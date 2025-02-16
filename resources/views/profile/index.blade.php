@@ -55,6 +55,17 @@
                                         </div>
 
                                         <div class="form-group">
+                                            <label for="nama_pengguna">Alias</label>
+                                            <input type="text"
+                                                class="form-control @error('alias') is-invalid @enderror"
+                                                id="alias" name="alias"
+                                                value="{{ session('alias') }}" disabled>
+                                            @error('alias')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="form-group">
                                             <label for="alamat_pengguna">Alamat</label>
                                             <input type="text"
                                                 class="form-control @error('alamat_pengguna') is-invalid @enderror"
@@ -114,9 +125,7 @@
                                         <div class="form-group">
                                             <label>Upload NIK</label>
                                             <div class="text-center mb-3">
-                                                <img id="nik-preview" src="{{ Auth::user()->upload_nik_pengguna
-        ? asset('storage/' . Auth::user()->upload_nik_pengguna)
-        : asset('user.png') }}" class="img-fluid"
+                                                <img id="nik-preview" src="{{ Auth::user()->upload_nik_pengguna ? asset('storage/' . Auth::user()->upload_nik_pengguna) : asset('user.png') }}" class="img-fluid"
                                                     style="max-height: 200px;" alt="NIK Preview">
                                             </div>
                                             <input type="file"
