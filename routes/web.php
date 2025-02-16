@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardMPUController;
 use App\Http\Controllers\DashboardAdminController;
-use App\Http\Controllers\AdminWeb\MenuUtamaController;
+use App\Http\Controllers\AdminWeb\menuUtama\MenuUtamaController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
 use App\Http\Controllers\ProfileController;
