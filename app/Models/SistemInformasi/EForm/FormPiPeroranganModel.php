@@ -28,4 +28,9 @@ class FormPiPeroranganModel extends Model
         'deleted_at',
         'deleted_by'
     ];
+
+    public function PiOrangLain()
+    {
+        return $this->belongsTo(FormPiOangLainModel::class, 'fk_t_form_pi_orang_lain', 'form_pi_orang_lain_id');
+    }
 }

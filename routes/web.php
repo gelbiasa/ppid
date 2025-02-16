@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\AdminWeb\MenuUtamaController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/session', [AuthController::class, 'getSessionData']);
 
+    Route::group(['prefix' => 'profile'], function () {
+        Route::get('/', [ProfileController::class, 'index']);
+        Route::put('/update_pengguna/{id}', [ProfileController::class, 'update_pengguna']);
+        Route::put('/update_password/{id}', [ProfileController::class, 'update_password']);
+    });
+
     Route::group(['prefix' => 'adminweb/menu-utama', 'middleware' => 'authorize:ADM'], function () {
         Route::get('/', [MenuUtamaController::class, 'index']);
         Route::post('/list', [MenuUtamaController::class, 'list']);
@@ -47,5 +54,4 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/delete_ajax', [MenuUtamaController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [MenuUtamaController::class, 'delete_ajax']);
     });
-    
 });

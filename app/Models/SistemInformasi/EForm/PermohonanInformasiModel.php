@@ -33,4 +33,14 @@ class PermohonanInformasiModel extends Model
         'deleted_at',
         'deleted_by'
     ];
+
+    public function PiPerorangan()
+    {
+        return $this->belongsTo(FormPiPeroranganModel::class, 'fk_t_form_pi_perorangan', 'form_pi_perorangan_id');
+    }
+
+    public function PiOrganisasi()
+    {
+        return $this->belongsTo(FormPiOrganisasiModel::class, 'fk_t_form_pi_organisasi', 'form_pi_organisasi_id');
+    }
 }
