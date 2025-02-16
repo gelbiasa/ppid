@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models\SistemInformasi;
+namespace App\Models\Log;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PermohonanInformasi extends Model
+class NotifVerifikatorModel extends Model
 {
     use HasFactory;
 }
