@@ -64,12 +64,16 @@
                     <p>Stok Barang</p>
                 </a>
             </li>
+            <li class="nav-header">Pengaturan Sistem Website Portal</li>
+
+            <!-- Manajemen Menu -->
             <li class="nav-item">
-                <a href="{{ url('/penjualan') }}" class="nav-link {{ $activeMenu == 'penjualan' ? 'active' : '' }} ">
-                    <i class="nav-icon fas fa-cash-register"></i>
-                    <p>Transaksi Penjualan</p>
+                <a href="{{ url('/adminweb/menu-utama') }}" class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
+                    <i class="fas fa-cog"></i>
+                    <p>Tambah Menu Utama</p>
                 </a>
             </li>
+            
         </ul>
     </nav>
 </div>
