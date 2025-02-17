@@ -1,29 +1,46 @@
-<form action="{{ url('/adminweb/menu-utama/ajax') }}" method="POST" id="form-tambah">
+@empty($menu)
+<div id="modal-master" class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Kesalahan</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-danger">
+                <h5><i class="icon fas fa-ban"></i> Kesalahan!!!</h5>
+                Data yang anda cari tidak ditemukan
+            </div>
+            <a href="{{ url('/adminweb/menu-utama') }}" class="btn btn-warning">Kembali</a>
+        </div>
+    </div>
+</div>
+@else
+<form action="{{ url('/adminweb/menu-utama/' . $menu->web_menu_id . '/update_ajax') }}" method="POST" id="form-edit">
     @csrf
+    @method('PUT')
     <div id="modal-master" class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Tambah Menu Utama</h5>
+                <h5 class="modal-title">Edit Menu Utama</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Nama Input -->
                 <div class="form-group">
                     <label>Nama</label>
-                    <input type="text" name="wm_menu_nama" id="name" class="form-control" required>
-                    <small id="error-name" class="error-text form-text text-danger"></small>
+                    <input type="text" name="wm_menu_nama" id="name" class="form-control" value="{{ $menu->wm_menu_nama }}" required>
+                    <small id="error-name" class="error-text text-danger"></small>
                 </div>
-
-                <!-- Status Menu (Aktif / Nonaktif) -->
                 <div class="form-group">
                     <label>Status Menu</label>
                     <select name="wm_status_menu" class="form-control" required>
-                        <option value="aktif">Aktif</option>
-                        <option value="nonaktif">Nonaktif</option>
+                        <option value="aktif" {{ $menu->wm_status_menu == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif" {{ $menu->wm_status_menu == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
-                    <small id="error-wm_status_menu" class="error-text form-text text-danger"></small>
+                    <small id="error-wm_status_menu" class="error-text text-danger"></small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -33,20 +50,9 @@
         </div>
     </div>
 </form>
-
 <script>
     $(document).ready(function() {
-        // Slugify otomatis
-        $('#name').on('input', function() {
-            var menuNama = $(this).val();
-            var menuUrl = menuNama.trim().toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-') // Ganti karakter non-alfanumerik dengan "-"
-                .replace(/^-+|-+$/g, ''); // Hapus "-" di awal/akhir
-            $('#wm_menu_url').val(menuUrl);
-        });
-
-        // Validasi Form
-        $("#form-tambah").validate({
+        $("#form-edit").validate({
             rules: {
                 wm_menu_nama: { required: true, minlength: 3, maxlength: 60 }
             },
@@ -62,19 +68,15 @@
                     url: form.action,
                     type: form.method,
                     data: $(form).serialize(),
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
                     success: function(response) {
-                        if(response.status) {
-                            $('#myModal').modal('hide'); // Tutup modal
+                        if (response.status) {
+                            $('#myModal').modal('hide');
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
                                 text: response.message
                             });
-                            $('#form-tambah')[0].reset(); // Reset form
-                            dataMenu.ajax.reload(); // Reload DataTables
+                            dataMenu.ajax.reload();
                         } else {
                             $('.error-text').text('');
                             $.each(response.msgField, function(prefix, val) {
@@ -86,13 +88,6 @@
                                 text: response.message
                             });
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Terjadi Kesalahan',
-                            text: 'Gagal menyimpan data: ' + error
-                        });
                     }
                 });
                 return false;
@@ -102,13 +97,13 @@
                 error.addClass('invalid-feedback');
                 element.closest('.form-group').append(error);
             },
-            highlight: function(element, errorClass, validClass) {
+            highlight: function(element) {
                 $(element).addClass('is-invalid');
             },
-            unhighlight: function(element, errorClass, validClass) {
+            unhighlight: function(element) {
                 $(element).removeClass('is-invalid');
             }
         });
     });
 </script>
-
+@endempty

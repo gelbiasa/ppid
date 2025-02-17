@@ -51,7 +51,7 @@
         }
 
         $(document).ready(function() {
-            var dataMenu = $('#table_web_menu').DataTable({
+            dataMenu = $('#table_web_menu').DataTable({
                 serverSide: true,
                 ajax: {
                     "url": "{{ url('/adminweb/menu-utama/list') }}",
