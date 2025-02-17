@@ -13,7 +13,8 @@ class PermohonanInformasiModel extends Model
     protected $table = 't_permohonan_informasi';
     protected $primaryKey = 'permohonan_informasi_id';
     protected $fillable = [
-        'fk_t_form_pi_perorangan',
+        'fk_t_form_pi_diri_sendiri',
+        'fk_t_form_pi_orang_lain',
         'fk_t_form_pi_organisasi',
         'pi_kategori_pemohon',
         'pi_kategori_aduan',
@@ -34,9 +35,14 @@ class PermohonanInformasiModel extends Model
         'deleted_by'
     ];
 
-    public function PiPerorangan()
+    public function PiDiriSendiri()
     {
-        return $this->belongsTo(FormPiPeroranganModel::class, 'fk_t_form_pi_perorangan', 'form_pi_perorangan_id');
+        return $this->belongsTo(FormPiDiriSendiriModel::class, 'fk_t_form_pi_diri_sendiri', 'form_pi_diri_sendiri_id');
+    }
+
+    public function PiOrangLain()
+    {
+        return $this->belongsTo(FormPiOrangLainModel::class, 'fk_t_form_pi_orang_lain', 'form_pi_orang_lain_id');
     }
 
     public function PiOrganisasi()

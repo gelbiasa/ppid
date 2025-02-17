@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminWeb\MenuUtamaController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,5 +54,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}/update_ajax', [MenuUtamaController::class, 'update_ajax']);
         Route::get('/{id}/delete_ajax', [MenuUtamaController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [MenuUtamaController::class, 'delete_ajax']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
+        Route::get('/', [PermohonanInformasiController::class, 'index']);
+        Route::get('/formPermohonanInformasi', [PermohonanInformasiController::class, 'formPermohonanInformasi']);
+        Route::post('/storePermohonanInformasi', [PermohonanInformasiController::class, 'storePermohonanInformasi']);
     });
 });
