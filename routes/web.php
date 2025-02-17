@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardMPUController;
 use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\AdminWeb\menuUtama\MenuUtamaController;
+use App\Http\Controllers\AdminWeb\SubMenu\SubMenuController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
 use App\Http\Controllers\ProfileController;
@@ -53,5 +54,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}/update_ajax', [MenuUtamaController::class, 'update_ajax']);
         Route::get('/{id}/delete_ajax', [MenuUtamaController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [MenuUtamaController::class, 'delete_ajax']);
+    });
+    Route::group(['prefix' => 'adminweb/submenu', 'middleware' => 'authorize:ADM'], function () {
+        Route::get('/', [SubMenuController::class, 'index']);
+        Route::post('/list', [SubMenuController::class, 'list']);
+        Route::get('/create_ajax', [SubMenuController::class, 'create_ajax']);
+        Route::post('/ajax', [SubMenuController::class, 'store_ajax']);
+        Route::get('/{id}/edit_ajax', [SubMenuController::class, 'edit_ajax']);
+        Route::put('/{id}/update_ajax', [SubMenuController::class, 'update_ajax']);
+        Route::get('/{id}/delete_ajax', [SubMenuController::class, 'confirm_ajax']);
+        Route::delete('/{id}/delete_ajax', [SubMenuController::class, 'delete_ajax']);
     });
 });

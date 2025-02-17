@@ -19,14 +19,13 @@ class WebKontenModel extends Model
         'wk_judul_konten',
         'wk_deskripsi_konten',
         'wk_status_konten',
-        'created_by',
+        'isDeleted',
+        'created_at',
+        'created_by', 
+        'updated_at',
         'updated_by',
+        'deleted_at',
         'deleted_by'
-    ];
-
-    protected $attributes = [
-        'wk_status_konten' => 'aktif',
-        'isDeleted' => 0
     ];
 
     public function menu()
