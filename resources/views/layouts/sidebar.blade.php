@@ -194,10 +194,6 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     </a>
                 </li>
                 <li class="nav-item">
-<<<<<<< HEAD
-                    <a href="{{ url('/permohonan') }}"
-                        class="nav-link {{ $activeMenu == 'permohonan' ? 'active' : '' }}">
-=======
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-folder-open"></i>
                         <p> E-Form
@@ -229,7 +225,6 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     </ul>
                 <li class="nav-item">
                     <a href="{{ url('/permohonan') }}" class="nav-link {{ $activeMenu == 'permohonan' ? 'active' : '' }}">
->>>>>>> b3f8a349026cc783a67a88fe0e44d7ee6a5d846b
                         <i class="nav-icon fas fa-envelope"></i>
                         <p>Pengajuan Permohonan</p>
                     </a>
