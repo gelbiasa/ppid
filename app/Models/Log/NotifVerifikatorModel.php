@@ -12,6 +12,7 @@ class NotifVerifikatorModel extends Model
 
     protected $table = 'log_notif_verifikator';
     protected $primaryKey = 'notif_verifikator_id';
+    public $timestamps = false;
     protected $fillable = [
         'kategori_notif_verif',
         'notif_verifikator_form_id',

@@ -12,6 +12,7 @@ class NotifAdminModel extends Model
 
     protected $table = 'log_notif_admin';
     protected $primaryKey = 'notif_admin_id';
+    public $timestamps = false;
     protected $fillable = [
         'kategori_notif_admin',
         'notif_admin_form_id',
