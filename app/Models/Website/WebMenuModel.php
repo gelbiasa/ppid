@@ -41,7 +41,16 @@ class WebMenuModel extends Model
     {
         return $this->belongsTo(WebMenuModel::class, 'wm_parent_id', 'web_menu_id');
     }
-
+    public function children()
+    {
+        return $this->hasMany(WebMenuModel::class, 'wm_parent_id', 'web_menu_id')
+                    ->orderBy('wm_urutan_menu');
+    }
+    
+    public function parent()
+    {
+        return $this->belongsTo(WebMenuModel::class, 'wm_parent_id', 'web_menu_id');
+    }
     public function konten()
     {
         return $this->hasOne(WebKontenModel::class, 'fk_web_menu', 'web_menu_id');
