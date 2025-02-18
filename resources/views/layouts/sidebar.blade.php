@@ -62,7 +62,8 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     <!-- Manajemen Menu -->
                     {{-- <li class="nav-header">Website / Portal</li>
                 <li class="nav-item">
-                    <a href="{{ url('/adminweb/menu-utama') }}" class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
+                    <a href="{{ url('/adminweb/menu-utama') }}"
+                        class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cog"></i>
                         <p>Tambah Menu Utama</p>
                     </a>
@@ -193,8 +194,42 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     </a>
                 </li>
                 <li class="nav-item">
+<<<<<<< HEAD
                     <a href="{{ url('/permohonan') }}"
                         class="nav-link {{ $activeMenu == 'permohonan' ? 'active' : '' }}">
+=======
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-folder-open"></i>
+                        <p> E-Form
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/PermohonanInformasi') }}"
+                                class="nav-link {{ $activeMenu == 'PermohonanInformasi' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Permohonan Informasi</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/PernyataanKeberatan') }}"
+                                class="nav-link {{ $activeMenu == 'PernyataanKeberatan' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Pernyataan Keberatan</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/PengaduanMasyarakat') }}"
+                                class="nav-link {{ $activeMenu == 'PengaduanMasyarakat' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Pengaduan Masyarakat </p>
+                            </a>
+                        </li>
+                    </ul>
+                <li class="nav-item">
+                    <a href="{{ url('/permohonan') }}" class="nav-link {{ $activeMenu == 'permohonan' ? 'active' : '' }}">
+>>>>>>> b3f8a349026cc783a67a88fe0e44d7ee6a5d846b
                         <i class="nav-icon fas fa-envelope"></i>
                         <p>Pengajuan Permohonan</p>
                     </a>
@@ -220,6 +255,7 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                         <p>Hasil Pertanyaan</p>
                     </a>
                 </li>
+
             @endif
         </ul>
     </nav>
