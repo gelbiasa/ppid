@@ -37,7 +37,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Menu</h5>
+                    <h5 class="modal-title">Tambah Menu</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -52,7 +52,7 @@
                         <div class="form-group">
                             <label>Parent Menu</label>
                             <select class="form-control" name="wm_parent_id">
-                                <option value="">None (Top Level)</option>
+                                <option value="">NULL (Menu Induk)</option>
                                 @foreach ($menus as $menu)
                                     <option value="{{ $menu->web_menu_id }}">{{ $menu->wm_menu_nama }}</option>
                                 @endforeach
@@ -61,14 +61,14 @@
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
                             <select class="form-control" name="wm_status_menu" required>
-                                <option value="aktif">Active</option>
-                                <option value="nonaktif">Inactive</option>
+                                <option value="aktif">Aktif</option>
+                                <option value="nonaktif">Non-Aktif</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save Menu</button>
+                        <button type="button" class="btn btn-warning" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -97,20 +97,23 @@
                         <div class="form-group">
                             <label>Parent Menu</label>
                             <select class="form-control" name="wm_parent_id" id="edit_parent_id">
-                                <option value="">None (Top Level)</option>
+                                <option value="">NULL (Menu Induk)</option>
+                                @foreach ($menus as $menu)
+                                    <option value="{{ $menu->web_menu_id }}">{{ $menu->wm_menu_nama }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
                             <select class="form-control" name="wm_status_menu" id="edit_status_menu" required>
-                                <option value="aktif">Active</option>
-                                <option value="nonaktif">Inactive</option>
+                                <option value="aktif">Aktif</option>
+                                <option value="nonaktif">Non-Aktif</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Update Menu</button>
+                        <button type="button" class="btn btn-warning" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -122,17 +125,18 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirm Delete</h5>
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this menu? This action cannot be undone.
+                    <p>Apakah Anda yakin ingin menghapus <strong id="menuNameToDelete"></strong>? Tindakan ini tidak dapat
+                        dibatalkan.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Ya,Hapus</button>
                 </div>
             </div>
         </div>
@@ -140,30 +144,103 @@
 @endsection
 
 @push('css')
-    {{-- Nestable CSS --}}
-    <link href="{{ asset('assets/nestable/nestable.css') }}" rel="stylesheet">
-    {{-- Toastr CSS --}}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/nestable2/jquery.nestable.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/toastr/toastr.min.css') }}">
     <style>
+        /* Container untuk seluruh menu */
+        .card-body {
+            max-height: 70vh;
+            /* Tinggi maksimum 70% dari viewport height */
+            overflow-y: auto;
+            /* Membuat scroll vertikal */
+            padding: 20px;
+        }
+
+        /* Membuat scrollbar lebih modern */
+        .card-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .card-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .dd {
+            width: 100% !important;
+            max-width: none !important;
+        }
+
         .dd-handle {
-            height: auto;
-            min-height: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 8px 15px;
+            min-height: 42px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #f8f9fa;
         }
-        .dd-item > button {
-            margin: 5px 0;
+
+        .dd-handle .float-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
         }
-        .badge {
-            margin-right: 8px;
+
+        /* Styling untuk text menu agar tidak terpotong */
+        .dd-handle span.menu-text {
+            flex: 1;
+            min-width: 150px;
+            word-break: break-word;
+        }
+
+        /* Memastikan tombol Simpan Urutan tetap terlihat */
+        #saveOrderBtn {
+            position: sticky;
+            bottom: 20px;
+            margin-top: 20px;
+        }
+
+        /* Responsif untuk layar kecil */
+        @media (max-width: 576px) {
+            .card-body {
+                max-height: 80vh;
+                /* Sedikit lebih tinggi untuk mobile */
+            }
+
+            .dd-handle {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .dd-handle .float-right {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 5px;
+            }
+
+            .btn-xs {
+                padding: 4px 8px;
+            }
         }
     </style>
 @endpush
 
 @push('js')
-    {{-- Nestable JS --}}
-    <script src="{{ asset('assets/nestable/jquery.nestable.js') }}"></script>
-    {{-- Toastr JS --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('vendor/nestable2/jquery.nestable.min.js') }}"></script>
+    <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -171,15 +248,10 @@
             $('#nestable').nestable({
                 maxDepth: 2
             });
-            
-            // Tombol "Simpan Urutan"
-            $('#saveOrderBtn').on('click', function() {
-                updateOrder();
-            });
 
-            // Fungsi Update Order
-            function updateOrder() {
-                var data = $('#nestable').nestable('serialize');
+            // Simpan Urutan Menu
+            $('#saveOrderBtn').on('click', function() {
+                let data = $('#nestable').nestable('serialize');
                 $.ajax({
                     url: "{{ url('/adminweb/menu-management/reorder') }}",
                     type: 'POST',
@@ -190,6 +262,8 @@
                     success: function(response) {
                         if (response.status) {
                             toastr.success(response.message);
+                            setTimeout(() => window.location.reload(),
+                                1000); // Reload setelah 1 detik
                         } else {
                             toastr.error(response.message);
                         }
@@ -198,14 +272,13 @@
                         toastr.error('Error updating menu order');
                     }
                 });
-            }
+            });
 
-            // Gunakan event delegation untuk tombol Edit
+            // Edit Menu
             $(document).on('click', '.edit-menu', function() {
-                var menuId = $(this).data('id');
+                let menuId = $(this).data('id');
                 $('#edit_menu_id').val(menuId);
 
-                // Fetch menu data
                 $.ajax({
                     url: `{{ url('/adminweb/menu-management') }}/${menuId}/edit`,
                     type: 'GET',
@@ -214,11 +287,13 @@
                             $('#edit_menu_nama').val(response.menu.wm_menu_nama);
                             $('#edit_status_menu').val(response.menu.wm_status_menu);
 
-                            // Populate parent menu dropdown
-                            var parentSelect = $('#edit_parent_id');
-                            parentSelect.empty().append('<option value="">None (Top Level)</option>');
-                            response.parentMenus.forEach(function(menu) {
-                                parentSelect.append(`<option value="${menu.web_menu_id}">${menu.wm_menu_nama}</option>`);
+                            let parentSelect = $('#edit_parent_id');
+                            parentSelect.empty().append(
+                                '<option value="">None (Top Level)</option>');
+                            response.parentMenus.forEach(menu => {
+                                parentSelect.append(
+                                    `<option value="${menu.web_menu_id}">${menu.wm_menu_nama}</option>`
+                                );
                             });
                             parentSelect.val(response.menu.wm_parent_id);
                         } else {
@@ -230,46 +305,55 @@
                     }
                 });
             });
+            $(document).ready(function() {
+                // Event listener untuk menampilkan modal hapus dan menyimpan ID menu yang akan dihapus
+                $(document).on('click', '.delete-menu', function() {
+                    let menuId = $(this).data('id');
+                    let menuName = $(this).data('name');
 
-            // Gunakan event delegation untuk tombol Delete
-            $(document).on('click', '.delete-menu', function() {
-                var menuId = $(this).data('id');
-                $('#deleteConfirmModal').modal('show');
-                // Simpan ID menu yang akan dihapus pada tombol konfirmasi
-                $('#confirmDelete').data('id', menuId);
-            });
+                    console.log("Menu ID yang akan dihapus:", menuId); // Debugging
 
-            // Tombol konfirmasi Delete
-            $('#confirmDelete').on('click', function() {
-                var menuId = $(this).data('id');
-                if (menuId) {
-                    $.ajax({
-                        url: `{{ url('/adminweb/menu-management') }}/${menuId}/delete`,
-                        type: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            if (response.status) {
-                                toastr.success(response.message);
-                                location.reload();
-                            } else {
-                                toastr.error(response.message);
+                    $('#confirmDelete').data('id', menuId); // Simpan ID di tombol konfirmasi
+                    $('#menuNameToDelete').text(menuName); // Tampilkan nama menu di modal
+                    $('#deleteConfirmModal').modal('show');
+                });
+
+                // Event listener untuk konfirmasi hapus
+                $('#confirmDelete').on('click', function() {
+                    let menuId = $(this).data('id');
+
+                    console.log("Menghapus menu ID:", menuId); // Debugging
+
+                    if (menuId) {
+                        $.ajax({
+                            url: `{{ url('/adminweb/menu-management') }}/${menuId}/delete`,
+                            type: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                if (response.status) {
+                                    toastr.success(response.message);
+                                    setTimeout(() => window.location.reload(), 1000);
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                                $('#deleteConfirmModal').modal('hide');
+                            },
+                            error: function(xhr) {
+                                toastr.error('Error deleting menu');
+                                console.error(xhr.responseText); // Debugging error
+                                $('#deleteConfirmModal').modal('hide');
                             }
-                            $('#deleteConfirmModal').modal('hide');
-                        },
-                        error: function() {
-                            toastr.error('Error deleting menu');
-                            $('#deleteConfirmModal').modal('hide');
-                        }
-                    });
-                }
+                        });
+                    }
+                });
             });
 
-            // Update Menu Form Submit
+            // Simpan Perubahan Edit Menu
             $('#editMenuForm').on('submit', function(e) {
                 e.preventDefault();
-                var menuId = $('#edit_menu_id').val();
+                let menuId = $('#edit_menu_id').val();
                 $.ajax({
                     url: `{{ url('/adminweb/menu-management') }}/${menuId}/update`,
                     type: 'PUT',
@@ -277,16 +361,15 @@
                     success: function(response) {
                         if (response.status) {
                             toastr.success(response.message);
-                            $('#editMenuModal').modal('hide');
-                            location.reload();
+                            setTimeout(() => window.location.reload(), 1000);
                         } else {
                             toastr.error(response.message);
                         }
                     },
                     error: function(xhr) {
                         if (xhr.status === 422) {
-                            var errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(function(key) {
+                            let errors = xhr.responseJSON.errors;
+                            Object.keys(errors).forEach(key => {
                                 toastr.error(errors[key][0]);
                             });
                         } else {
@@ -296,7 +379,7 @@
                 });
             });
 
-            // Add Menu Form Submit
+            // Tambah Menu Baru
             $('#addMenuForm').on('submit', function(e) {
                 e.preventDefault();
                 $.ajax({
@@ -306,16 +389,15 @@
                     success: function(response) {
                         if (response.status) {
                             toastr.success(response.message);
-                            $('#addMenuModal').modal('hide');
-                            location.reload();
+                            setTimeout(() => window.location.reload(), 1000);
                         } else {
                             toastr.error(response.message);
                         }
                     },
                     error: function(xhr) {
                         if (xhr.status === 422) {
-                            var errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(function(key) {
+                            let errors = xhr.responseJSON.errors;
+                            Object.keys(errors).forEach(key => {
                                 toastr.error(errors[key][0]);
                             });
                         } else {
@@ -325,7 +407,7 @@
                 });
             });
 
-            // Reset forms ketika modal ditutup
+            // Reset forms setelah modal ditutup
             $('.modal').on('hidden.bs.modal', function() {
                 $(this).find('form')[0].reset();
             });
