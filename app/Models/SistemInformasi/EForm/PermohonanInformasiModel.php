@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class PermohonanInformasiModel extends Model
 {
@@ -25,6 +26,7 @@ class PermohonanInformasiModel extends Model
         'fk_t_form_pi_organisasi',
         'pi_kategori_pemohon',
         'pi_kategori_aduan',
+        'pi_bukti_aduan',
         'pi_informasi_yang_dibutuhkan',
         'pi_alasan_permohonan_informasi',
         'pi_sumber_informasi',
@@ -65,6 +67,28 @@ class PermohonanInformasiModel extends Model
             $kategoriPemohon = $request->pi_kategori_pemohon;
             $formId = null;
             $notifMessage = '';
+            $userLevel = Auth::user()->level->level_kode;
+
+            $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
+
+            // Handle bukti_aduan based on user level
+            $buktiAduan = null;
+            if ($userLevel === 'ADM') {
+                if (!$request->hasFile('pi_bukti_aduan')) {
+                    throw new \Exception('Bukti aduan wajib diupload untuk Admin');
+                }
+                
+                $bukti = $request->file('pi_bukti_aduan');
+                $validator = Validator::make(['pi_bukti_aduan' => $bukti], [
+                    'pi_bukti_aduan' => 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240'
+                ]);
+
+                if ($validator->fails()) {
+                    throw new ValidationException($validator);
+                }
+
+                $buktiAduan = self::uploadFile($bukti, 'pi_bukti_aduan');
+            }
 
             // Handle different types of submissions based on kategori_pemohon
             switch ($kategoriPemohon) {
@@ -84,7 +108,8 @@ class PermohonanInformasiModel extends Model
             // Create main permohonan informasi record
             $permohonanInformasi = self::create(array_merge([
                 'pi_kategori_pemohon' => $kategoriPemohon,
-                'pi_kategori_aduan' => 'online',
+                'pi_kategori_aduan' => $kategoriAduan,
+                'pi_bukti_aduan' => $buktiAduan,
                 'pi_informasi_yang_dibutuhkan' => $request->pi_informasi_yang_dibutuhkan,
                 'pi_alasan_permohonan_informasi' => $request->pi_alasan_permohonan_informasi,
                 'pi_sumber_informasi' => implode(', ', $request->pi_sumber_informasi),
@@ -106,35 +131,39 @@ class PermohonanInformasiModel extends Model
             return ['success' => false, 'message' => 'Terjadi kesalahan saat mengajukan permohonan: ' . $e->getMessage()];
         }
     }
-    
-    public static function updateData($request)
-    {
-
-    }
-
-    
-    public static function deleteData($request)
-    {
-
-    }
 
     public static function validasiData($request)
     {
-        // Validasi dasar untuk semua jenis permohonan
-        $validasiDasar = Validator::make($request->all(), [
+        $userLevel = Auth::user()->level->level_kode;
+        
+        // Build validation rules array
+        $rules = [
             'pi_kategori_pemohon' => 'required',
             'pi_informasi_yang_dibutuhkan' => 'required',
             'pi_alasan_permohonan_informasi' => 'required',
             'pi_sumber_informasi' => 'required|array',
             'pi_alamat_sumber_informasi' => 'required',
-        ], [
+        ];
+
+        // Add bukti_aduan validation for ADM users
+        if ($userLevel === 'ADM') {
+            $rules['pi_bukti_aduan'] = 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240';
+        }
+
+        $messages = [
             'pi_kategori_pemohon.required' => 'Kategori pemohon wajib diisi',
             'pi_informasi_yang_dibutuhkan.required' => 'Informasi yang dibutuhkan wajib diisi',
             'pi_alasan_permohonan_informasi.required' => 'Alasan permohonan informasi wajib diisi',
             'pi_sumber_informasi.required' => 'Sumber informasi wajib diisi',
             'pi_sumber_informasi.array' => 'Format sumber informasi tidak valid',
             'pi_alamat_sumber_informasi.required' => 'Alamat sumber informasi wajib diisi',
-        ]);
+            'pi_bukti_aduan.required' => 'Bukti aduan wajib diupload untuk Admin',
+            'pi_bukti_aduan.file' => 'Bukti aduan harus berupa file',
+            'pi_bukti_aduan.mimes' => 'Format file bukti aduan tidak valid. Format yang diizinkan: PDF, JPG, JPEG, PNG, SVG, DOC, DOCX',
+            'pi_bukti_aduan.max' => 'Ukuran file bukti aduan maksimal 10MB',
+        ];
+
+        $validasiDasar = Validator::make($request->all(), $rules, $messages);
 
         if ($validasiDasar->fails()) {
             throw new ValidationException($validasiDasar);
@@ -179,5 +208,12 @@ class PermohonanInformasiModel extends Model
             'log_transaction_pelaku' => session('alias'),
             'log_transaction_tanggal_aktivitas' => now()
         ]);
+    }
+
+    private static function uploadFile($file, $prefix)
+    {
+        $fileName = $prefix . '/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('public', $fileName);
+        return $fileName;
     }
 }

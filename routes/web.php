@@ -80,9 +80,15 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}/delete_ajax', [SubMenuController::class, 'delete_ajax']);
     });
 
-    Route::group(['prefix' => 'SistemInformasi/EForm/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
-        Route::get('/', [PermohonanInformasiController::class, 'index']);
-        Route::get('/formPermohonanInformasi', [PermohonanInformasiController::class, 'formPermohonanInformasi']);
-        Route::post('/storePermohonanInformasi', [PermohonanInformasiController::class, 'storePermohonanInformasi']);
+    Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
+        Route::get('/', [PermohonanInformasiController::class, 'indexRPN']);
+        Route::get('/formPermohonanInformasi', [PermohonanInformasiController::class, 'formPermohonanInformasiRPN']);
+        Route::post('/storePermohonanInformasi', [PermohonanInformasiController::class, 'storePermohonanInformasiRPN']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PermohonanInformasi', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PermohonanInformasiController::class, 'indexADM']);
+        Route::get('/formPermohonanInformasi', [PermohonanInformasiController::class, 'formPermohonanInformasiADM']);
+        Route::post('/storePermohonanInformasi', [PermohonanInformasiController::class, 'storePermohonanInformasiADM']);
     });
 });
