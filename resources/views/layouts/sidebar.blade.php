@@ -39,18 +39,6 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ url('/level') }}" class="nav-link {{ $activeMenu == 'level' ? 'active' : '' }} ">
-                        <i class="nav-icon fas fa-layer-group"></i>
-                        <p>Level User</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url('/user') }}" class="nav-link {{ $activeMenu == 'user' ? 'active' : '' }}">
-                        <i class="nav-icon far fa-user"></i>
-                        <p>Data User</p>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="{{ url('/notifAdmin') }}" class="nav-link {{ $activeMenu == 'notifikasi' ? 'active' : '' }}">
                         <i class="nav-icon fas fa-bell"></i>
                         <p>Notifikasi</p>
@@ -58,16 +46,29 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                             <span class="badge badge-danger notification-badge">{{ $totalNotifikasiADM }}</span>
                         @endif
                     </a>
-                    <!-- Manajemen Menu -->
-                    {{--
-                <li class="nav-header">Website / Portal</li>
+                </li>
                 <li class="nav-item">
-                    <a href="{{ url('/adminweb/menu-utama') }}"
-                        class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-cog"></i>
-                        <p>Tambah Menu Utama</p>
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-folder-open"></i>
+                        <p> Manage Pengguna
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
                     </a>
-                </li> --}}
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url('/level') }}" class="nav-link {{ $activeMenu == 'level' ? 'active' : '' }} ">
+                                <i class="nav-icon fas fa-layer-group"></i>
+                                <p>Level User</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('/user') }}" class="nav-link {{ $activeMenu == 'user' ? 'active' : '' }}">
+                                <i class="nav-icon far fa-user"></i>
+                                <p>Data User</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="nav-header">Website / Portal</li>
                 <!-- Menu Utama -->
                 <li class="nav-item {{ request()->is('adminweb/menu-utama*') ? 'menu-open' : '' }}">

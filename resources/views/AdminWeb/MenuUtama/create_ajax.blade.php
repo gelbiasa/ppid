@@ -66,7 +66,7 @@
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
-                        if(response.status) {
+                        if(response.success) {
                             $('#myModal').modal('hide'); // Tutup modal
                             Swal.fire({
                                 icon: 'success',
@@ -87,7 +87,7 @@
                             });
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function(xhr, success, error) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Terjadi Kesalahan',

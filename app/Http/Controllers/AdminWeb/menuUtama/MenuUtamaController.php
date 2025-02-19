@@ -67,56 +67,12 @@ class MenuUtamaController extends Controller
     public function store_ajax(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            // Validasi input form
-            $rules = [
-                'wm_menu_nama' => 'required|string|max:60',
-                'wm_status_menu' => 'required|in:aktif,nonaktif', // Validasi enum untuk wm_status_menu
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors(),
-                ]);
-            }
-
-            try {
-                // Menghitung wm_urutan_menu (orderNumber)
-                $orderNumber = WebMenuModel::whereNull('wm_parent_id')->count() + 1;
-
-                // Memastikan wm_status_menu diubah menjadi string enum yang valid ('aktif' / 'nonaktif')
-                $statusMenu = $request->wm_status_menu; // Nilai sudah dalam format enum 'aktif' atau 'nonaktif'
-
-                // Menyimpan data menu ke database
-                WebMenuModel::create([
-                    'wm_menu_nama' => $request->wm_menu_nama,
-                    'wm_menu_url' => Str::slug($request->wm_menu_nama), // Menyimpan slug otomatis
-                    'wm_parent_id' => null,
-                    'wm_urutan_menu' => $orderNumber,
-                    'wm_status_menu' => $statusMenu,  // memastikan ini sesuai dengan enum
-                    'created_by' => session('alias'),  //  simpan alias pengguna yang membuat
-                ]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Menu utama berhasil disimpan',
-                ]);
-            } catch (\Exception $e) {
-                // Menyimpan log kesalahan jika terjadi exception
-                Log::error('Error: ' . $e->getMessage());
-
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-                ]);
-            }
+            $result = WebMenuModel::createData($request);
+            return response()->json($result);
         }
-
         return redirect('/dashboardAdmin');
     }
+
     public function edit_ajax(int $id)
     {
         $menu = WebMenuModel::find($id);
@@ -131,100 +87,24 @@ class MenuUtamaController extends Controller
     public function update_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'wm_menu_nama' => 'required|string|max:60',
-                'wm_status_menu' => 'required|in:aktif,nonaktif',
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors(),
-                ]);
-            }
-
-            try {
-                $menu = WebMenuModel::findOrFail($id); // Gunakan findOrFail untuk menghindari null return
-
-                $menu->update([
-                    'wm_menu_nama' => $request->wm_menu_nama,
-                    'wm_menu_url' => Str::slug($request->wm_menu_nama),
-                    'wm_status_menu' => $request->wm_status_menu,
-                    'updated_by' => session('alias'),
-                ]);
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Menu utama berhasil diperbarui',
-                ]);
-            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Menu tidak ditemukan',
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Error: ' . $e->getMessage());
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-                ]);
-            }
+            $result = WebMenuModel::updateData($request, $id);
+            return response()->json($result);
         }
-
         return redirect('/dashboardAdmin');
     }
+
     public function confirm_ajax(int $id)
     {
         $menu = WebMenuModel::find($id);
         return view('adminweb.menuUtama.confirm_ajax', ['menu' => $menu]);
     }
+    
     public function delete_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $menu = WebMenuModel::find($id);
-
-            if (!$menu) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Data tidak ditemukan'
-                ]);
-            }
-
-            // Periksa apakah menu memiliki submenu
-            $hasSubMenu = WebMenuModel::where('wm_parent_id', $id)->exists();
-
-            if ($hasSubMenu) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Menu tidak bisa dihapus karena memiliki submenu di dalamnya'
-                ]);
-            }
-
-            // Hapus menu jika tidak memiliki submenu
-            try {
-                $menu->update([
-                    'deleted_by' => session('alias'),
-                    'isDeleted' => 1
-                ]);
-
-                $menu->delete();
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil dihapus'
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Error saat menghapus menu: ' . $e->getMessage());
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
-                ]);
-            }
+            $result = WebMenuModel::deleteData($id);
+            return response()->json($result);
         }
-
         return redirect('/dashboardAdmin');
     }
 }
