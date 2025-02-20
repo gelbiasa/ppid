@@ -5,12 +5,21 @@ namespace App\Http\Controllers\SistemInformasi\EForm;
 use App\Http\Controllers\Controller;
 use App\Models\SistemInformasi\EForm\PermohonanInformasiModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class PermohonanInformasiController extends Controller
 {
-    public function indexRPN()
+    private function getUserFolder()
     {
+        $levelKode = Auth::user()->level->level_kode;
+        return ($levelKode === 'ADM' || $levelKode === 'RPN') ? $levelKode : abort(403);
+    }
+
+    public function index()
+    {
+        $folder = $this->getUserFolder();
+
         $breadcrumb = (object) [
             'title' => 'Permohonan Informasi',
             'list' => ['Home', 'Permohonan Informasi']
@@ -20,17 +29,19 @@ class PermohonanInformasiController extends Controller
             'title' => 'Pengajuan Permohonan Informasi'
         ];
 
-        $activeMenu = 'PermohonanInformasi'; // Set the active menu
+        $activeMenu = 'PermohonanInformasi';
 
-        return view('SistemInformasi/EForm/RPN/PermohonanInformasi.index', [
+        return view("SistemInformasi/EForm/$folder/PermohonanInformasi.index", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu
         ]);
     }
 
-    public function formPermohonanInformasiRPN()
+    public function formPermohonanInformasi()
     {
+        $folder = $this->getUserFolder();
+
         $breadcrumb = (object) [
             'title' => 'Permohonan Informasi',
             'list' => ['Home', 'Permohonan Informasi', 'Tambah']
@@ -42,100 +53,28 @@ class PermohonanInformasiController extends Controller
 
         $activeMenu = 'PermohonanInformasi';
 
-        return view('SistemInformasi/EForm/RPN/PermohonanInformasi.pengisianForm', [
+        return view("SistemInformasi/EForm/$folder/PermohonanInformasi.pengisianForm", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
         ]);
     }
 
-    public function storePermohonanInformasiRPN(Request $request)
+    public function storePermohonanInformasi(Request $request)
     {
         try {
-            // Jalankan validasi dari model
+            $folder = $this->getUserFolder();
             PermohonanInformasiModel::validasiData($request);
-            
-            // Lanjutkan dengan pembuatan permohonan
             $result = PermohonanInformasiModel::createData($request);
 
             if ($result['success']) {
-                return redirect('/SistemInformasi/EForm/RPN/PermohonanInformasi')
+                return redirect("/SistemInformasi/EForm/$folder/PermohonanInformasi")
                     ->with('success', $result['message']);
             }
 
             return redirect()->back()
                 ->with('error', $result['message'])
                 ->withInput();
-
-        } catch (ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->validator)
-                ->withInput();
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-
-    public function indexADM()
-    {
-        $breadcrumb = (object) [
-            'title' => 'Permohonan Informasi',
-            'list' => ['Home', 'Permohonan Informasi']
-        ];
-
-        $page = (object) [
-            'title' => 'Pengajuan Permohonan Informasi'
-        ];
-
-        $activeMenu = 'PermohonanInformasi'; // Set the active menu
-
-        return view('SistemInformasi/EForm/ADM/PermohonanInformasi.index', [
-            'breadcrumb' => $breadcrumb,
-            'page' => $page,
-            'activeMenu' => $activeMenu
-        ]);
-    }
-
-    public function formPermohonanInformasiADM()
-    {
-        $breadcrumb = (object) [
-            'title' => 'Permohonan Informasi',
-            'list' => ['Home', 'Permohonan Informasi', 'Tambah']
-        ];
-
-        $page = (object) [
-            'title' => 'Pengajuan Permohonan Informasi'
-        ];
-
-        $activeMenu = 'PermohonanInformasi';
-
-        return view('SistemInformasi/EForm/ADM/PermohonanInformasi.pengisianForm', [
-            'breadcrumb' => $breadcrumb,
-            'page' => $page,
-            'activeMenu' => $activeMenu,
-        ]);
-    }
-
-    public function storePermohonanInformasiADM(Request $request)
-    {
-        try {
-            // Jalankan validasi dari model
-            PermohonanInformasiModel::validasiData($request);
-            
-            // Lanjutkan dengan pembuatan permohonan
-            $result = PermohonanInformasiModel::createData($request);
-
-            if ($result['success']) {
-                return redirect('/SistemInformasi/EForm/ADM/PermohonanInformasi')
-                    ->with('success', $result['message']);
-            }
-
-            return redirect()->back()
-                ->with('error', $result['message'])
-                ->withInput();
-
         } catch (ValidationException $e) {
             return redirect()->back()
                 ->withErrors($e->validator)

@@ -92,7 +92,7 @@ class AuthController extends Controller
             if (strlen($alias . ' ' . $word) > 15) {
                 // Jika menambahkan kata akan melebihi 15 karakter, singkat dengan inisial
                 $alias .= ' ' . strtoupper(substr($word, 0, 1)) . '.';
-                break; // Hentikan iterasi setelah menambahkan inisial
+                break; 
             } else {
                 $alias .= ($alias == '' ? '' : ' ') . $word;
             }

@@ -119,10 +119,11 @@ class PermohonanInformasiModel extends Model
             ], $formId));
 
             // Create notifications
-            self::createNotifications($permohonanInformasi->permohonan_informasi_id, $notifMessage);
+            NotifAdminModel::createData($permohonanInformasi->permohonan_informasi_id, $notifMessage);
+            NotifVerifikatorModel::createData($permohonanInformasi->permohonan_informasi_id, $notifMessage);
 
             // Log the transaction
-            self::logTransaction();
+            TransactionModel::createData();
 
             DB::commit();
             return ['success' => true, 'message' => 'Permohonan Informasi berhasil diajukan.'];
@@ -180,34 +181,6 @@ class PermohonanInformasiModel extends Model
         }
 
         return true;
-    }
-
-    private static function createNotifications($formId, $message)
-    {
-        NotifAdminModel::create([
-            'kategori_notif_admin' => 'Permohonan Informasi',
-            'notif_admin_form_id' => $formId,
-            'pesan_notif_admin' => $message,
-            'created_at' => now()
-        ]);
-
-        NotifVerifikatorModel::create([
-            'kategori_notif_verif' => 'Permohonan Informasi',
-            'notif_verifikator_form_id' => $formId,
-            'pesan_notif_verif' => $message,
-            'created_at' => now()
-        ]);
-    }
-
-    private static function logTransaction()
-    {
-        TransactionModel::create([
-            'log_transaction_jenis' => 'CREATED',
-            'log_transaction_aktivitas' => Auth::user()->nama_pengguna . ' mengajukan form Permohonan Informasi',
-            'log_transaction_level' => Auth::user()->level->level_nama,
-            'log_transaction_pelaku' => session('alias'),
-            'log_transaction_tanggal_aktivitas' => now()
-        ]);
     }
 
     private static function uploadFile($file, $prefix)
