@@ -2,6 +2,7 @@
 
 namespace App\Models\Website;
 
+use App\Models\Log\TransactionModel;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -52,44 +53,6 @@ class WebMenuModel extends Model
         return $this->hasOne(WebKontenModel::class, 'fk_web_menu', 'web_menu_id');
     }
 
-  
-    // //coba khin
-     public static function getMenusWithChildren()
-    {
-        return self::with(['children' => function ($query) {
-                $query->orderBy('wm_urutan_menu');
-            }])
-            ->whereNull('wm_parent_id')
-            ->where('isDeleted', 0)
-            ->orderBy('wm_urutan_menu')
-            ->get();
-    }
-
-    public static function validasiData($request)
-    {
-        $rules = [
-            'wm_menu_nama' => 'required|string|max:60',
-            'wm_parent_id' => 'nullable|exists:web_menu,web_menu_id',
-            'wm_status_menu' => 'required|in:aktif,nonaktif',
-        ];
-
-        $messages = [
-            'wm_menu_nama.required' => 'Nama menu wajib diisi',
-            'wm_menu_nama.max' => 'Nama menu maksimal 60 karakter',
-            'wm_parent_id.exists' => 'Parent menu tidak valid',
-            'wm_status_menu.required' => 'Status menu wajib diisi',
-            'wm_status_menu.in' => 'Status menu harus aktif atau nonaktif',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-
-        return true;
-    }
-
     public static function createData($request)
     {
         DB::beginTransaction();
@@ -108,6 +71,8 @@ class WebMenuModel extends Model
                 'wm_status_menu' => $request->wm_status_menu,
                 'created_by' => session('alias')
             ]);
+
+            TransactionModel::createData();
 
             DB::commit();
             return [
@@ -128,34 +93,6 @@ class WebMenuModel extends Model
             return [
                 'status' => false,
                 'message' => 'Terjadi kesalahan saat membuat menu'
-            ];
-        }
-    }
-
-    public static function getEditData($id)
-    {
-        try {
-            $menu = self::findOrFail($id);
-            $parentMenus = self::whereNull('wm_parent_id')
-                ->where('web_menu_id', '!=', $id)
-                ->where('isDeleted', 0)
-                ->whereNotIn('web_menu_id', function($query) use ($id) {
-                    $query->select('web_menu_id')
-                        ->from('web_menu')
-                        ->where('wm_parent_id', $id);
-                })
-                ->get();
-
-            return [
-                'status' => true,
-                'menu' => $menu,
-                'parentMenus' => $parentMenus
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error fetching menu for edit: ' . $e->getMessage());
-            return [
-                'status' => false,
-                'message' => 'Error mengambil data menu'
             ];
         }
     }
@@ -188,6 +125,8 @@ class WebMenuModel extends Model
                 'wm_status_menu' => $request->wm_status_menu,
                 'updated_by' => session('alias')
             ]);
+
+            TransactionModel::createData();
 
             DB::commit();
             return [
@@ -232,6 +171,7 @@ class WebMenuModel extends Model
             ]);
 
             self::reorderAfterDelete($menu->wm_parent_id);
+            TransactionModel::createData();
             
             DB::commit();
             return [
@@ -244,6 +184,70 @@ class WebMenuModel extends Model
             return [
                 'status' => false,
                 'message' => 'Terjadi kesalahan saat menghapus menu'
+            ];
+        }
+    }
+
+    public static function validasiData($request)
+    {
+        $rules = [
+            'wm_menu_nama' => 'required|string|max:60',
+            'wm_parent_id' => 'nullable|exists:web_menu,web_menu_id',
+            'wm_status_menu' => 'required|in:aktif,nonaktif',
+        ];
+
+        $messages = [
+            'wm_menu_nama.required' => 'Nama menu wajib diisi',
+            'wm_menu_nama.max' => 'Nama menu maksimal 60 karakter',
+            'wm_parent_id.exists' => 'Parent menu tidak valid',
+            'wm_status_menu.required' => 'Status menu wajib diisi',
+            'wm_status_menu.in' => 'Status menu harus aktif atau nonaktif',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        return true;
+    }
+
+    public static function getMenusWithChildren()
+    {
+        return self::with(['children' => function ($query) {
+                $query->orderBy('wm_urutan_menu');
+            }])
+            ->whereNull('wm_parent_id')
+            ->where('isDeleted', 0)
+            ->orderBy('wm_urutan_menu')
+            ->get();
+    }
+
+    public static function getEditData($id)
+    {
+        try {
+            $menu = self::findOrFail($id);
+            $parentMenus = self::whereNull('wm_parent_id')
+                ->where('web_menu_id', '!=', $id)
+                ->where('isDeleted', 0)
+                ->whereNotIn('web_menu_id', function($query) use ($id) {
+                    $query->select('web_menu_id')
+                        ->from('web_menu')
+                        ->where('wm_parent_id', $id);
+                })
+                ->get();
+
+            return [
+                'status' => true,
+                'menu' => $menu,
+                'parentMenus' => $parentMenus
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error fetching menu for edit: ' . $e->getMessage());
+            return [
+                'status' => false,
+                'message' => 'Error mengambil data menu'
             ];
         }
     }
