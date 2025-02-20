@@ -14,6 +14,10 @@
                 data-target="#deleteConfirmModal">
                 <i class="fas fa-trash"></i>
             </button>
+            <button type="button" class="btn btn-xs btn-info detail-menu dd-nodrag" data-id="{{ $menu->web_menu_id }}"
+                data-toggle="modal" data-target="#detailMenuModal">
+                <i class="fas fa-eye"></i>
+            </button>
         </span>
     </div>
     @if ($menu->children->count() > 0)
