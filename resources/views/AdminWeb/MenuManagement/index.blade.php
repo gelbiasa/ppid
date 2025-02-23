@@ -50,9 +50,9 @@
                             <input type="text" class="form-control" name="wm_menu_nama" required>
                         </div>
                         <div class="form-group">
-                            <label>Parent Menu</label>
+                            <label>Kategori Menu</label>
                             <select class="form-control" name="wm_parent_id">
-                                <option value="">NULL (Menu Induk)</option>
+                                <option value="">-Set Sebagai Menu Utama</option>
                                 @foreach ($menus as $menu)
                                     <option value="{{ $menu->web_menu_id }}">{{ $menu->wm_menu_nama }}</option>
                                 @endforeach
@@ -95,9 +95,9 @@
                             <input type="text" class="form-control" name="wm_menu_nama" id="edit_menu_nama" required>
                         </div>
                         <div class="form-group">
-                            <label>Parent Menu</label>
+                            <label>Kategori Menu</label>
                             <select class="form-control" name="wm_parent_id" id="edit_parent_id">
-                                <option value="">NULL (Menu Induk)</option>
+                                <option value="">-Set Sebagai Menu Utama</option>
                                 @foreach ($menus as $menu)
                                     <option value="{{ $menu->web_menu_id }}">{{ $menu->wm_menu_nama }}</option>
                                 @endforeach
@@ -119,18 +119,18 @@
             </div>
         </div>
     </div>
-   <!-- Detail Menu Modal -->
-   <div class="modal fade" id="detailMenuModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document"> <!-- Ubah ke ukuran sedang -->
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-info-circle"></i> Detail Menu Aplikasi
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+    <!-- Detail Menu Modal -->
+    <div class="modal fade" id="detailMenuModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document"> <!-- Ubah ke ukuran sedang -->
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle"></i> Detail Menu Aplikasi
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 <div class="modal-body">
                     <table class="table table-bordered">
                         <tr>
@@ -142,7 +142,7 @@
                             <td><span id="detail_menu_url"></span></td>
                         </tr>
                         <tr>
-                            <th>Parent Menu</th>
+                            <th>Kategori Menu</th>
                             <td><span id="detail_parent_menu"></span></td>
                         </tr>
                         <tr>
@@ -244,55 +244,60 @@
             });
             // Detail Menu
 
-$(document).on('click', '.detail-menu', function() {
-    let menuId = $(this).data('id');
+            $(document).on('click', '.detail-menu', function() {
+                let menuId = $(this).data('id');
 
-    console.log("Memuat detail menu dengan ID:", menuId); // Debugging
+                console.log("Memuat detail menu dengan ID:", menuId); // Debugging
 
-    if (!menuId) {
-        console.error("Data ID tidak ditemukan.");
-        return;
-    }
+                if (!menuId) {
+                    console.error("Data ID tidak ditemukan.");
+                    return;
+                }
 
-    $.ajax({
-        url: "/adminweb/menu-management/" + menuId + "/detail_menu", // Gunakan URL yang sesuai
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            console.log("Response dari server:", response); // Debugging
+                $.ajax({
+                    url: "/adminweb/menu-management/" + menuId +
+                    "/detail_menu", // Gunakan URL yang sesuai
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log("Response dari server:", response); // Debugging
 
-            if (response.status) {
-                let menu = response.menu;
+                        if (response.status) {
+                            let menu = response.menu;
 
-                // Isi modal dengan data dari server
-                $('#detail_menu_nama').text(menu.wm_menu_nama || '-');
-                $('#detail_menu_url').text(menu.wm_menu_url || '-');
-                $('#detail_parent_menu').text(menu.parent_menu_name || 'Menu Induk');
-                $('#detail_urutan_menu').text(menu.wm_urutan_menu || '-');
-                $('#detail_status_menu').html(
-                    `<span class="badge ${menu.wm_status_menu === 'aktif' ? 'badge-success' : 'badge-danger'}">
+                            // Isi modal dengan data dari server
+                            $('#detail_menu_nama').text(menu.wm_menu_nama || '-');
+                            $('#detail_menu_url').text(menu.wm_menu_url || '-');
+                            $('#detail_parent_menu').text(
+                                menu.wm_parent_id ?
+                                `Anak dari Menu ${menu.parent_menu_nama|| '-'}` :
+                                'Menu Induk'
+                            );
+                            $('#detail_urutan_menu').text(menu.wm_urutan_menu || '-');
+                            $('#detail_status_menu').html(
+                                `<span class="badge ${menu.wm_status_menu === 'aktif' ? 'badge-success' : 'badge-danger'}">
                         ${menu.wm_status_menu}
                     </span>`
-                );
-                $('#detail_created_by').text(menu.created_by || '-');
-                $('#detail_created_at').text(menu.created_at || '-');
-                $('#detail_updated_by').text(menu.updated_by || '-');
-                $('#detail_updated_at').text(menu.updated_at || '-');
+                            );
+                            $('#detail_created_by').text(menu.created_by || '-');
+                            $('#detail_created_at').text(menu.created_at || '-');
+                            $('#detail_updated_by').text(menu.updated_by || '-');
+                            $('#detail_updated_at').text(menu.updated_at || '-');
 
-                // Tampilkan modal setelah data terisi
-                $('#detailMenuModal').modal('show');
+                            // Tampilkan modal setelah data terisi
+                            $('#detailMenuModal').modal('show');
 
-            } else {
-                console.error("Gagal mendapatkan data:", response.message);
-                alert("Gagal memuat detail menu: " + response.message);
-            }
-        },
-        error: function(xhr) {
-            console.error("AJAX Error:", xhr.responseText);
-            alert("Terjadi kesalahan saat mengambil data menu.");
-        }
-    });
-});
+                        } else {
+                            console.error("Gagal mendapatkan data:", response.message);
+                            alert("Gagal memuat detail menu: " + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error("AJAX Error:", xhr.responseText);
+                        alert("Terjadi kesalahan saat mengambil data menu.");
+                    }
+                });
+            });
 
 
             // Edit Menu
@@ -310,7 +315,7 @@ $(document).on('click', '.detail-menu', function() {
 
                             let parentSelect = $('#edit_parent_id');
                             parentSelect.empty().append(
-                                '<option value="">None (Top Level)</option>');
+                                '<option value="">-Set Sebagai Menu Utama</option>');
                             response.parentMenus.forEach(menu => {
                                 parentSelect.append(
                                     `<option value="${menu.web_menu_id}">${menu.wm_menu_nama}</option>`
