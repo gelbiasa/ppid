@@ -47,7 +47,8 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Menu<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="wm_menu_nama" required>
+                            <input type="text" class="form-control" name="wm_menu_nama" id="add_menu_nama">
+                            <div class="invalid-feedback">Nama menu wajib diisi</div>
                         </div>
                         <div class="form-group">
                             <label>Kategori Menu</label>
@@ -60,10 +61,12 @@
                         </div>
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
-                            <select class="form-control" name="wm_status_menu" required>
+                            <select class="form-control" name="wm_status_menu" id="add_status_menu">
+                                <option value="">Pilih Status</option>
                                 <option value="aktif">Aktif</option>
                                 <option value="nonaktif">Non-Aktif</option>
                             </select>
+                            <div class="invalid-feedback">Status menu wajib diisi</div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -92,7 +95,8 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Menu Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="wm_menu_nama" id="edit_menu_nama" required>
+                            <input type="text" class="form-control" name="wm_menu_nama" id="edit_menu_nama">
+                            <div class="invalid-feedback">Nama menu wajib diisi</div>
                         </div>
                         <div class="form-group">
                             <label>Kategori Menu</label>
@@ -105,10 +109,12 @@
                         </div>
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
-                            <select class="form-control" name="wm_status_menu" id="edit_status_menu" required>
+                            <select class="form-control" name="wm_status_menu" id="edit_status_menu">
+                                <option value="">Pilih Status</option>
                                 <option value="aktif">Aktif</option>
                                 <option value="nonaktif">Non-Aktif</option>
                             </select>
+                            <div class="invalid-feedback">Status menu wajib diisi</div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -204,6 +210,17 @@
 @push('css')
     <link rel="stylesheet" href="{{ asset('vendor/nestable2/jquery.nestable.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/toastr/toastr.min.css') }}">
+    <style>
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .invalid-feedback {
+            display: none;
+            color: #dc3545;
+            font-size: 80%;
+            margin-top: 0.25rem;
+        }
+    </style>
 @endpush
 
 @push('js')
@@ -212,6 +229,13 @@
     <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
 
     <script>
+        // Tambahkan token CSRF ke semua request AJAX
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
         $(document).ready(function() {
             // Initialize Nestable (tanpa auto-save)
             $('#nestable').nestable({
@@ -242,8 +266,8 @@
                     }
                 });
             });
-            // Detail Menu
 
+            // Detail Menu
             $(document).on('click', '.detail-menu', function() {
                 let menuId = $(this).data('id');
 
@@ -255,8 +279,7 @@
                 }
 
                 $.ajax({
-                    url: "/adminweb/menu-management/" + menuId +
-                    "/detail_menu", // Gunakan URL yang sesuai
+                    url: "/adminweb/menu-management/" + menuId + "/detail_menu",
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
@@ -299,7 +322,6 @@
                 });
             });
 
-
             // Edit Menu
             $(document).on('click', '.edit-menu', function() {
                 let menuId = $(this).data('id');
@@ -331,54 +353,139 @@
                     }
                 });
             });
-            $(document).ready(function() {
-                // Event listener untuk menampilkan modal hapus dan menyimpan ID menu yang akan dihapus
-                $(document).on('click', '.delete-menu', function() {
-                    let menuId = $(this).data('id');
-                    let menuName = $(this).data('name');
 
-                    console.log("Menu ID yang akan dihapus:", menuId); // Debugging
+            // Hapus Menu
+            $(document).on('click', '.delete-menu', function() {
+                let menuId = $(this).data('id');
+                let menuName = $(this).data('name');
 
-                    $('#confirmDelete').data('id', menuId); // Simpan ID di tombol konfirmasi
-                    $('#menuNameToDelete').text(menuName); // Tampilkan nama menu di modal
-                    $('#deleteConfirmModal').modal('show');
-                });
+                console.log("Menu ID yang akan dihapus:", menuId); // Debugging
 
-                // Event listener untuk konfirmasi hapus
-                $('#confirmDelete').on('click', function() {
-                    let menuId = $(this).data('id');
+                $('#confirmDelete').data('id', menuId); // Simpan ID di tombol konfirmasi
+                $('#menuNameToDelete').text(menuName); // Tampilkan nama menu di modal
+                $('#deleteConfirmModal').modal('show');
+            });
 
-                    console.log("Menghapus menu ID:", menuId); // Debugging
+            // Event listener untuk konfirmasi hapus
+            $('#confirmDelete').on('click', function() {
+                let menuId = $(this).data('id');
 
-                    if (menuId) {
-                        $.ajax({
-                            url: `{{ url('/adminweb/menu-management') }}/${menuId}/delete`,
-                            type: 'DELETE',
-                            data: {
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function(response) {
-                                if (response.status) {
-                                    toastr.success(response.message);
-                                    setTimeout(() => window.location.reload(), 1000);
-                                } else {
-                                    toastr.error(response.message);
-                                }
-                                $('#deleteConfirmModal').modal('hide');
-                            },
-                            error: function(xhr) {
-                                toastr.error('Error deleting menu');
-                                console.error(xhr.responseText); // Debugging error
-                                $('#deleteConfirmModal').modal('hide');
+                console.log("Menghapus menu ID:", menuId); // Debugging
+
+                if (menuId) {
+                    $.ajax({
+                        url: `{{ url('/adminweb/menu-management') }}/${menuId}/delete`,
+                        type: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.status) {
+                                toastr.success(response.message);
+                                setTimeout(() => window.location.reload(), 1000);
+                            } else {
+                                toastr.error(response.message);
                             }
-                        });
+                            $('#deleteConfirmModal').modal('hide');
+                        },
+                        error: function(xhr) {
+                            toastr.error('Error deleting menu');
+                            console.error(xhr.responseText); // Debugging error
+                            $('#deleteConfirmModal').modal('hide');
+                        }
+                    });
+                }
+            });
+
+            // Validasi Form Add Menu
+            $('#addMenuForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Reset validasi
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').hide();
+                
+                let isValid = true;
+                let menuNama = $('#add_menu_nama').val().trim();
+                let statusMenu = $('#add_status_menu').val();
+                
+                // Validasi Nama Menu
+                if (!menuNama) {
+                    $('#add_menu_nama').addClass('is-invalid');
+                    $('#add_menu_nama').siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+                
+                // Validasi Status
+                if (!statusMenu) {
+                    $('#add_status_menu').addClass('is-invalid');
+                    $('#add_status_menu').siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    return false;
+                }
+                
+                // Jika validasi berhasil, lanjutkan submit
+                $.ajax({
+                    url: "{{ url('/adminweb/menu-management/store') }}",
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.status) {
+                            toastr.success(response.message);
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 422) {
+                            let errors = xhr.responseJSON.errors;
+                            Object.keys(errors).forEach(key => {
+                                toastr.error(errors[key][0]);
+                                // Tandai field yang error
+                                $(`[name="${key}"]`).addClass('is-invalid');
+                                $(`[name="${key}"]`).siblings('.invalid-feedback').text(errors[key][0]).show();
+                            });
+                        } else {
+                            toastr.error('Error creating menu');
+                        }
                     }
                 });
             });
 
-            // Simpan Perubahan Edit Menu
+            // Validasi Form Edit Menu
             $('#editMenuForm').on('submit', function(e) {
                 e.preventDefault();
+                
+                // Reset validasi
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').hide();
+                
+                let isValid = true;
+                let menuNama = $('#edit_menu_nama').val().trim();
+                let statusMenu = $('#edit_status_menu').val();
+                
+                // Validasi Nama Menu
+                if (!menuNama) {
+                    $('#edit_menu_nama').addClass('is-invalid');
+                    $('#edit_menu_nama').siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+                
+                // Validasi Status
+                if (!statusMenu) {
+                    $('#edit_status_menu').addClass('is-invalid');
+                    $('#edit_status_menu').siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    return false;
+                }
+                
                 let menuId = $('#edit_menu_id').val();
                 $.ajax({
                     url: `{{ url('/adminweb/menu-management') }}/${menuId}/update`,
@@ -397,6 +504,9 @@
                             let errors = xhr.responseJSON.errors;
                             Object.keys(errors).forEach(key => {
                                 toastr.error(errors[key][0]);
+                                // Tandai field yang error
+                                $(`[name="${key}"]`).addClass('is-invalid');
+                                $(`[name="${key}"]`).siblings('.invalid-feedback').text(errors[key][0]).show();
                             });
                         } else {
                             toastr.error('Error updating menu');
@@ -405,37 +515,11 @@
                 });
             });
 
-            // Tambah Menu Baru
-            $('#addMenuForm').on('submit', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: "{{ url('/adminweb/menu-management/store') }}",
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if (response.status) {
-                            toastr.success(response.message);
-                            setTimeout(() => window.location.reload(), 1000);
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        if (xhr.status === 422) {
-                            let errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(key => {
-                                toastr.error(errors[key][0]);
-                            });
-                        } else {
-                            toastr.error('Error creating menu');
-                        }
-                    }
-                });
-            });
-
-            // Reset forms setelah modal ditutup
+            // Reset forms dan validasi setelah modal ditutup
             $('.modal').on('hidden.bs.modal', function() {
                 $(this).find('form')[0].reset();
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').hide();
             });
         });
     </script>

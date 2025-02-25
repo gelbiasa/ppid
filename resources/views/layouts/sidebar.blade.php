@@ -76,34 +76,30 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                         <i class="nav-icon fas fa-cog"></i>
                         <p>
                             Manajemen Menu
-                            <i class="right fas fa-angle-left"></i> <!-- Ikon panah dropdown -->
+                            <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
-
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ url('/adminweb/menu-utama') }}"
-                                class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
-                                <i class="far fa-plus-square"></i>
+                            <a href="{{ url('/adminweb/menu-utama') }}" class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
+                                <i class="fas fa-plus-square nav-icon"></i>
                                 <p>Tambah Menu Utama</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url('/adminweb/submenu') }}"
-                                class="nav-link {{ $activeMenu == 'submenu' ? 'active' : '' }}">
-                                <i class="far fa-folder-open"></i></i>
+                            <a href="{{ url('/adminweb/submenu') }}" class="nav-link {{ $activeMenu == 'submenu' ? 'active' : '' }}">
+                                <i class="fas fa-folder-open nav-icon"></i>
                                 <p>Tambah Submenu</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url('/adminweb/menu-management') }}"
-                                class="nav-link {{ $activeMenu == 'menumanagement' ? 'active' : '' }}">
-                                <i class="far fa-plus-square"></i>
+                            <a href="{{ url('/adminweb/menu-management') }}" class="nav-link {{ $activeMenu == 'menumanagement' ? 'active' : '' }}">
+                                <i class="fas fa-tasks nav-icon"></i>
                                 <p>Menu Management</p>
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li>                
 
                 <li class="nav-header">Sistem Informasi</li>
                 <li class="nav-item">

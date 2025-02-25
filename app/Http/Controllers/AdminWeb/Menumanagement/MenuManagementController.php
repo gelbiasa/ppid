@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\AdminWeb;
+namespace App\Http\Controllers\AdminWeb\MenuManagement;
 
 
 use App\Http\Controllers\Controller;
@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 
 class MenuManagementController extends Controller
 {
+    public $breadcrumb = 'Menu Management';
+    public $pagename = 'AdminWeb/MenuManagement';
     public function index()
     {
         try {

@@ -7,7 +7,7 @@ use App\Http\Controllers\DashboardMPUController;
 use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
-use App\Http\Controllers\AdminWeb\MenuManagementController;
+use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\AdminWeb\SubMenu\SubMenuController;
 use App\Http\Controllers\AdminWeb\menuUtama\MenuUtamaController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/edit', [MenuManagementController::class, 'edit']);
         Route::put('/{id}/update', [MenuManagementController::class, 'update']);
         Route::delete('/{id}/delete', [MenuManagementController::class, 'delete']);
+        Route::get('/{id}/detail_menu', [MenuManagementController::class, 'detail_menu']); 
         Route::post('/reorder', [MenuManagementController::class, 'reorder']); // New route for drag-drop reordering
        
     });
