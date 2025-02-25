@@ -10,6 +10,9 @@ use Illuminate\Validation\ValidationException;
 
 class PermohonanInformasiController extends Controller
 {
+    public $breadcrumb = 'Permohonan Informasi';
+    public $pagename = 'SistemInformasi/EForm/PermohonanInformasi';
+  
     private function getUserFolder()
     {
         $levelKode = Auth::user()->level->level_kode;
@@ -64,9 +67,10 @@ class PermohonanInformasiController extends Controller
     {
         try {
             $folder = $this->getUserFolder();
-            PermohonanInformasiModel::validasiData($request);
+            // PermohonanInformasiModel::validasiData($request);
+            $result = PermohonanInformasiModel::validasiData($request);
             $result = PermohonanInformasiModel::createData($request);
-
+            
             if ($result['success']) {
                 return redirect("/SistemInformasi/EForm/$folder/PermohonanInformasi")
                     ->with('success', $result['message']);

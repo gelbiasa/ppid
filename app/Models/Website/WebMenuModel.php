@@ -53,16 +53,41 @@ class WebMenuModel extends Model
         return $this->hasOne(WebKontenModel::class, 'fk_web_menu', 'web_menu_id');
     }
 
+    public static function selectData(){
+        $arr_data =  self::query()
+            ->select([
+               'web_menu_id',
+               'wm_menu_nama',
+               'wm_menu_url',
+               'wm_parent_id',
+               'wm_urutan_menu'
+           ])
+           ->where('wm_status_menu', 'aktif')
+           ->where('isDeleted', 0)
+           ->orderBy('wm_urutan_menu')
+           ->get()
+           ->map(function ($menu) {
+               return [
+                   'id' => $menu->web_menu_id,
+                   'wm_menu_nama' => $menu->wm_menu_nama,
+                   'wm_menu_url' => $menu->wm_menu_url,
+                   'wm_parent_id' => $menu->wm_parent_id,
+                   'wm_urutan_menu' => $menu->wm_urutan_menu
+               ];
+           })->toArray();
+           return $arr_data;
+}
+
     public static function createData($request)
     {
         DB::beginTransaction();
         try {
             self::validasiData($request);
-
+    
             $orderNumber = self::where('wm_parent_id', $request->wm_parent_id)
                 ->where('isDeleted', 0)
                 ->count() + 1;
-
+    
             $menu = self::create([
                 'wm_menu_nama' => $request->wm_menu_nama,
                 'wm_menu_url' => Str::slug($request->wm_menu_nama),
@@ -71,15 +96,22 @@ class WebMenuModel extends Model
                 'wm_status_menu' => $request->wm_status_menu,
                 'created_by' => session('alias')
             ]);
-
-            TransactionModel::createData();
-
-            DB::commit();
-            return [
+    
+            // Mencatat log transaksi
+            TransactionModel::createData(
+                'CREATED', 
+                $menu->web_menu_id,
+                $menu->wm_menu_nama
+            );
+    
+            $result = [
                 'status' => true,
                 'message' => 'Menu berhasil dibuat',
                 'data' => $menu
             ];
+    
+            DB::commit();
+            return $result;
         } catch (ValidationException $e) {
             DB::rollBack();
             return [
@@ -126,14 +158,21 @@ class WebMenuModel extends Model
                 'updated_by' => session('alias')
             ]);
 
-            TransactionModel::createData();
+            // Mencatat log transaksi
+            TransactionModel::createData(
+                'UPDATED', 
+                $menu->web_menu_id,
+                $menu->wm_menu_nama
+            );
 
-            DB::commit();
-            return [
+            $result = [
                 'status' => true,
-                'message' => 'Menu berhasil diperbarui',
+                'message' => 'Menu berhasil diperbaharui',
                 'data' => $menu
             ];
+
+            DB::commit();
+            return $result;
         } catch (ValidationException $e) {
             DB::rollBack();
             return [
@@ -171,13 +210,22 @@ class WebMenuModel extends Model
             ]);
 
             self::reorderAfterDelete($menu->wm_parent_id);
-            TransactionModel::createData();
+
+            // Mencatat log transaksi
+            TransactionModel::createData(
+                'DELETED', 
+                $menu->web_menu_id,
+                $menu->wm_menu_nama
+            );
+
+            $result = [
+                'status' => true,
+                'message' => 'Menu berhasil dihapus',
+                'data' => $menu
+            ];
             
             DB::commit();
-            return [
-                'status' => true,
-                'message' => 'Menu berhasil dihapus'
-            ];
+            return $result;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting menu: ' . $e->getMessage());

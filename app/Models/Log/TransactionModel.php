@@ -17,77 +17,67 @@ class TransactionModel extends Model
     public $timestamps = false;
     protected $fillable = [
         'log_transaction_jenis',
+        'log_transaction_aktivitas_id',
         'log_transaction_aktivitas',
         'log_transaction_level',
         'log_transaction_pelaku',
         'log_transaction_tanggal_aktivitas',
     ];
 
-    public static function createData($model = null)
+    // Di TransactionModel
+    public static function createData($tipeTransaksi, $aktivitasId, $detailAktivitas)
     {
-        $transactionType = self::menentukanTipeTransaction($model);
-        $activity = self::generateAktivitas($transactionType);
-        
-        TransactionModel::create([
+        // Dapatkan controller dan action saat ini
+        $route = Route::current();
+        $controller = $route->getController();
+
+        // Dapatkan tipe transaksi
+        $transactionType = strtoupper($tipeTransaksi);
+
+        // Tentukan jenis form/menu berdasarkan controller
+        $formType = self::menentukanTipeForm($controller);
+
+        // Generate pesan aktivitas
+        $aktivitas = self::generateAktivitas(
+            Auth::user()->nama_pengguna,
+            $transactionType,
+            $formType,
+            $detailAktivitas
+        );
+
+        // Buat record log transaksi
+        self::create([
             'log_transaction_jenis' => $transactionType,
-            'log_transaction_aktivitas' => $activity,
+            'log_transaction_aktivitas_id' => $aktivitasId,
+            'log_transaction_aktivitas' => $aktivitas,
             'log_transaction_level' => Auth::user()->level->level_nama,
             'log_transaction_pelaku' => session('alias'),
             'log_transaction_tanggal_aktivitas' => now()
         ]);
     }
-    
-    private static function menentukanTipeTransaction($model)
+
+    private static function menentukanTipeForm($controller)
     {
-        // Default to CREATED if no model is provided
-        if (!$model) {
-            return 'CREATED';
+        if (!$controller) {
+            return 'tidak ada controller';
         }
-        
-        // Check model state to determine transaction type
-        if ($model->deleted_by !== null) {
-            return 'DELETED';
-        } elseif ($model->updated_by !== null && $model->created_by !== $model->updated_by) {
-            return 'UPDATED';
-        } else {
-            return 'CREATED';
+
+        // Cek apakah controller memiliki properti breadcrumb
+        if (property_exists($controller, 'breadcrumb')) {
+            return $controller->breadcrumb;
         }
-    }
-    
-    private static function generateAktivitas($transactionType)
-    {
-        $userName = Auth::user()->nama_pengguna;
-        $formType = self::menentukanTipeForm();
-        $action = self::mendapatkanAksi($transactionType);
-        
-        return "{$userName} {$action} {$formType}";
-    }
-    
-    private static function menentukanTipeForm()
-    {
-        $currentRoute = Route::currentRouteName() ?? Route::current()->uri();
-        
-        // E-Form handling
-        if (strpos($currentRoute, 'PermohonanInformasi') !== false) {
-            return 'E-Form Permohonan Informasi';
-        } elseif (strpos($currentRoute, 'PernyataanKeberatan') !== false) {
-            return 'E-Form Pernyataan Keberatan';
-        } elseif (strpos($currentRoute, 'PengaduanMasyarakat') !== false) {
-            return 'E-Form Pengaduan Masyarakat';
+
+        // Jika tidak ada breadcrumb, coba ambil dari pagename
+        if (property_exists($controller, 'pagename')) {
+            $segments = explode('/', $controller->pagename);
+            $lastSegment = end($segments);
+            // Hapus kata 'Controller' dari nama
+            return str_replace('Controller', '', $lastSegment);
         }
-        
-        // Menu management handling
-        elseif (strpos($currentRoute, 'menu-utama') !== false && !strpos($currentRoute, 'management')) {
-            return 'Menu Utama';
-        } elseif (strpos($currentRoute, 'submenu') !== false) {
-            return 'Submenu';
-        } elseif (strpos($currentRoute, 'menu-management') !== false) {
-            return 'Menu Management';
-        }
-        
+
         return 'data';
     }
-    
+
     private static function mendapatkanAksi($transactionType)
     {
         switch ($transactionType) {
@@ -100,5 +90,15 @@ class TransactionModel extends Model
             default:
                 return 'melakukan aksi pada';
         }
+    }
+
+    private static function generateAktivitas($namaPengguna, $tipeTransaksi, $tipeForm, $detailAktivitas)
+    {
+        $aksi = self::mendapatkanAksi($tipeTransaksi);
+
+        // Jika ada detail aktivitas, tambahkan ke pesan
+        $detailTambahan = $detailAktivitas ? " $detailAktivitas" : '';
+
+        return "{$namaPengguna} {$aksi} {$tipeForm}{$detailTambahan}";
     }
 }

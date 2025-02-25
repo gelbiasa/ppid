@@ -2,19 +2,22 @@
 
 namespace App\Models\SistemInformasi\EForm;
 
+error_reporting(E_ALL);
+
+use App\Models\BaseModel;
 use App\Models\Log\NotifAdminModel;
 use App\Models\Log\NotifVerifikatorModel;
 use App\Models\Log\TransactionModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
-class PermohonanInformasiModel extends Model
+class PermohonanInformasiModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -34,15 +37,15 @@ class PermohonanInformasiModel extends Model
         'pi_status',
         'pi_jawaban',
         'pi_alasan_penolakan',
-        'pi_sudah_dibaca',
-        'isDeleted',
-        'created_at',
-        'created_by', 
-        'updated_at',
-        'updated_by',
-        'deleted_at',
-        'deleted_by'
+        'pi_sudah_dibaca'
     ];
+
+    // Konstruktor untuk menggabungkan field umum
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
+    }
 
     public function PiDiriSendiri()
     {
@@ -61,74 +64,92 @@ class PermohonanInformasiModel extends Model
 
     public static function createData($request)
     {
-        try {
-            DB::beginTransaction();
+        $fileName = self::uploadFile(
+            $request->file('pi_bukti_aduan'),
+            'pi_bukti_aduan'
+        );
 
-            $kategoriPemohon = $request->pi_kategori_pemohon;
-            $formId = null;
-            $notifMessage = '';
+        $notifMessage = '';
+        try {
+
+            $data = $request->t_permohonan_informasi;
+
+            $kategoriPemohon = $data['pi_kategori_pemohon'];
+
             $userLevel = Auth::user()->level->level_kode;
 
             $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
 
-            // Handle bukti_aduan based on user level
-            $buktiAduan = null;
             if ($userLevel === 'ADM') {
-                if (!$request->hasFile('pi_bukti_aduan')) {
-                    throw new \Exception('Bukti aduan wajib diupload untuk Admin');
-                }
-                
-                $bukti = $request->file('pi_bukti_aduan');
-                $validator = Validator::make(['pi_bukti_aduan' => $bukti], [
-                    'pi_bukti_aduan' => 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240'
-                ]);
-
-                if ($validator->fails()) {
-                    throw new ValidationException($validator);
-                }
-
-                $buktiAduan = self::uploadFile($bukti, 'pi_bukti_aduan');
+                $data['pi_bukti_aduan'] = $fileName;
             }
 
             // Handle different types of submissions based on kategori_pemohon
             switch ($kategoriPemohon) {
+
                 case 'Diri Sendiri':
-                    list($formId, $notifMessage) = FormPiDiriSendiriModel::createData();
+                    $child = FormPiDiriSendiriModel::createData($request);
                     break;
-                    
+
                 case 'Orang Lain':
-                    list($formId, $notifMessage) = FormPiOrangLainModel::createData($request);
+                    $child = FormPiOrangLainModel::createData($request);
                     break;
-                    
+
                 case 'Organisasi':
-                    list($formId, $notifMessage) = FormPiOrganisasiModel::createData($request);
+                    $child = FormPiOrganisasiModel::createData($request);
                     break;
             }
 
-            // Create main permohonan informasi record
-            $permohonanInformasi = self::create(array_merge([
-                'pi_kategori_pemohon' => $kategoriPemohon,
-                'pi_kategori_aduan' => $kategoriAduan,
-                'pi_bukti_aduan' => $buktiAduan,
-                'pi_informasi_yang_dibutuhkan' => $request->pi_informasi_yang_dibutuhkan,
-                'pi_alasan_permohonan_informasi' => $request->pi_alasan_permohonan_informasi,
-                'pi_sumber_informasi' => implode(', ', $request->pi_sumber_informasi),
-                'pi_alamat_sumber_informasi' => $request->pi_alamat_sumber_informasi,
-                'pi_status' => 'Masuk',
-                'created_by' => session('alias')
-            ], $formId));
+            DB::beginTransaction();
 
-            // Create notifications
-            NotifAdminModel::createData($permohonanInformasi->permohonan_informasi_id, $notifMessage);
-            NotifVerifikatorModel::createData($permohonanInformasi->permohonan_informasi_id, $notifMessage);
+            $data['pi_kategori_pemohon'] = $kategoriPemohon;
+            $data['pi_kategori_aduan'] = $kategoriAduan;
+            $data['pi_bukti_aduan'] = $fileName;
+            $data['pi_status'] = 'Masuk';
 
-            // Log the transaction
-            TransactionModel::createData();
+            // Tetapkan nilai child primary key ke field relasi yang sesuai
+            // Ini perbaikan untuk masalah pertama
+            $data[$child['pkField']] = $child['id'];
+
+            $saveData = self::create($data);
+
+            $notifMessage = $child['message'];
+
+            // Perbaikan untuk masalah ketiga: gunakan ID permohonan_informasi untuk notifikasi
+            $permohonanId = $saveData->permohonan_informasi_id;
+
+            // Create notifications dengan permohonan_informasi_id
+            NotifAdminModel::createData($permohonanId, $notifMessage);
+            NotifVerifikatorModel::createData($permohonanId, $notifMessage);
+
+            // Mencatat log transaksi
+            TransactionModel::createData(
+                'CREATED',
+                $saveData->permohonan_informasi_id,
+                $saveData->pi_informasi_yang_dibutuhkan
+            );
+
+            $result = [
+                'success' => true,
+                'message' => 'Permohonan Informasi berhasil diajukan.',
+                'data' => $saveData
+            ];
 
             DB::commit();
-            return ['success' => true, 'message' => 'Permohonan Informasi berhasil diajukan.'];
+
+            return $result;
+        } catch (ValidationException $e) {
+            DB::rollback();
+            self::removeFile($fileName);
+            return [
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ];
         } catch (\Exception $e) {
             DB::rollback();
+            self::removeFile($fileName);
+
             return ['success' => false, 'message' => 'Terjadi kesalahan saat mengajukan permohonan: ' . $e->getMessage()];
         }
     }
@@ -136,14 +157,15 @@ class PermohonanInformasiModel extends Model
     public static function validasiData($request)
     {
         $userLevel = Auth::user()->level->level_kode;
-        
+
         // Build validation rules array
         $rules = [
-            'pi_kategori_pemohon' => 'required',
-            'pi_informasi_yang_dibutuhkan' => 'required',
-            'pi_alasan_permohonan_informasi' => 'required',
-            'pi_sumber_informasi' => 'required|array',
-            'pi_alamat_sumber_informasi' => 'required',
+            't_permohonan_informasi.pi_kategori_pemohon' => 'required',
+            't_permohonan_informasi.pi_informasi_yang_dibutuhkan' => 'required',
+            't_permohonan_informasi.pi_alasan_permohonan_informasi' => 'required',
+            't_permohonan_informasi.pi_sumber_informasi' => 'required',
+            't_permohonan_informasi.pi_alamat_sumber_informasi' => 'required',
+
         ];
 
         // Add bukti_aduan validation for ADM users
@@ -152,12 +174,11 @@ class PermohonanInformasiModel extends Model
         }
 
         $messages = [
-            'pi_kategori_pemohon.required' => 'Kategori pemohon wajib diisi',
-            'pi_informasi_yang_dibutuhkan.required' => 'Informasi yang dibutuhkan wajib diisi',
-            'pi_alasan_permohonan_informasi.required' => 'Alasan permohonan informasi wajib diisi',
-            'pi_sumber_informasi.required' => 'Sumber informasi wajib diisi',
-            'pi_sumber_informasi.array' => 'Format sumber informasi tidak valid',
-            'pi_alamat_sumber_informasi.required' => 'Alamat sumber informasi wajib diisi',
+            't_permohonan_informasi.pi_kategori_pemohon.required' => 'Kategori pemohon wajib diisi',
+            't_permohonan_informasi.pi_informasi_yang_dibutuhkan.required' => 'Informasi yang dibutuhkan wajib diisi',
+            't_permohonan_informasi.pi_alasan_permohonan_informasi.required' => 'Alasan permohonan informasi wajib diisi',
+            't_permohonan_informasi.pi_sumber_informasi.required' => 'Sumber informasi wajib diisi',
+            't_permohonan_informasi.pi_alamat_sumber_informasi.required' => 'Alamat sumber informasi wajib diisi',
             'pi_bukti_aduan.required' => 'Bukti aduan wajib diupload untuk Admin',
             'pi_bukti_aduan.file' => 'Bukti aduan harus berupa file',
             'pi_bukti_aduan.mimes' => 'Format file bukti aduan tidak valid. Format yang diizinkan: PDF, JPG, JPEG, PNG, SVG, DOC, DOCX',
@@ -171,7 +192,11 @@ class PermohonanInformasiModel extends Model
         }
 
         // Validasi tambahan berdasarkan kategori pemohon
-        switch ($request->pi_kategori_pemohon) {
+        $kategoriPemohon = $request->t_permohonan_informasi['pi_kategori_pemohon'];
+        switch ($kategoriPemohon) {
+            case 'Diri Sendiri':
+                FormPiDiriSendiriModel::validasiData($request);
+                break;
             case 'Orang Lain':
                 FormPiOrangLainModel::validasiData($request);
                 break;
@@ -188,5 +213,15 @@ class PermohonanInformasiModel extends Model
         $fileName = $prefix . '/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
         $file->storeAs('public', $fileName);
         return $fileName;
+    }
+
+    private static function removeFile($fileName)
+    {
+        if ($fileName) {
+            $filePath = storage_path('app/public/' . $fileName);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
     }
 }
