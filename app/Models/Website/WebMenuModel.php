@@ -28,7 +28,7 @@ class WebMenuModel extends Model
         'wm_status_menu',
         'isDeleted',
         'created_at',
-        'created_by', 
+        'created_by',
         'updated_at',
         'updated_by',
         'deleted_at',
@@ -36,7 +36,6 @@ class WebMenuModel extends Model
     ];
 
     // Existing relationships
-
     public function parentMenu()
     {
         return $this->belongsTo(WebMenuModel::class, 'wm_parent_id', 'web_menu_id');
@@ -45,7 +44,7 @@ class WebMenuModel extends Model
     public function children()
     {
         return $this->hasMany(WebMenuModel::class, 'wm_parent_id', 'web_menu_id')
-                    ->orderBy('wm_urutan_menu');
+            ->orderBy('wm_urutan_menu');
     }
 
     public function konten()
@@ -136,12 +135,12 @@ class WebMenuModel extends Model
             self::validasiData($request);
 
             $menu = self::findOrFail($id);
-            
+
             if ($request->wm_parent_id) {
                 $isChild = self::where('wm_parent_id', $id)
                     ->where('web_menu_id', $request->wm_parent_id)
                     ->exists();
-                
+
                 if ($isChild) {
                     return [
                         'status' => false,
@@ -195,20 +194,17 @@ class WebMenuModel extends Model
         DB::beginTransaction();
         try {
             $menu = self::findOrFail($id);
-            
+
             if ($menu->children()->where('isDeleted', 0)->exists()) {
                 return [
                     'status' => false,
-                    'message' => 'Tidak dapat menghapus menu yang memiliki submenu aktif'
+                    'message' => 'Tidak dapat menghapus menu yang memiliki submenu aktif,Silahkan Hapus Submenu Terlebih Dahulu'
                 ];
             }
-
-            $menu->update([
-                'deleted_by' => session('alias'),
-                'isDeleted' => 1,
-                'deleted_at' => now()
-            ]);
-
+            $menu->deleted_by = session('alias');
+            $menu->isDeleted = 1;
+            $menu->deleted_at = now();
+            $menu->save();
             self::reorderAfterDelete($menu->wm_parent_id);
 
             // Mencatat log transaksi
@@ -264,8 +260,8 @@ class WebMenuModel extends Model
     public static function getMenusWithChildren()
     {
         return self::with(['children' => function ($query) {
-                $query->orderBy('wm_urutan_menu');
-            }])
+            $query->orderBy('wm_urutan_menu');
+        }])
             ->whereNull('wm_parent_id')
             ->where('isDeleted', 0)
             ->orderBy('wm_urutan_menu')
@@ -279,7 +275,7 @@ class WebMenuModel extends Model
             $parentMenus = self::whereNull('wm_parent_id')
                 ->where('web_menu_id', '!=', $id)
                 ->where('isDeleted', 0)
-                ->whereNotIn('web_menu_id', function($query) use ($id) {
+                ->whereNotIn('web_menu_id', function ($query) use ($id) {
                     $query->select('web_menu_id')
                         ->from('web_menu')
                         ->where('wm_parent_id', $id);
@@ -304,14 +300,14 @@ class WebMenuModel extends Model
     {
         try {
             $menu = self::with('parentMenu')->find($id);
-            
+
             if (!$menu) {
                 return [
                     'status' => false,
                     'message' => 'Menu tidak ditemukan'
                 ];
             }
-            
+
             return [
                 'status' => true,
                 'menu' => [
@@ -320,7 +316,7 @@ class WebMenuModel extends Model
                     'wm_status_menu' => $menu->wm_status_menu,
                     'wm_parent_id' => $menu->wm_parent_id,
                     'wm_urutan_menu' => $menu->wm_urutan_menu,
-                    'parent_menu_name' => $menu->parent ? $menu->parent->wm_menu_nama : null,
+                    'parent_menu_nama' => $menu->parentMenu ? $menu->parentMenu->wm_menu_nama : null, // Ubah ini
                     'created_by' => $menu->created_by,
                     'created_at' => $menu->created_at->format('Y-m-d H:i:s'),
                     'updated_by' => $menu->updated_by,
