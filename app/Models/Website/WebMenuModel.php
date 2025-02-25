@@ -2,18 +2,18 @@
 
 namespace App\Models\Website;
 
+use App\Models\BaseModel;
 use App\Models\Log\TransactionModel;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Website\WebKontenModel;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class WebMenuModel extends Model
+class WebMenuModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -25,14 +25,7 @@ class WebMenuModel extends Model
         'wm_urutan_menu',
         'wm_menu_nama',
         'wm_menu_url',
-        'wm_status_menu',
-        'isDeleted',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-        'deleted_at',
-        'deleted_by'
+        'wm_status_menu'
     ];
 
     // Existing relationships
@@ -93,7 +86,6 @@ class WebMenuModel extends Model
                 'wm_parent_id' => $request->wm_parent_id,
                 'wm_urutan_menu' => $orderNumber,
                 'wm_status_menu' => $request->wm_status_menu,
-                'created_by' => session('alias')
             ]);
     
             // Mencatat log transaksi
@@ -154,7 +146,6 @@ class WebMenuModel extends Model
                 'wm_menu_url' => Str::slug($request->wm_menu_nama),
                 'wm_parent_id' => $request->wm_parent_id,
                 'wm_status_menu' => $request->wm_status_menu,
-                'updated_by' => session('alias')
             ]);
 
             // Mencatat log transaksi
@@ -201,7 +192,6 @@ class WebMenuModel extends Model
                     'message' => 'Tidak dapat menghapus menu yang memiliki submenu aktif,Silahkan Hapus Submenu Terlebih Dahulu'
                 ];
             }
-            $menu->deleted_by = session('alias');
             $menu->isDeleted = 1;
             $menu->deleted_at = now();
             $menu->save();
@@ -342,7 +332,6 @@ class WebMenuModel extends Model
                     $menu->update([
                         'wm_parent_id' => $item['parent_id'] ?? null,
                         'wm_urutan_menu' => $position + 1,
-                        'updated_by' => session('alias')
                     ]);
 
                     if (isset($item['children'])) {
@@ -352,7 +341,6 @@ class WebMenuModel extends Model
                                 $childMenu->update([
                                     'wm_parent_id' => $item['id'],
                                     'wm_urutan_menu' => $childPosition + 1,
-                                    'updated_by' => session('alias')
                                 ]);
                             }
                         }

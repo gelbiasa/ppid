@@ -2,16 +2,16 @@
 
 namespace App\Models\Website;
 
+use App\Models\BaseModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Log\TransactionModel;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class WebKontenModel extends Model
+class WebKontenModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -22,14 +22,7 @@ class WebKontenModel extends Model
         'fk_web_menu',
         'wk_judul_konten',
         'wk_deskripsi_konten',
-        'wk_status_konten',
-        'isDeleted',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-        'deleted_at',
-        'deleted_by'
+        'wk_status_konten'
     ];
 
     // Relationships
@@ -55,7 +48,6 @@ class WebKontenModel extends Model
                 'wk_judul_konten' => $request->wk_judul_konten,
                 'wk_deskripsi_konten' => $request->wk_deskripsi_konten,
                 'wk_status_konten' => $request->wk_status_konten,
-                'created_by' => session('alias')
             ];
             
             $konten = self::create($data);
@@ -69,12 +61,16 @@ class WebKontenModel extends Model
                     WebKontenImagesModel::create([
                         'fk_web_konten' => $konten->web_konten_id,
                         'wki_image_webkonten' => 'uploads/konten/' . $imageName,
-                        'created_by' => session('alias')
                     ]);
                 }
             }
             
-            TransactionModel::createData();
+            TransactionModel::createData(
+                
+                'CREATED', 
+                $konten->web_konten_id,
+                $konten->wk_judul_konten
+            );
             
             DB::commit();
             return [
@@ -112,7 +108,6 @@ class WebKontenModel extends Model
                 'wk_judul_konten' => $request->wk_judul_konten,
                 'wk_deskripsi_konten' => $request->wk_deskripsi_konten,
                 'wk_status_konten' => $request->wk_status_konten,
-                'updated_by' => session('alias')
             ]);
 
             // Handle images if present
@@ -124,7 +119,6 @@ class WebKontenModel extends Model
                     WebKontenImagesModel::create([
                         'fk_web_konten' => $konten->web_konten_id,
                         'wki_image_webkonten' => 'uploads/konten/' . $imageName,
-                        'created_by' => session('alias')
                     ]);
                 }
             }
@@ -136,7 +130,12 @@ class WebKontenModel extends Model
                 }
             }
 
-            TransactionModel::createData();
+            TransactionModel::createData(
+                
+                'UPDATED', 
+                $konten->web_konten_id,
+                $konten->wk_judul_konten
+            );
 
             DB::commit();
             return [
@@ -171,16 +170,18 @@ class WebKontenModel extends Model
             WebKontenImagesModel::where('fk_web_konten', $id)
                 ->update([
                     'isDeleted' => 1,
-                    'deleted_by' => session('alias'),
                     'deleted_at' => now()
                 ]);
             
-            $konten->deleted_by = session('alias');
             $konten->isDeleted = 1;
             $konten->deleted_at = now();
             $konten->save();
             
-            TransactionModel::createData();
+            TransactionModel::createData(
+                'DELETED', 
+                $konten->web_konten_id,
+                $konten->wk_judul_konten
+            );
 
             DB::commit();
             return [

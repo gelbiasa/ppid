@@ -2,14 +2,14 @@
 
 namespace App\Models\Website;
 
+use App\Models\BaseModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Log\TransactionModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class WebKontenImagesModel extends Model
+class WebKontenImagesModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -18,14 +18,7 @@ class WebKontenImagesModel extends Model
 
     protected $fillable = [
         'fk_web_konten',
-        'wki_image_webkonten',
-        'isDeleted',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-        'deleted_at',
-        'deleted_by'
+        'wki_image_webkonten'
     ];
 
     public function konten()
@@ -45,12 +38,15 @@ class WebKontenImagesModel extends Model
                 unlink($filePath);
             }
             
-            $image->deleted_by = session('alias');
             $image->isDeleted = 1;
             $image->deleted_at = now();
             $image->save();
             
-            TransactionModel::createData();
+            TransactionModel::createData(
+                'DELETED', 
+                $image->konten_image_id,
+                $image->wki_image_webkonten
+            );
             
             DB::commit();
             return [
@@ -74,10 +70,13 @@ class WebKontenImagesModel extends Model
             $image = self::create([
                 'fk_web_konten' => $kontenId,
                 'wki_image_webkonten' => $imagePath,
-                'created_by' => session('alias')
             ]);
             
-            TransactionModel::createData();
+            TransactionModel::createData(
+                'CREATED', 
+                $image->konten_image_id,
+                $image->wki_image_webkonten
+            );
             
             DB::commit();
             return [
