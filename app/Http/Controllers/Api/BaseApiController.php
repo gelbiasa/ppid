@@ -17,12 +17,22 @@ class BaseApiController extends Controller
     protected const ACTION_CREATE = 'create';
     protected const ACTION_UPDATE = 'update';
     protected const ACTION_DELETE = 'delete';
+    protected const ACTION_LOGIN = 'login';
+    protected const ACTION_REGISTER = 'register';
+    protected const ACTION_LOGOUT = 'logout';
     
     // Konstanta untuk pesan error autentikasi
     protected const AUTH_TOKEN_NOT_FOUND = 'Token tidak ditemukan';
     protected const AUTH_USER_NOT_FOUND = 'User tidak ditemukan';
     protected const AUTH_TOKEN_EXPIRED = 'Token telah kadaluarsa';
     protected const AUTH_TOKEN_INVALID = 'Token tidak valid';
+    protected const AUTH_INVALID_CREDENTIALS = 'Kredensial tidak valid';
+    protected const AUTH_LOGIN_SUCCESS = 'Login berhasil';
+    protected const AUTH_REGISTER_SUCCESS = 'Registrasi berhasil';
+    protected const AUTH_LOGOUT_SUCCESS = 'Logout berhasil, token telah dihapus';
+    protected const AUTH_LOGOUT_FAILED = 'Gagal melakukan logout';
+    protected const VALIDATION_FAILED = 'Validasi gagal';
+    protected const SERVER_ERROR = 'Terjadi kesalahan pada server';
    
     // Template pesan untuk setiap aksi
     protected $messageTemplates = [
@@ -41,6 +51,18 @@ class BaseApiController extends Controller
         self::ACTION_DELETE => [
             'success' => 'Data %s berhasil dihapus.',
             'error' => 'Gagal menghapus data %s. Silakan coba lagi.'
+        ],
+        self::ACTION_LOGIN => [
+            'success' => self::AUTH_LOGIN_SUCCESS,
+            'error' => self::AUTH_INVALID_CREDENTIALS
+        ],
+        self::ACTION_REGISTER => [
+            'success' => self::AUTH_REGISTER_SUCCESS,
+            'error' => self::VALIDATION_FAILED
+        ],
+        self::ACTION_LOGOUT => [
+            'success' => self::AUTH_LOGOUT_SUCCESS,
+            'error' => self::AUTH_LOGOUT_FAILED
         ],
     ];
 
@@ -114,6 +136,36 @@ class BaseApiController extends Controller
     }
     
     /**
+     * Mengeksekusi aksi validasi form dan memberikan respons terstandarisasi.
+     * @param callable $validatorAction Fungsi yang akan menghasilkan validator
+     * @param callable $successAction Fungsi yang akan dieksekusi jika validasi berhasil
+     * @param string $actionType Jenis aksi (login, register, dll)
+     * @return JsonResponse
+     */
+    protected function executeWithValidation(callable $validatorAction, callable $successAction, string $actionType): JsonResponse
+    {
+        try {
+            $validator = $validatorAction();
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => self::VALIDATION_FAILED,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            $result = $successAction();
+            $message = $this->messageTemplates[$actionType]['success'];
+            
+            return $this->successResponse($result, $message);
+        } catch (\Exception $e) {
+            $this->logError('Validation action error', $e);
+            return $this->errorResponse(self::SERVER_ERROR, $e->getMessage(), 500);
+        }
+    }
+    
+    /**
      * Mengembalikan respons sukses dalam format JSON.
      *
      * @param mixed $data Data yang akan dikirim dalam respons
@@ -165,5 +217,24 @@ class BaseApiController extends Controller
                 'trace' => $exception->getTraceAsString()
             ]);
         }
+    }
+    
+    /**
+     * Generate alias dari nama pengguna
+     */
+    protected function generateAlias(string $name): string
+    {
+        $words = explode(' ', $name);
+        $alias = '';
+
+        foreach ($words as $word) {
+            if (strlen($alias . ' ' . $word) > 15) {
+                $alias .= ' ' . strtoupper(substr($word, 0, 1)) . '.';
+                break;
+            }
+            $alias .= ($alias === '' ? '' : ' ') . $word;
+        }
+
+        return trim($alias);
     }
 }

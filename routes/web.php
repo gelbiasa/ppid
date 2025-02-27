@@ -8,8 +8,6 @@ use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
-use App\Http\Controllers\AdminWeb\SubMenu\SubMenuController;
-use App\Http\Controllers\AdminWeb\menuUtama\MenuUtamaController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 
 /*
@@ -47,16 +45,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/update_password/{id}', [ProfileController::class, 'update_password']);
     });
 
-    Route::group(['prefix' => 'adminweb/menu-utama', 'middleware' => 'authorize:ADM'], function () {
-        Route::get('/', [MenuUtamaController::class, 'index']);
-        Route::post('/list', [MenuUtamaController::class, 'list']);
-        Route::get('/create_ajax', [MenuUtamaController::class, 'create_ajax']);
-        Route::post('/ajax', [MenuUtamaController::class, 'store_ajax']);
-        Route::get('/{id}/edit_ajax', [MenuUtamaController::class, 'edit_ajax']);
-        Route::put('/{id}/update_ajax', [MenuUtamaController::class, 'update_ajax']);
-        Route::get('/{id}/delete_ajax', [MenuUtamaController::class, 'confirm_ajax']);
-        Route::delete('/{id}/delete_ajax', [MenuUtamaController::class, 'delete_ajax']);
-    });
 
     Route::group(['prefix' => 'adminweb/menu-management', 'middleware' => 'authorize:ADM'], function () {
         Route::get('/', [MenuManagementController::class, 'index']);
@@ -68,18 +56,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}/delete', [MenuManagementController::class, 'delete']);
         Route::get('/{id}/detail_menu', [MenuManagementController::class, 'detail_menu']); 
         Route::post('/reorder', [MenuManagementController::class, 'reorder']); // New route for drag-drop reordering
-       
     });
-    Route::group(['prefix' => 'adminweb/submenu', 'middleware' => 'authorize:ADM'], function () {
-        Route::get('/', [SubMenuController::class, 'index']);
-        Route::post('/list', [SubMenuController::class, 'list']);
-        Route::get('/create_ajax', [SubMenuController::class, 'create_ajax']);
-        Route::post('/ajax', [SubMenuController::class, 'store_ajax']);
-        Route::get('/{id}/edit_ajax', [SubMenuController::class, 'edit_ajax']);
-        Route::put('/{id}/update_ajax', [SubMenuController::class, 'update_ajax']);
-        Route::get('/{id}/delete_ajax', [SubMenuController::class, 'confirm_ajax']);
-        Route::delete('/{id}/delete_ajax', [SubMenuController::class, 'delete_ajax']);
-    });
+  
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);
