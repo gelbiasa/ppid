@@ -21,102 +21,39 @@ class WebKontenImagesModel extends BaseModel
         'wki_image_webkonten'
     ];
 
-    public function konten()
+    public function WebKonten()
     {
         return $this->belongsTo(WebKontenModel::class, 'fk_web_konten', 'web_konten_id');
     }
-
-    public static function deleteData($id)
+    public function __construct(array $attributes = [])
     {
-        DB::beginTransaction();
-        try {
-            $image = self::findOrFail($id);
-            
-            // Delete file if exists
-            $filePath = public_path($image->wki_image_webkonten);
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-            
-            $image->isDeleted = 1;
-            $image->deleted_at = now();
-            $image->save();
-            
-            TransactionModel::createData(
-                'DELETED', 
-                $image->konten_image_id,
-                $image->wki_image_webkonten
-            );
-            
-            DB::commit();
-            return [
-                'status' => true,
-                'message' => 'Gambar berhasil dihapus'
-            ];
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error deleting image: ' . $e->getMessage());
-            return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat menghapus gambar'
-            ];
-        }
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function createImage($kontenId, $imagePath)
+    public static function selectData()
     {
-        DB::beginTransaction();
-        try {
-            $image = self::create([
-                'fk_web_konten' => $kontenId,
-                'wki_image_webkonten' => $imagePath,
-            ]);
-            
-            TransactionModel::createData(
-                'CREATED', 
-                $image->konten_image_id,
-                $image->wki_image_webkonten
-            );
-            
-            DB::commit();
-            return [
-                'status' => true,
-                'message' => 'Gambar berhasil ditambahkan',
-                'data' => $image
-            ];
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error creating image: ' . $e->getMessage());
-            return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat menambahkan gambar'
-            ];
-        }
+      //
     }
 
-    public static function getImagesByKonten($kontenId)
+    public static function createData()
     {
-        try {
-            $images = self::where('fk_web_konten', $kontenId)
-                ->where('isDeleted', 0)
-                ->get();
-                
-            return [
-                'status' => true,
-                'images' => $images->map(function($image) {
-                    return [
-                        'konten_images_id' => $image->konten_images_id,
-                        'wki_image_webkonten' => $image->wki_image_webkonten,
-                        'url' => asset($image->wki_image_webkonten)
-                    ];
-                })
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error getting images by konten: ' . $e->getMessage());
-            return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil gambar'
-            ];
-        }
+      //
     }
+
+    public static function updateData()
+    {
+        //
+    }
+
+    public static function deleteData()
+    {
+        //
+    }
+
+    public static function validasiData()
+    {
+        //
+    }
+
 }
