@@ -45,68 +45,118 @@ class WebMenuModel extends BaseModel
         return $this->hasOne(WebKontenModel::class, 'fk_web_menu', 'web_menu_id');
     }
 
-    public static function selectData(){
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
+    }
+
+    public static function selectData()
+    {
         $arr_data =  self::query()
             ->select([
-               'web_menu_id',
-               'wm_menu_nama',
-               'wm_menu_url',
-               'wm_parent_id',
-               'wm_urutan_menu'
-           ])
-           ->where('wm_status_menu', 'aktif')
-           ->where('isDeleted', 0)
-           ->orderBy('wm_urutan_menu')
-           ->get()
-           ->map(function ($menu) {
-               return [
-                   'id' => $menu->web_menu_id,
-                   'wm_menu_nama' => $menu->wm_menu_nama,
-                   'wm_menu_url' => $menu->wm_menu_url,
-                   'wm_parent_id' => $menu->wm_parent_id,
-                   'wm_urutan_menu' => $menu->wm_urutan_menu
-               ];
-           })->toArray();
-           return $arr_data;
-}
+                'web_menu_id',
+                'wm_menu_nama',
+                'wm_menu_url',
+                'wm_parent_id',
+                'wm_urutan_menu'
+            ])
+            ->where('wm_status_menu', 'aktif')
+            ->where('isDeleted', 0)
+            ->orderBy('wm_urutan_menu')
+            ->get()
+            ->map(function ($menu) {
+                return [
+                    'id' => $menu->web_menu_id,
+                    'wm_menu_nama' => $menu->wm_menu_nama,
+                    'wm_menu_url' => $menu->wm_menu_url,
+                    'wm_parent_id' => $menu->wm_parent_id,
+                    'wm_urutan_menu' => $menu->wm_urutan_menu
+                ];
+            })->toArray();
+        return $arr_data;
+    }
+
+    public static function mengecekKetersediaanMenu($menuName, $excludeId = null)
+    {
+        $query = self::where('wm_menu_nama', $menuName)
+            ->where('isDeleted', 0);
+
+        if ($excludeId) {
+            $query->where('web_menu_id', '!=', $excludeId);
+        }
+
+        $menuAktif = clone $query;
+        $menuAktif = $menuAktif->where('wm_status_menu', 'aktif')->first();
+
+        if ($menuAktif) {
+            return [
+                'exists' => true,
+                'message' => 'Menu sudah ada dan berstatus aktif'
+            ];
+        }
+
+        $menuNonaktif = clone $query;
+        $menuNonaktif = $menuNonaktif->where('wm_status_menu', 'nonaktif')->first();
+
+        if ($menuNonaktif) {
+            return [
+                'exists' => true,
+                'message' => 'Menu sudah ada, tetapi saat ini berstatus nonaktif'
+            ];
+        }
+
+        return [
+            'exists' => false
+        ];
+    }
 
     public static function createData($request)
     {
         DB::beginTransaction();
         try {
             self::validasiData($request);
-    
-            $orderNumber = self::where('wm_parent_id', $request->wm_parent_id)
+            $data = $request->web_menu;
+
+            // Cek apakah nama menu sudah ada dan belum di-soft delete
+            $menuCheck = self::mengecekKetersediaanMenu($data['wm_menu_nama']);
+
+            // Jika menu dengan nama sama ditemukan dan belum di-soft delete
+            if ($menuCheck['exists']) {
+                return [
+                    'success' => false,
+                    'message' => $menuCheck['message']
+                ];
+            }
+
+            // Menu belum ada atau sudah di-soft delete, jadi bisa lanjutkan pembuatan menu baru
+            $orderNumber = self::where('wm_parent_id', $data['wm_parent_id'])
                 ->where('isDeleted', 0)
                 ->count() + 1;
-    
-            $menu = self::create([
-                'wm_menu_nama' => $request->wm_menu_nama,
-                'wm_menu_url' => Str::slug($request->wm_menu_nama),
-                'wm_parent_id' => $request->wm_parent_id,
-                'wm_urutan_menu' => $orderNumber,
-                'wm_status_menu' => $request->wm_status_menu,
-            ]);
-    
-            // Mencatat log transaksi
+
+            $data['wm_menu_url'] = Str::slug($data['wm_menu_nama']);
+            $data['wm_urutan_menu'] = $orderNumber;
+
+            $saveData = self::create($data);
+
             TransactionModel::createData(
-                'CREATED', 
-                $menu->web_menu_id,
-                $menu->wm_menu_nama
+                'CREATED',
+                $saveData->web_menu_id,
+                $saveData->wm_menu_nama
             );
-    
+
             $result = [
-                'status' => true,
+                'success' => true,
                 'message' => 'Menu berhasil dibuat',
-                'data' => $menu
+                'data' => $saveData
             ];
-    
+
             DB::commit();
             return $result;
         } catch (ValidationException $e) {
             DB::rollBack();
             return [
-                'status' => false,
+                'success' => false,
                 'message' => 'Validasi gagal',
                 'errors' => $e->validator->errors()
             ];
@@ -114,51 +164,59 @@ class WebMenuModel extends BaseModel
             DB::rollBack();
             Log::error('Error creating menu: ' . $e->getMessage());
             return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat membuat menu'
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat membuat menu: ' . $e->getMessage()
             ];
         }
     }
 
     public static function updateData($request, $id)
     {
-        DB::beginTransaction();
         try {
             self::validasiData($request);
 
-            $menu = self::findOrFail($id);
+            $saveData = self::findOrFail($id);
+            $data = $request->web_menu;
 
-            if ($request->wm_parent_id) {
+            // Cek apakah nama menu sudah ada dan belum di-soft delete
+            $menuCheck = self::mengecekKetersediaanMenu($data['wm_menu_nama'], $id);
+
+            // Jika menu dengan nama sama ditemukan dan belum di-soft delete
+            if ($menuCheck['exists']) {
+                return [
+                    'success' => false,
+                    'message' => $menuCheck['message']
+                ];
+            }
+
+            if ($data['wm_parent_id']) {
                 $isChild = self::where('wm_parent_id', $id)
-                    ->where('web_menu_id', $request->wm_parent_id)
+                    ->where('web_menu_id', $data['wm_parent_id'])
                     ->exists();
 
                 if ($isChild) {
                     return [
-                        'status' => false,
+                        'success' => false,
                         'message' => 'Tidak dapat mengatur menu anak sebagai parent'
                     ];
                 }
             }
 
-            $menu->update([
-                'wm_menu_nama' => $request->wm_menu_nama,
-                'wm_menu_url' => Str::slug($request->wm_menu_nama),
-                'wm_parent_id' => $request->wm_parent_id,
-                'wm_status_menu' => $request->wm_status_menu,
-            ]);
+            DB::beginTransaction();
 
-            // Mencatat log transaksi
+            $data['wm_menu_url'] = Str::slug($data['wm_menu_nama']);
+            $saveData->update($data);
+
             TransactionModel::createData(
-                'UPDATED', 
-                $menu->web_menu_id,
-                $menu->wm_menu_nama
+                'UPDATED',
+                $saveData->web_menu_id,
+                $saveData->wm_menu_nama
             );
 
             $result = [
-                'status' => true,
+                'success' => true,
                 'message' => 'Menu berhasil diperbaharui',
-                'data' => $menu
+                'data' => $saveData
             ];
 
             DB::commit();
@@ -166,7 +224,7 @@ class WebMenuModel extends BaseModel
         } catch (ValidationException $e) {
             DB::rollBack();
             return [
-                'status' => false,
+                'success' => false,
                 'message' => 'Validasi gagal',
                 'errors' => $e->validator->errors()
             ];
@@ -174,50 +232,53 @@ class WebMenuModel extends BaseModel
             DB::rollBack();
             Log::error('Error updating menu: ' . $e->getMessage());
             return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui menu'
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui menu: ' . $e->getMessage()
             ];
         }
     }
 
+
     public static function deleteData($id)
     {
-        DB::beginTransaction();
         try {
-            $menu = self::findOrFail($id);
+            $saveData = self::findOrFail($id);
 
-            if ($menu->children()->where('isDeleted', 0)->exists()) {
+            if ($saveData->children()->where('isDeleted', 0)->exists()) {
                 return [
-                    'status' => false,
-                    'message' => 'Tidak dapat menghapus menu yang memiliki submenu aktif,Silahkan Hapus Submenu Terlebih Dahulu'
+                    'success' => false, // Perbaikan: mengganti 's' menjadi 'success'
+                    'message' => 'Tidak dapat menghapus menu yang memiliki submenu aktif. Silahkan hapus submenu terlebih dahulu'
                 ];
             }
-            $menu->isDeleted = 1;
-            $menu->deleted_at = now();
-            $menu->save();
-            self::reorderAfterDelete($menu->wm_parent_id);
+
+            DB::beginTransaction();
+
+            $saveData->isDeleted = 1;
+            $saveData->deleted_at = now();
+            $saveData->save();
+            self::reorderAfterDelete($saveData->wm_parent_id);
 
             // Mencatat log transaksi
             TransactionModel::createData(
-                'DELETED', 
-                $menu->web_menu_id,
-                $menu->wm_menu_nama
+                'DELETED',
+                $saveData->web_menu_id,
+                $saveData->wm_menu_nama
             );
 
             $result = [
-                'status' => true,
+                'success' => true,
                 'message' => 'Menu berhasil dihapus',
-                'data' => $menu
+                'data' => $saveData
             ];
-            
+
             DB::commit();
             return $result;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting menu: ' . $e->getMessage());
             return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat menghapus menu'
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus menu: ' . $e->getMessage()
             ];
         }
     }
@@ -225,17 +286,17 @@ class WebMenuModel extends BaseModel
     public static function validasiData($request)
     {
         $rules = [
-            'wm_menu_nama' => 'required|string|max:60',
-            'wm_parent_id' => 'nullable|exists:web_menu,web_menu_id',
-            'wm_status_menu' => 'required|in:aktif,nonaktif',
+            'web_menu.wm_menu_nama' => 'required|string|max:60',
+            'web_menu.wm_parent_id' => 'nullable|exists:web_menu,web_menu_id',
+            'web_menu.wm_status_menu' => 'required|in:aktif,nonaktif',
         ];
 
         $messages = [
-            'wm_menu_nama.required' => 'Nama menu wajib diisi',
-            'wm_menu_nama.max' => 'Nama menu maksimal 60 karakter',
-            'wm_parent_id.exists' => 'Parent menu tidak valid',
-            'wm_status_menu.required' => 'Status menu wajib diisi',
-            'wm_status_menu.in' => 'Status menu harus aktif atau nonaktif',
+            'web_menu.wm_menu_nama.required' => 'Nama menu wajib diisi',
+            'web_menu.wm_menu_nama.max' => 'Nama menu maksimal 60 karakter',
+            'web_menu.wm_parent_id.exists' => 'Parent menu tidak valid',
+            'web_menu.wm_status_menu.required' => 'Status menu wajib diisi',
+            'web_menu.wm_status_menu.in' => 'Status menu harus aktif atau nonaktif',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -272,16 +333,17 @@ class WebMenuModel extends BaseModel
                 })
                 ->get();
 
-            return [
-                'status' => true,
+            $result = [
+                'success' => true,
                 'menu' => $menu,
                 'parentMenus' => $parentMenus
             ];
+
+            return $result;
         } catch (\Exception $e) {
-            Log::error('Error fetching menu for edit: ' . $e->getMessage());
             return [
-                'status' => false,
-                'message' => 'Error mengambil data menu'
+                'success' => false,
+                'message' => 'Error mengambil data menu: ' . $e->getMessage()
             ];
         }
     }
@@ -293,39 +355,41 @@ class WebMenuModel extends BaseModel
 
             if (!$menu) {
                 return [
-                    'status' => false,
+                    'success' => false,
                     'message' => 'Menu tidak ditemukan'
                 ];
             }
 
-            return [
-                'status' => true,
+            $result = [
+                'success' => true,
                 'menu' => [
                     'wm_menu_nama' => $menu->wm_menu_nama,
                     'wm_menu_url' => $menu->wm_menu_url,
                     'wm_status_menu' => $menu->wm_status_menu,
                     'wm_parent_id' => $menu->wm_parent_id,
                     'wm_urutan_menu' => $menu->wm_urutan_menu,
-                    'parent_menu_nama' => $menu->parentMenu ? $menu->parentMenu->wm_menu_nama : null, // Ubah ini
+                    'parent_menu_nama' => $menu->parentMenu ? $menu->parentMenu->wm_menu_nama : null,
                     'created_by' => $menu->created_by,
                     'created_at' => $menu->created_at->format('Y-m-d H:i:s'),
                     'updated_by' => $menu->updated_by,
                     'updated_at' => $menu->updated_at ? $menu->updated_at->format('Y-m-d H:i:s') : null,
                 ]
             ];
+
+            return $result;
         } catch (\Exception $e) {
             Log::error('Error in detail_menu: ' . $e->getMessage());
             return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat mengambil detail menu'
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil detail menu: ' . $e->getMessage()
             ];
         }
     }
 
     public static function reorderMenus($data)
     {
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
             foreach ($data as $position => $item) {
                 $menu = self::find($item['id']);
                 if ($menu) {
@@ -348,17 +412,17 @@ class WebMenuModel extends BaseModel
                 }
             }
 
-            DB::commit();
-            return [
-                'status' => true,
+            $result = [
+                'success' => true,
                 'message' => 'Urutan menu berhasil diperbarui'
             ];
+            DB::commit();
+            return $result;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error reordering menu: ' . $e->getMessage());
             return [
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat mengatur ulang urutan menu'
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengatur ulang urutan menu: ' . $e->getMessage()
             ];
         }
     }

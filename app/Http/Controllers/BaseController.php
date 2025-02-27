@@ -4,85 +4,81 @@ namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Routing\Controller as LaravelController;
+use Illuminate\Validation\ValidationException;
 
 class BaseController extends LaravelController
 {
     use AuthorizesRequests, ValidatesRequests;
+    
     /**
-     * Handle common API response format
+     * Mengembalikan respons sukses untuk redirect
      *
-     * @param bool $success
-     * @param string $message
-     * @param mixed $data
-     * @param int $statusCode
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function apiResponse($success = true, $message = '', $data = null, $statusCode = 200)
-    {
-        return response()->json([
-            'success' => $success,
-            'message' => $message,
-            'data' => $data
-        ], $statusCode);
-    }
-
-    /**
-     * Handle exception and redirect with appropriate message
-     *
-     * @param \Exception $e
-     * @param string $redirectRoute
+     * @param string $route Nama route untuk redirect
+     * @param string $message Pesan sukses
+     * @param array $additionalParams Parameter tambahan untuk with session
      * @return \Illuminate\Http\RedirectResponse
      */
-    protected function handleException(\Exception $e, $redirectRoute = null)
+    protected function redirectSuccess($route, $message = 'Data berhasil diproses', array $additionalParams = [])
     {
-        if ($e instanceof ValidationException) {
-            return redirect()->back()
-                ->withErrors($e->validator)
-                ->withInput();
-        }
-
-        return redirect()->back()
-            ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-            ->withInput();
+        $params = ['success' => $message];
+        
+        // Menggabungkan parameter tambahan ke dalam respons
+        $sessionParams = array_merge($params, $additionalParams);
+        
+        return redirect($route)->with($sessionParams);
     }
-
+    
     /**
-     * Execute an action and handle any exceptions
+     * Mengembalikan respons error untuk redirect kembali
      *
-     * @param \Closure $action
-     * @param string $successMessage
-     * @param string $successRedirect
-     * @param string $errorRedirect
-     * @return mixed
+     * @param string $message Pesan error
+     * @param array $additionalParams Parameter tambahan untuk with session
+     * @return \Illuminate\Http\RedirectResponse
      */
-    protected function executeAction(\Closure $action, $successMessage = 'Operasi berhasil', $successRedirect = null, $errorRedirect = null)
+    protected function redirectError($message, array $additionalParams = [])
     {
-        try {
-            $result = $action();
-            
-            if (is_array($result) && isset($result['success'])) {
-                if ($result['success']) {
-                    $message = $result['message'] ?? $successMessage;
-                    $redirect = $successRedirect ?: redirect()->back();
-                    return redirect($redirect)->with('success', $message);
-                } else {
-                    $message = $result['message'] ?? 'Operasi gagal';
-                    return redirect()->back()->with('error', $message)->withInput();
-                }
-            }
-            
-            return $result;
-        } catch (ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->validator)
-                ->withInput();
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-                ->withInput();
-        }
+        $params = ['error' => $message];
+        
+        // Menggabungkan parameter tambahan ke dalam respons
+        $sessionParams = array_merge($params, $additionalParams);
+        
+        return redirect()->back()->with($sessionParams)->withInput();
+    }
+    
+    /**
+     * Mengembalikan respons error validasi untuk redirect kembali
+     *
+     * @param ValidationException $e Exception validasi
+     * @param array $additionalParams Parameter tambahan untuk with session
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    protected function redirectValidationError(ValidationException $e, array $additionalParams = [])
+    {
+        $params = [];
+        
+        // Menggabungkan parameter tambahan ke dalam respons
+        $sessionParams = array_merge($params, $additionalParams);
+        
+        return redirect()->back()->withErrors($e->validator)->with($sessionParams)->withInput();
+    }
+    
+    /**
+     * Mengembalikan respons error exception umum untuk redirect kembali
+     *
+     * @param \Exception $e Exception yang terjadi
+     * @param string $prefix Awalan pesan error (misalnya: "Terjadi kesalahan saat...")
+     * @param array $additionalParams Parameter tambahan untuk with session
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    protected function redirectException(\Exception $e, $prefix = 'Terjadi kesalahan', array $additionalParams = [])
+    {
+        $message = $prefix . ': ' . $e->getMessage();
+        $params = ['error' => $message];
+        
+        // Menggabungkan parameter tambahan ke dalam respons
+        $sessionParams = array_merge($params, $additionalParams);
+        
+        return redirect()->back()->with($sessionParams)->withInput();
     }
 }

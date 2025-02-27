@@ -2,8 +2,6 @@
 
 namespace App\Models\SistemInformasi\EForm;
 
-error_reporting(E_ALL);
-
 use App\Models\BaseModel;
 use App\Models\Log\NotifAdminModel;
 use App\Models\Log\NotifVerifikatorModel;
@@ -12,10 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
 class PermohonanInformasiModel extends BaseModel
 {
@@ -40,13 +36,6 @@ class PermohonanInformasiModel extends BaseModel
         'pi_sudah_dibaca'
     ];
 
-    // Konstruktor untuk menggabungkan field umum
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
-    }
-
     public function PiDiriSendiri()
     {
         return $this->belongsTo(FormPiDiriSendiriModel::class, 'fk_t_form_pi_diri_sendiri', 'form_pi_diri_sendiri_id');
@@ -62,6 +51,17 @@ class PermohonanInformasiModel extends BaseModel
         return $this->belongsTo(FormPiOrganisasiModel::class, 'fk_t_form_pi_organisasi', 'form_pi_organisasi_id');
     }
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
+    }
+
+    public static function selectData()
+    {
+      //
+    }
+
     public static function createData($request)
     {
         $fileName = self::uploadFile(
@@ -71,20 +71,15 @@ class PermohonanInformasiModel extends BaseModel
 
         $notifMessage = '';
         try {
-
             $data = $request->t_permohonan_informasi;
-
             $kategoriPemohon = $data['pi_kategori_pemohon'];
-
             $userLevel = Auth::user()->level->level_kode;
-
             $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
 
             if ($userLevel === 'ADM') {
                 $data['pi_bukti_aduan'] = $fileName;
             }
 
-            // Handle different types of submissions based on kategori_pemohon
             switch ($kategoriPemohon) {
 
                 case 'Diri Sendiri':
@@ -107,15 +102,9 @@ class PermohonanInformasiModel extends BaseModel
             $data['pi_bukti_aduan'] = $fileName;
             $data['pi_status'] = 'Masuk';
 
-            // Tetapkan nilai child primary key ke field relasi yang sesuai
-            // Ini perbaikan untuk masalah pertama
             $data[$child['pkField']] = $child['id'];
-
             $saveData = self::create($data);
-
             $notifMessage = $child['message'];
-
-            // Perbaikan untuk masalah ketiga: gunakan ID permohonan_informasi untuk notifikasi
             $permohonanId = $saveData->permohonan_informasi_id;
 
             // Create notifications dengan permohonan_informasi_id
@@ -129,36 +118,36 @@ class PermohonanInformasiModel extends BaseModel
                 $saveData->pi_informasi_yang_dibutuhkan
             );
 
-            $result = [
-                'success' => true,
-                'message' => 'Permohonan Informasi berhasil diajukan.',
-                'data' => $saveData
-            ];
+            $result = self::responFormatSukses($saveData, 'Permohonan Informasi berhasil diajukan.');
 
             DB::commit();
 
             return $result;
         } catch (ValidationException $e) {
-            DB::rollback();
+            DB::rollBack();
             self::removeFile($fileName);
-            return [
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
-            ];
+            return self::responValidatorError($e);
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
             self::removeFile($fileName);
-
-            return ['success' => false, 'message' => 'Terjadi kesalahan saat mengajukan permohonan: ' . $e->getMessage()];
+            return self::responFormatError($e, 'Terjadi kesalahan saat mengajukan permohonan');
         }
+    }
+
+    public static function updateData()
+    {
+        //
+    }
+
+    public static function deleteData()
+    {
+        //
     }
 
     public static function validasiData($request)
     {
         $userLevel = Auth::user()->level->level_kode;
 
-        // Build validation rules array
         $rules = [
             't_permohonan_informasi.pi_kategori_pemohon' => 'required',
             't_permohonan_informasi.pi_informasi_yang_dibutuhkan' => 'required',
@@ -168,7 +157,6 @@ class PermohonanInformasiModel extends BaseModel
 
         ];
 
-        // Add bukti_aduan validation for ADM users
         if ($userLevel === 'ADM') {
             $rules['pi_bukti_aduan'] = 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240';
         }
@@ -191,7 +179,6 @@ class PermohonanInformasiModel extends BaseModel
             throw new ValidationException($validasiDasar);
         }
 
-        // Validasi tambahan berdasarkan kategori pemohon
         $kategoriPemohon = $request->t_permohonan_informasi['pi_kategori_pemohon'];
         switch ($kategoriPemohon) {
             case 'Diri Sendiri':
@@ -206,22 +193,5 @@ class PermohonanInformasiModel extends BaseModel
         }
 
         return true;
-    }
-
-    private static function uploadFile($file, $prefix)
-    {
-        $fileName = $prefix . '/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('public', $fileName);
-        return $fileName;
-    }
-
-    private static function removeFile($fileName)
-    {
-        if ($fileName) {
-            $filePath = storage_path('app/public/' . $fileName);
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-        }
     }
 }

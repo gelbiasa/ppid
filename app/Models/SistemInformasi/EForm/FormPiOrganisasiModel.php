@@ -48,7 +48,7 @@ class FormPiOrganisasiModel extends BaseModel
                 'id' => $saveData->form_pi_organisasi_id,
                 'message' => "{$saveData->pi_nama_organisasi} Mengajukan Permohonan Informasi",
             ];
-            return ($result);
+            return $result;
         } catch (\Exception $e) {
             // Jika terjadi kesalahan, hapus file yang sudah diupload
             self::removeFile($fileName);
@@ -78,23 +78,6 @@ class FormPiOrganisasiModel extends BaseModel
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
-        }
-    }
-
-    private static function uploadFile($file, $prefix)
-    {
-        $fileName = $prefix . '/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('public', $fileName);
-        return $fileName;
-    }
-
-    private static function removeFile($fileName)
-    {
-        if ($fileName) {
-            $filePath = storage_path('app/public/' . $fileName);
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
         }
     }
 }

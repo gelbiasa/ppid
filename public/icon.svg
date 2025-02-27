@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Latar belakang -->
+  <circle cx="32" cy="32" r="30" fill="#ffffff" stroke="#005baa" stroke-width="2"/>
+  
+  <!-- Lingkaran luar -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#005baa" stroke-width="1.5"/>
+  
+  <!-- Lingkaran dalam -->
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#005baa" stroke-width="1.5"/>
+  
+  <!-- Lambang gedung polinema -->
+  <polygon points="32,15 45,28 45,45 19,45 19,28" fill="#ffffff" stroke="#005baa" stroke-width="1.5"/>
+  
+  <!-- Detail gedung -->
+  <rect x="25" y="34" width="4" height="11" fill="#ffffff" stroke="#005baa" stroke-width="1"/>
+  <rect x="35" y="34" width="4" height="11" fill="#ffffff" stroke="#005baa" stroke-width="1"/>
+  
+  <!-- Puncak gedung -->
+  <polygon points="32,18 40,26 24,26" fill="#ffffff" stroke="#005baa" stroke-width="1"/>
+  
+  <!-- Teks POLINEMA pada lingkaran -->
+  <path d="M32,8 A24,24 0 0 1 55,32" fill="none" stroke="none" id="top-curve"/>
+  <text font-family="Arial" font-size="5" font-weight="bold" fill="#005baa">
+    <textPath href="#top-curve">POLITEKNIK NEGERI MALANG</textPath>
+  </text>
+  
+  <!-- Gear/roda gigi mengelilingi -->
+  <g stroke="#005baa" stroke-width="1" fill="#ffffff">
+    <path d="M32,57 L33,53 L31,53 Z"/>
+    <path d="M40,54 L43,51 L41,49 Z"/>
+    <path d="M47,47 L51,46 L50,43 Z"/>
+    <path d="M51,39 L54,40 L53,37 Z"/>
+    <path d="M51,25 L54,24 L53,27 Z"/>
+    <path d="M47,17 L51,18 L50,21 Z"/>
+    <path d="M40,10 L43,13 L41,15 Z"/>
+    <path d="M32,7 L33,11 L31,11 Z"/>
+    <path d="M24,10 L21,13 L23,15 Z"/>
+    <path d="M17,17 L13,18 L14,21 Z"/>
+    <path d="M13,25 L10,24 L11,27 Z"/>
+    <path d="M13,39 L10,40 L11,37 Z"/>
+    <path d="M17,47 L13,46 L14,43 Z"/>
+    <path d="M24,54 L21,51 L23,49 Z"/>
+  </g>
+</svg>

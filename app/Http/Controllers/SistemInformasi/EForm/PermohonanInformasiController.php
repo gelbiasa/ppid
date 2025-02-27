@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers\SistemInformasi\EForm;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\SistemInformasi\EForm\PermohonanInformasiModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class PermohonanInformasiController extends Controller
+class PermohonanInformasiController extends BaseController
 {
     public $breadcrumb = 'Permohonan Informasi';
     public $pagename = 'SistemInformasi/EForm/PermohonanInformasi';
-  
-    private function getUserFolder()
-    {
-        $levelKode = Auth::user()->level->level_kode;
-        return ($levelKode === 'ADM' || $levelKode === 'RPN') ? $levelKode : abort(403);
-    }
 
     public function index()
     {
@@ -41,7 +35,7 @@ class PermohonanInformasiController extends Controller
         ]);
     }
 
-    public function formPermohonanInformasi()
+    public function create()
     {
         $folder = $this->getUserFolder();
 
@@ -63,30 +57,28 @@ class PermohonanInformasiController extends Controller
         ]);
     }
 
-    public function storePermohonanInformasi(Request $request)
+    public function store(Request $request)
     {
         try {
             $folder = $this->getUserFolder();
-            // PermohonanInformasiModel::validasiData($request);
-            $result = PermohonanInformasiModel::validasiData($request);
+            PermohonanInformasiModel::validasiData($request);
             $result = PermohonanInformasiModel::createData($request);
-            
+
             if ($result['success']) {
-                return redirect("/SistemInformasi/EForm/$folder/PermohonanInformasi")
-                    ->with('success', $result['message']);
+                return $this->redirectSuccess("/SistemInformasi/EForm/$folder/PermohonanInformasi", $result['message']);
             }
 
-            return redirect()->back()
-                ->with('error', $result['message'])
-                ->withInput();
+            return $this->redirectError($result['message']);
         } catch (ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->validator)
-                ->withInput();
+            return $this->redirectValidationError($e);
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-                ->withInput();
+            return $this->redirectException($e, 'Terjadi kesalahan saat mengajukan permohonan');
         }
+    }
+
+    private function getUserFolder()
+    {
+        $levelKode = Auth::user()->level->level_kode;
+        return ($levelKode === 'ADM' || $levelKode === 'RPN') ? $levelKode : abort(403);
     }
 }

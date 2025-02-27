@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ config('app.name', 'PWL Laravel Starter Code')}}</title>
+  <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
 
   <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- Untuk mengirimkan token laravel CSRF pada setiap request ajax -->
 

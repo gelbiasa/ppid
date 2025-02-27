@@ -2,11 +2,11 @@
 
 namespace App\Models\SistemInformasi\EForm;
 
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PernyataanKeberatanModel extends Model
+class PernyataanKeberatanModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -28,28 +28,42 @@ class PernyataanKeberatanModel extends Model
         'pk_status',
         'pk_jawaban',
         'pk_alasan_penolakan',
-        'pk_sudah_dibaca',
-        'isDeleted',
-        'created_at',
-        'created_by', 
-        'updated_at',
-        'updated_by',
-        'deleted_at',
-        'deleted_by'
+        'pk_sudah_dibaca'
     ];
 
-    public function PiDiriSendiri()
+    public function PkOrangLain()
     {
-        return $this->belongsTo(FormPiDiriSendiriModel::class, 'fk_t_form_pi_diri_sendiri', 'form_pi_diri_sendiri_id');
+        return $this->belongsTo(FormPiOrangLainModel::class, 'fk_t_form_pk_orang_lain', 'form_pk_orang_lain_id');
     }
 
-    public function PiOrangLain()
+    public function __construct(array $attributes = [])
     {
-        return $this->belongsTo(FormPiOrangLainModel::class, 'fk_t_form_pi_orang_lain', 'form_pi_orang_lain_id');
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public function PiOrganisasi()
+    public static function selectData()
     {
-        return $this->belongsTo(FormPiOrganisasiModel::class, 'fk_t_form_pi_organisasi', 'form_pi_organisasi_id');
+      //
+    }
+
+    public static function createData()
+    {
+      //
+    }
+
+    public static function updateData()
+    {
+        //
+    }
+
+    public static function deleteData()
+    {
+        //
+    }
+
+    public static function validasiData()
+    {
+        //
     }
 }

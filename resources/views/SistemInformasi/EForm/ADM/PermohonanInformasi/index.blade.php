@@ -31,7 +31,7 @@
         <hr class="thick-line">
         <div class="row text-center">
             <div class="col-md-4">
-                <a href="{{ url('SistemInformasi/EForm/ADM/PermohonanInformasi/formPermohonanInformasi') }}" class="custom-button d-block p-3 mb-2">
+                <a href="{{ url('SistemInformasi/EForm/ADM/PermohonanInformasi/create') }}" class="custom-button d-block p-3 mb-2">
                     <i class="fas fa-edit fa-2x"></i>
                     <h5>E-Form Permohonan Informasi</h5>
                 </a>

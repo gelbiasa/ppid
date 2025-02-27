@@ -47,12 +47,12 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Menu<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="wm_menu_nama" id="add_menu_nama">
+                            <input type="text" class="form-control" name="web_menu[wm_menu_nama]" id="add_menu_nama">
                             <div class="invalid-feedback">Nama menu wajib diisi</div>
                         </div>
                         <div class="form-group">
                             <label>Kategori Menu</label>
-                            <select class="form-control" name="wm_parent_id">
+                            <select class="form-control" name="web_menu[wm_parent_id]">
                                 <option value="">-Set Sebagai Menu Utama</option>
                                 @foreach ($menus as $menu)
                                     <option value="{{ $menu->web_menu_id }}">{{ $menu->wm_menu_nama }}</option>
@@ -61,7 +61,7 @@
                         </div>
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
-                            <select class="form-control" name="wm_status_menu" id="add_status_menu">
+                            <select class="form-control" name="web_menu[wm_status_menu]" id="add_status_menu">
                                 <option value="">Pilih Status</option>
                                 <option value="aktif">Aktif</option>
                                 <option value="nonaktif">Non-Aktif</option>
@@ -91,16 +91,16 @@
                 <form id="editMenuForm">
                     @csrf
                     @method('PUT')
-                    <input type="hidden" name="menu_id" id="edit_menu_id">
+                    <input type="hidden" name="web_menu[web_menu_id]" id="edit_menu_id">
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Menu Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="wm_menu_nama" id="edit_menu_nama">
+                            <input type="text" class="form-control" name="web_menu[wm_menu_nama]" id="edit_menu_nama">
                             <div class="invalid-feedback">Nama menu wajib diisi</div>
                         </div>
                         <div class="form-group">
                             <label>Kategori Menu</label>
-                            <select class="form-control" name="wm_parent_id" id="edit_parent_id">
+                            <select class="form-control" name="web_menu[wm_parent_id]" id="edit_parent_id">
                                 <option value="">-Set Sebagai Menu Utama</option>
                                 @foreach ($menus as $menu)
                                     <option value="{{ $menu->web_menu_id }}">{{ $menu->wm_menu_nama }}</option>
@@ -109,7 +109,7 @@
                         </div>
                         <div class="form-group">
                             <label>Status <span class="text-danger">*</span></label>
-                            <select class="form-control" name="wm_status_menu" id="edit_status_menu">
+                            <select class="form-control" name="web_menu[wm_status_menu]" id="edit_status_menu">
                                 <option value="">Pilih Status</option>
                                 <option value="aktif">Aktif</option>
                                 <option value="nonaktif">Non-Aktif</option>
@@ -253,7 +253,7 @@
                         data: data
                     },
                     success: function(response) {
-                        if (response.status) {
+                        if (response.success) {
                             toastr.success(response.message);
                             setTimeout(() => window.location.reload(),
                                 1000); // Reload setelah 1 detik
@@ -285,7 +285,7 @@
                     success: function(response) {
                         console.log("Response dari server:", response); // Debugging
 
-                        if (response.status) {
+                        if (response.success) {
                             let menu = response.menu;
 
                             // Isi modal dengan data dari server
@@ -331,7 +331,7 @@
                     url: `{{ url('/adminweb/menu-management') }}/${menuId}/edit`,
                     type: 'GET',
                     success: function(response) {
-                        if (response.status) {
+                        if (response.success) {
                             $('#edit_menu_nama').val(response.menu.wm_menu_nama);
                             $('#edit_status_menu').val(response.menu.wm_status_menu);
 
@@ -380,7 +380,7 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                            if (response.status) {
+                            if (response.success) {
                                 toastr.success(response.message);
                                 setTimeout(() => window.location.reload(), 1000);
                             } else {
@@ -433,7 +433,7 @@
                     type: 'POST',
                     data: $(this).serialize(),
                     success: function(response) {
-                        if (response.status) {
+                        if (response.success) {
                             toastr.success(response.message);
                             setTimeout(() => window.location.reload(), 1000);
                         } else {
@@ -441,7 +441,7 @@
                         }
                     },
                     error: function(xhr) {
-                        if (xhr.status === 422) {
+                        if (xhr.success === 422) {
                             let errors = xhr.responseJSON.errors;
                             Object.keys(errors).forEach(key => {
                                 toastr.error(errors[key][0]);
@@ -492,7 +492,7 @@
                     type: 'PUT',
                     data: $(this).serialize(),
                     success: function(response) {
-                        if (response.status) {
+                        if (response.success) {
                             toastr.success(response.message);
                             setTimeout(() => window.location.reload(), 1000);
                         } else {
@@ -500,7 +500,7 @@
                         }
                     },
                     error: function(xhr) {
-                        if (xhr.status === 422) {
+                        if (xhr.success === 422) {
                             let errors = xhr.responseJSON.errors;
                             Object.keys(errors).forEach(key => {
                                 toastr.error(errors[key][0]);

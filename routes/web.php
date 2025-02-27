@@ -83,13 +83,13 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);
-        Route::get('/formPermohonanInformasi', [PermohonanInformasiController::class, 'formPermohonanInformasi']);
-        Route::post('/storePermohonanInformasi', [PermohonanInformasiController::class, 'storePermohonanInformasi']);
+        Route::get('/create', [PermohonanInformasiController::class, 'create']);
+        Route::post('/store', [PermohonanInformasiController::class, 'store']);
     });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PermohonanInformasi', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);
-        Route::get('/formPermohonanInformasi', [PermohonanInformasiController::class, 'formPermohonanInformasi']);
-        Route::post('/storePermohonanInformasi', [PermohonanInformasiController::class, 'storePermohonanInformasi']);
+        Route::get('/create', [PermohonanInformasiController::class, 'create']);
+        Route::post('/store', [PermohonanInformasiController::class, 'store']);
     });
 });

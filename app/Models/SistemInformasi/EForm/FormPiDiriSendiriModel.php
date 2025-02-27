@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
 class FormPiDiriSendiriModel extends BaseModel
 {
@@ -29,6 +28,11 @@ class FormPiDiriSendiriModel extends BaseModel
     {
         parent::__construct($attributes);
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
+    }
+
+    public static function selectData()
+    {
+      //
     }
 
     public static function createData($request)
@@ -60,12 +64,21 @@ class FormPiDiriSendiriModel extends BaseModel
                 'id' => $saveData->form_pi_diri_sendiri_id,
                 'message' => "{$saveData->pi_nama_pengguna} Mengajukan Permohonan Informasi",
             ];
-            return ($result);
+            return $result;
         } catch (\Exception $e) {
-            // Jika terjadi kesalahan, hapus file yang sudah diupload
             self::removeFile($fileName);
             throw $e;
         }
+    }
+
+    public static function updateData()
+    {
+        //
+    }
+
+    public static function deleteData()
+    {
+        //
     }
 
     public static function validasiData($request)
@@ -90,23 +103,6 @@ class FormPiDiriSendiriModel extends BaseModel
 
             if ($validator->fails()) {
                 throw new ValidationException($validator);
-            }
-        }
-    }
-
-    private static function uploadFile($file, $prefix)
-    {
-        $fileName = $prefix . '/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('public', $fileName);
-        return $fileName;
-    }
-
-    private static function removeFile($fileName)
-    {
-        if ($fileName) {
-            $filePath = storage_path('app/public/' . $fileName);
-            if (file_exists($filePath)) {
-                unlink($filePath);
             }
         }
     }
