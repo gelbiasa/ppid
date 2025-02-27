@@ -1,10 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Auth\AuthMenuController;
+use App\Http\Controllers\Api\Auth\BeritaPengumumanController;
 use App\Http\Controllers\Api\Public\PublicMenuController;
 
 /*
@@ -27,7 +26,8 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('user', [AuthController::class, 'getUser']);
-        Route::get('menus', [AuthMenuController::class, 'getMenus']);
+        Route::get('menus', [AuthMenuController::class, 'getAuthMenus']);
+        Route::get('berita-pengumuman', [BeritaPengumumanController::class, 'getBeritaPengumuman']);
     });
 });
 
@@ -36,5 +36,5 @@ Route::prefix('auth')->group(function () {
 
 // route publik
 Route::group(['prefix' => 'public'], function () {
-    Route::get('/menus', [PublicMenuController::class, 'getPublicMenus']);
+    Route::get('menus', [PublicMenuController::class, 'getPublicMenus']);
 });

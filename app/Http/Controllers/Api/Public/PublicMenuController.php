@@ -1,39 +1,25 @@
 <?php
 
+namespace App\Http\Controllers\Api\Public;
 
-use Illuminate\Http\JsonResponse;
 use App\Models\Website\WebMenuModel;
-use Illuminate\Support\Facades\Cache;
-use App\Http\Controllers\Api\public\ApiController;
+use App\Http\Controllers\Api\BaseApiController;
 
-class PublicMenuController extends ApiController
+class PublicMenuController extends BaseApiController
 {
-    public function __construct()
-    {
-        parent :: __construct();
-    }
+  
     /**
      * Mendapatkan daftar menu publik dalam format hierarki.
      */
-    public function getPublicMenus(): JsonResponse
+    public function getPublicMenus()
     {
-        try {
-            $menus = WebMenuModel::selectData();
-            // Ubah menjadi struktur hierarki
-            $menuTree = $this->buildMenuTree($menus);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data menu berhasil diambil.',
-                'data' => $menuTree
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Gagal mengambil data menu. Silakan coba lagi.',
-                'error' => $e->getMessage() // Tambahkan untuk debugging jika diperlukan
-            ], 500);
-        }
+        return $this->execute(
+            function() {
+                $menus = WebMenuModel::selectData();
+                return $this->buildMenuTree($menus);
+            },
+            'menu' // hanya penanda data yang akan diambil
+        );
     }
 
     /**
