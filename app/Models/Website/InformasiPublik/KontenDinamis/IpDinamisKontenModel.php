@@ -11,7 +11,7 @@ class IpDinamisKontenModel extends  BaseModel
     use HasFactory, SoftDeletes;
 
     protected $table = 'm_ip_dinamis_konten';
-    protected $primaryKey = 'm_ip_konten_dinamis_id';
+    protected $primaryKey = 'ip_dinamis_konten_id';
     protected $fillable = [
         'kd_nama_konten_dinamis'
     ];

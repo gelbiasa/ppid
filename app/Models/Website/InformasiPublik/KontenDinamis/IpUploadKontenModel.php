@@ -11,7 +11,7 @@ class IpUploadKontenModel extends BaseModel
     use HasFactory, SoftDeletes;
 
     protected $table = 't_ip_upload_konten';
-    protected $primaryKey = 'upload_konten_id';
+    protected $primaryKey = 'ip_upload_konten_id';
     protected $fillable = [
         'fk_m_ip_dinamis_konten',
         'uk_judul_konten',
@@ -19,9 +19,9 @@ class IpUploadKontenModel extends BaseModel
         'uk_dokumen_konten'
     ];
 
-    public function dinamis_konten()
+    public function DinamisKonten()
     {
-        return $this->belongsTo(IpDinamisKontenModel::class, 'fk_m_ip_dinamis_konten', 'm_ip_konten_dinamis_id');
+        return $this->belongsTo(IpDinamisKontenModel::class, 'fk_m_ip_dinamis_konten', 'ip_dinamis_konten_id');
     }
 
 
