@@ -7,10 +7,6 @@ use App\Http\Controllers\Api\BaseApiController;
 
 class PublicMenuController extends BaseApiController
 {
-  
-    /**
-     * Mendapatkan daftar menu publik dalam format hierarki.
-     */
     public function getPublicMenus()
     {
         return $this->execute(
@@ -21,10 +17,7 @@ class PublicMenuController extends BaseApiController
             'menu' // hanya penanda data yang akan diambil
         );
     }
-
-    /**
-     * Mengubah daftar menu menjadi struktur hierarki (tree).
-     */
+    //Mengubah daftar menu menjadi struktur hierarki (tree).
     private function buildMenuTree(array $menus, $parentId = null): array
     {
         $tree = [];
@@ -39,7 +32,6 @@ class PublicMenuController extends BaseApiController
                 $tree[] = $menu;
             }
         }
-
         return $tree;
     }
 }

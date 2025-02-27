@@ -56,9 +56,9 @@ class WebMenuModel extends BaseModel
         $arr_data =  self::query()
             ->select([
                 'web_menu_id',
-                'wm_menu_nama',
-                'wm_menu_url',
                 'wm_parent_id',
+                'wm_menu_url',
+                'wm_menu_nama',
                 'wm_urutan_menu'
             ])
             ->where('wm_status_menu', 'aktif')
@@ -68,9 +68,35 @@ class WebMenuModel extends BaseModel
             ->map(function ($menu) {
                 return [
                     'id' => $menu->web_menu_id,
-                    'wm_menu_nama' => $menu->wm_menu_nama,
-                    'wm_menu_url' => $menu->wm_menu_url,
                     'wm_parent_id' => $menu->wm_parent_id,
+                    'wm_menu_url' => $menu->wm_menu_url,
+                    'wm_menu_nama' => $menu->wm_menu_nama,
+                    'wm_urutan_menu' => $menu->wm_urutan_menu
+                ];
+            })->toArray();
+        return $arr_data;
+    }
+    public static function selectBeritaPengumuman()
+    {
+        $arr_data = self::query()
+            ->select([
+                'web_menu_id',
+                'wm_parent_id',
+                'wm_menu_url',
+                'wm_menu_nama',
+                'wm_urutan_menu'
+            ])
+            ->where('wm_status_menu', 'aktif')
+            ->where('isDeleted', 0)
+            ->whereIn('wm_menu_nama', ['Berita', 'Pengumuman'])
+            ->orderBy('wm_urutan_menu')
+            ->get()
+            ->map(function ($menu) {
+                return [
+                    'id' => $menu->web_menu_id,
+                    'wm_parent_id' => $menu->wm_parent_id,
+                    'wm_menu_url' => $menu->wm_menu_url,
+                    'wm_menu_nama' => $menu->wm_menu_nama,
                     'wm_urutan_menu' => $menu->wm_urutan_menu
                 ];
             })->toArray();

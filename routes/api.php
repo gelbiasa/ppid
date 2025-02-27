@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\ApiAuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Auth\AuthMenuController;
 use App\Http\Controllers\Api\Auth\BeritaPengumumanController;
 use App\Http\Controllers\Api\Public\PublicMenuController;
+use Spatie\FlareClient\Api;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,20 +20,17 @@ use App\Http\Controllers\Api\Public\PublicMenuController;
 
 Route::prefix('auth')->group(function () {
     // Public routes (tidak perlu autentikasi)
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [ApiAuthController::class, 'login']);
+    Route::post('register', [ApiAuthController::class, 'register']);
     
     // Protected routes (perlu autentikasi)
     Route::middleware('auth:api')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('user', [AuthController::class, 'getUser']);
+        Route::post('logout', [ApiAuthController::class, 'logout']);
+        Route::get('user', [ApiAuthController::class, 'getUser']);
         Route::get('menus', [AuthMenuController::class, 'getAuthMenus']);
         Route::get('berita-pengumuman', [BeritaPengumumanController::class, 'getBeritaPengumuman']);
     });
 });
-
-
-
 
 // route publik
 Route::group(['prefix' => 'public'], function () {

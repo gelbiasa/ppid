@@ -81,18 +81,6 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ url('/adminweb/menu-utama') }}" class="nav-link {{ $activeMenu == 'menuUtama' ? 'active' : '' }}">
-                                <i class="fas fa-plus-square nav-icon"></i>
-                                <p>Tambah Menu Utama</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url('/adminweb/submenu') }}" class="nav-link {{ $activeMenu == 'submenu' ? 'active' : '' }}">
-                                <i class="fas fa-folder-open nav-icon"></i>
-                                <p>Tambah Submenu</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="{{ url('/adminweb/menu-management') }}" class="nav-link {{ $activeMenu == 'menumanagement' ? 'active' : '' }}">
                                 <i class="fas fa-tasks nav-icon"></i>
                                 <p>Menu Management</p>
