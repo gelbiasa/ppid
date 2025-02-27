@@ -6,32 +6,32 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PengaduanMasyarakatModel extends BaseModel
+class WBSModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 't_pengaduan_masyarakat';
-    protected $primaryKey = 'pengaduan_masyarakat_id';
+    protected $table = 't_wbs';
+    protected $primaryKey = 'wbs_id';
     protected $fillable = [
-        'pm_kategori_aduan',
-        'pm_bukti_aduan',
-        'pm_nama_tanpa_gelar',
-        'pm_nik_pengguna',
-        'pm_upload_nik_pengguna',
-        'pm_email_pengguna',
-        'pm_no_hp_pengguna',
-        'pm_jenis_laporan',
-        'pm_yang_dilaporkan',
-        'pm_jabatan',
-        'pm_waktu_kejadian',
-        'pm_lokasi_kejadian',
-        'pm_kronologis_kejadian',
-        'pm_bukti_pendukung',
-        'pm_catatan_tambahan',
-        'pm_status',
-        'pm_jawaban',
-        'pm_alasan_penolakan',
-        'pm_sudah_dibaca'
+        'wbs_kategori_aduan',
+        'wbs_bukti_aduan',
+        'wbs_nama_tanpa_gelar',
+        'wbs_nik_pengguna',
+        'wbs_upload_nik_pengguna',
+        'wbs_email_pengguna',
+        'wbs_no_hp_pengguna',
+        'wbs_jenis_laporan',
+        'wbs_yang_dilaporkan',
+        'wbs_jabatan',
+        'wbs_waktu_kejadian',
+        'wbs_lokasi_kejadian',
+        'wbs_kronologis_kejadian',
+        'wbs_bukti_pendukung',
+        'wbs_catatan_tambahan',
+        'wbs_status',
+        'wbs_jawaban',
+        'wbs_alasan_penolakan',
+        'wbs_sudah_dibaca'
         
     ];
 

@@ -6,32 +6,27 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PengaduanMasyarakatModel extends BaseModel
+class PermohonanPerawatanModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 't_pengaduan_masyarakat';
-    protected $primaryKey = 'pengaduan_masyarakat_id';
+    protected $table = 't_permohonan_perawatan';
+    protected $primaryKey = 'permohonan_perawatan_id';
     protected $fillable = [
-        'pm_kategori_aduan',
-        'pm_bukti_aduan',
-        'pm_nama_tanpa_gelar',
-        'pm_nik_pengguna',
-        'pm_upload_nik_pengguna',
-        'pm_email_pengguna',
-        'pm_no_hp_pengguna',
-        'pm_jenis_laporan',
-        'pm_yang_dilaporkan',
-        'pm_jabatan',
-        'pm_waktu_kejadian',
-        'pm_lokasi_kejadian',
-        'pm_kronologis_kejadian',
-        'pm_bukti_pendukung',
-        'pm_catatan_tambahan',
-        'pm_status',
-        'pm_jawaban',
-        'pm_alasan_penolakan',
-        'pm_sudah_dibaca'
+        'pp_kategori_aduan',
+        'pp_bukti_aduan',
+        'pp_nama_pengguna',
+        'pp_no_hp_pengguna',
+        'pp_email_pengguna',
+        'pp_unit_kerja',
+        'pp_perawatan_yang_diusulkan',
+        'pp_keluhan_kerusakan',
+        'pp_lokasi_perawatan',
+        'pp_foto_kondisi',
+        'pp_status',
+        'pp_jawaban',
+        'pp_alasan_penolakan',
+        'pp_sudah_dibaca'
         
     ];
 
