@@ -22,7 +22,6 @@ class LangkahTimelineModel extends BaseModel
         return $this->belongsTo(TimelineModel::class, 'fk_m_timeline', 'timeline_id');
     }
 
-
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
