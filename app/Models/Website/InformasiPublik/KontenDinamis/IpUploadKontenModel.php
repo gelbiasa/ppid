@@ -19,7 +19,7 @@ class IpUploadKontenModel extends BaseModel
         'uk_dokumen_konten'
     ];
 
-    public function DinamisKonten()
+    public function IpDinamisKonten()
     {
         return $this->belongsTo(IpDinamisKontenModel::class, 'fk_m_ip_dinamis_konten', 'ip_dinamis_konten_id');
     }
