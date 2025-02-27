@@ -11,7 +11,7 @@ class MenuPintasanModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 't_menu_pintasan_lainya';
+    protected $table = 't_menu_pintasan_lainnya';
     protected $primaryKey = 'menu_pintasan_id';
     protected $fillable = [
         'mpl_judul',
