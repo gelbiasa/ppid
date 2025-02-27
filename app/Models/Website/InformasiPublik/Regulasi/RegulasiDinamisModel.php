@@ -17,7 +17,7 @@ class RegulasiDinamisModel extends BaseModel
         'fk_web_menu',
         'rd_judul_reg_dinamis'
     ];
-    public function Menu()
+    public function WebMenu()
     {
         return $this->belongsTo(WebMenuModel::class, 'fk_web_menu',  'web_menu_id');
     }
