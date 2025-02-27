@@ -1,28 +1,26 @@
 <?php
 
-namespace App\Models\Website\Publikasi\Pengumuman;
+namespace App\Models\Website\LayananInformasi;
 
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PengumumanModel extends BaseModel
+class LIDUploadModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 't_pengumuman';
-    protected $primaryKey = 'pengumuman_id';
+    protected $table = 't_lid_upload';
+    protected $primaryKey = 'lid_upload_id';
     protected $fillable = [
-        'fk_m_pengumuman_dinamis',
-        'peg_judul',
-        'peg_slug',
-        'peg_deskripsi',
-        'status_pengumuman',
+        'fk_m_li_dinamis',
+        'lid_upload_type',
+        'lid_upload_value'
     ];
 
-    public function PengumumanDinamis()
+    public function LiDinamis()
     {
-        return $this->belongsTo(PengumumanDinamisModel::class, 'fk_m_pengumuman_dinamis', 'pengumuman_dinamis_id');
+        return $this->belongsTo(LIDinamisModel::class, 'fk_m_li_dinamis', 'li_dinamis_id');
     }
 
     public function __construct(array $attributes = [])

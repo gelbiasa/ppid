@@ -1,29 +1,21 @@
 <?php
 
-namespace App\Models\Website\Publikasi\Pengumuman;
+namespace App\Models\Website\LayananInformasi;
 
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PengumumanModel extends BaseModel
+class LIDinamisModel extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 't_pengumuman';
-    protected $primaryKey = 'pengumuman_id';
+    protected $table = 'm_li_dinamis';
+    protected $primaryKey = 'li_dinamis_id';
     protected $fillable = [
-        'fk_m_pengumuman_dinamis',
-        'peg_judul',
-        'peg_slug',
-        'peg_deskripsi',
-        'status_pengumuman',
+        'li_dinamsi_kode',
+        'li_dinamis_nama',
     ];
-
-    public function PengumumanDinamis()
-    {
-        return $this->belongsTo(PengumumanDinamisModel::class, 'fk_m_pengumuman_dinamis', 'pengumuman_dinamis_id');
-    }
 
     public function __construct(array $attributes = [])
     {
