@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\AdminWeb\Footer;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\TraitsController;
 use App\Models\Website\Footer\KategoriFooterModel;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
 class KategoriFooterController extends Controller
 {
+    use TraitsController;
     // Halaman index kategori footer
     public function index()
     {

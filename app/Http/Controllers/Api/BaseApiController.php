@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\TraitsController;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class BaseApiController extends Controller
 {
+    use TraitsController;
     // Konstanta untuk berbagai jenis aksi API
     protected const ACTION_GET = 'get';
     protected const ACTION_CREATE = 'create';

@@ -3,11 +3,13 @@
 namespace App\Models\Website\Footer;
 
 use App\Models\BaseModel;
+use App\Models\TraitsModel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class FooterModel extends Model
 {
