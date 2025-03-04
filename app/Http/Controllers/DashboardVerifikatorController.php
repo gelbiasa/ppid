@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class DashboardVerifikatorController extends Controller
 {
+    use TraitsController;
+    
     public function index() {
         $breadcrumb = (object) [
             'title' => 'Selamat Datang Pengguna',

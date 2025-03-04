@@ -2,13 +2,12 @@
 
 namespace App\Models\SistemInformasi\DinamisEForm;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class PertanyaanDinamisModel extends BaseModel
+class PertanyaanDinamisModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_pertanyaan_dinamis';
     protected $primaryKey = 'pertanyaan_dinamis_id';
@@ -20,7 +19,7 @@ class PertanyaanDinamisModel extends BaseModel
 
     public function FormDinamis()
     {
-        return $this->belongsTo(FormDinamsimModel::class, 'fk_t_form_dinamis', 'form_dinamis_id');
+        return $this->belongsTo(FormDinamisModel::class, 'fk_t_form_dinamis', 'form_dinamis_id');
     }
 
     public function __construct(array $attributes = [])

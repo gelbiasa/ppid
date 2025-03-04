@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\SistemInformasi\EForm;
 
-use App\Http\Controllers\BaseController;
+use App\Http\Controllers\TraitsController;
 use App\Models\SistemInformasi\EForm\PermohonanInformasiModel;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class PermohonanInformasiController extends BaseController
+class PermohonanInformasiController extends Controller
 {
+    use TraitsController;
+    
     public $breadcrumb = 'Permohonan Informasi';
     public $pagename = 'SistemInformasi/EForm/PermohonanInformasi';
 

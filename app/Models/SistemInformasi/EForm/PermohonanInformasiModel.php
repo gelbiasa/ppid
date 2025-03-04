@@ -2,20 +2,19 @@
 
 namespace App\Models\SistemInformasi\EForm;
 
-use App\Models\BaseModel;
 use App\Models\Log\NotifAdminModel;
 use App\Models\Log\NotifVerifikatorModel;
 use App\Models\Log\TransactionModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-class PermohonanInformasiModel extends BaseModel
+class PermohonanInformasiModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_permohonan_informasi';
     protected $primaryKey = 'permohonan_informasi_id';

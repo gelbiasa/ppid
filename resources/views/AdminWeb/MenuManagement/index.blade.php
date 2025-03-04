@@ -6,9 +6,12 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
+                @if(Auth::user()->level->level_kode === 'SAR' || 
+                    App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'create'))
                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addMenuModal">
                     <i class="fas fa-plus"></i> Tambah Menu
                 </button>
+                @endif
             </div>
         </div>
         <div class="card-body">
@@ -33,6 +36,8 @@
     </div>
 
     <!-- Add Menu Modal -->
+    @if(Auth::user()->level->level_kode === 'SAR' || 
+    App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'create'))
     <div class="modal fade" id="addMenuModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -77,6 +82,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Edit Menu Modal -->
     <div class="modal fade" id="editMenuModal" tabindex="-1" role="dialog">
@@ -211,6 +217,15 @@
     <link rel="stylesheet" href="{{ asset('vendor/nestable2/jquery.nestable.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/toastr/toastr.min.css') }}">
     <style>
+        .dd-item-buttons {
+        position: absolute;
+        right: 10px;
+        top: 7px;
+        z-index: 10;
+        }
+        .dd-handle {
+            padding-right: 120px !important; /* Provide space for buttons */
+        }
         .is-invalid {
             border-color: #dc3545 !important;
         }
@@ -323,6 +338,8 @@
             });
 
             // Edit Menu
+            @if(Auth::user()->level->level_kode === 'SAR' || 
+               App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'update'))
             $(document).on('click', '.edit-menu', function() {
                 let menuId = $(this).data('id');
                 $('#edit_menu_id').val(menuId);
@@ -353,8 +370,16 @@
                     }
                 });
             });
+            @else
+            $(document).on('click', '.edit-menu', function() {
+                toastr.error('Anda tidak memiliki izin untuk mengubah menu');
+                return false;
+            });
+            @endif
 
             // Hapus Menu
+            @if(Auth::user()->level->level_kode === 'SAR' || 
+               App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'delete'))
             $(document).on('click', '.delete-menu', function() {
                 let menuId = $(this).data('id');
                 let menuName = $(this).data('name');
@@ -396,6 +421,13 @@
                     });
                 }
             });
+            @else
+            $(document).on('click', '.delete-menu', function() {
+                toastr.error('Anda tidak memiliki izin untuk menghapus menu');
+                return false;
+            });
+            @endif
+
 
             // Validasi Form Add Menu
             $('#addMenuForm').on('submit', function(e) {

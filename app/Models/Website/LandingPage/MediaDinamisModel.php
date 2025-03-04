@@ -2,14 +2,12 @@
 
 namespace App\Models\Website\LandingPage;
 
-use App\Models\BaseModel;
+use App\Models\TraitsModel;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class MediaDinamisModel extends BaseModel
+class MediaDinamisModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_media_dinamis';
     protected $primaryKey = 'media_dinamis_id';

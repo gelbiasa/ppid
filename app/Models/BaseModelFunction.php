@@ -2,16 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model as EloquentModel;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-abstract class BaseModel extends EloquentModel
+trait BaseModelFunction
 {
-    use HasFactory, SoftDeletes;
-
     protected $commonFields = [
         'isDeleted',
         'created_at',
@@ -22,14 +17,20 @@ abstract class BaseModel extends EloquentModel
         'deleted_by'
     ];
 
-    protected static function boot()
+    /**
+     * Boot trait untuk mengatur event listeners
+     */
+    public static function bootBaseModelFunction()
     {
-        parent::boot();
-
         // Event ketika model dibuat, isi created_by otomatis
         static::creating(function ($model) {
-            if (!isset($model->created_by) && session()->has('alias')) {
-                $model->created_by = session('alias');
+            if (!isset($model->created_by)) {
+                if (session()->has('alias')) {
+                    $model->created_by = session('alias');
+                } else {
+                    // Tambahkan default value untuk kasus registrasi
+                    $model->created_by = 'System';
+                }
             }
         });
 

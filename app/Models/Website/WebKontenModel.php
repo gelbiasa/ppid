@@ -2,18 +2,12 @@
 
 namespace App\Models\Website;
 
-use App\Models\BaseModel;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Log\TransactionModel;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class WebKontenModel extends BaseModel
+class WebKontenModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'web_konten';
     protected $primaryKey = 'web_konten_id';

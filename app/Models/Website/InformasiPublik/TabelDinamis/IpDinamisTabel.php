@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\InformasiPublik\TabelDinamis;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class IpDinamisTabel extends BaseModel
+class IpDinamisTabel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'm_ip_dinamis_tabel';
     protected $primaryKey = 'ip_dinamis_tabel_id';

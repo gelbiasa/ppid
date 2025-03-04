@@ -6,16 +6,20 @@ use Illuminate\Http\Request;
 use illuminate\Support\Facades\Auth;
 use App\Models\UserModel;
 use App\Models\LevelModel;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    use TraitsController;
+
     public function login()
     {
-        if (Auth::check()) { // jika sudah login, maka redirect ke halaman home 
-            return redirect('/dashboardAdmin');
+        if (Auth::check()) {
+            // Redirect sesuai level pengguna yang login
+            $levelCode = Auth::user()->level->level_kode;
+            return redirect('/dashboard' . $levelCode);
         }
         return view('auth.login');
     }
@@ -23,46 +27,8 @@ class AuthController extends Controller
     public function postlogin(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $user = UserModel::where('nik_pengguna', $request->username)
-                ->orWhere('email_pengguna', $request->username)
-                ->orWhere('no_hp_pengguna', $request->username)
-                ->first();
-
-            if ($user && Hash::check($request->password, $user->password)) {
-                Auth::login($user);
-
-                // Simpan data ke sesi
-                session([
-                    'user_id' => $user->user_id,
-                    'nama_pengguna' => $user->nama_pengguna,
-                    'alamat_pengguna' => $user->alamat_pengguna,
-                    'no_hp_pengguna' => $user->no_hp_pengguna,
-                    'email_pengguna' => $user->email_pengguna,
-                    'pekerjaan_pengguna' => $user->pekerjaan_pengguna,
-                    'nik_pengguna' => $user->nik_pengguna,
-                    'upload_nik_pengguna' => $user->upload_nik_pengguna,
-                    'alias' => self::generateAlias($user->nama_pengguna), // Alias dari nama pengguna
-                ]);
-
-                $redirectUrl = match ($user->level->level_kode) {
-                    'ADM' => url('/dashboardAdmin'),
-                    'RPN' => url('/dashboardResponden'),
-                    'MPU' => url('/dashboardMPU'),
-                    'VFR' => url('/dashboardVFR'),
-                    default => url('/login')
-                };
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Login Berhasil',
-                    'redirect' => $redirectUrl,
-                ]);
-            }
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Login Gagal, Periksa Kredensial Anda',
-            ]);
+            $result = UserModel::prosesLogin($request);
+            return response()->json($result);
         }
 
         return redirect('auth.auth');
@@ -83,24 +49,6 @@ class AuthController extends Controller
         ]);
     }
 
-    private static function generateAlias($nama)
-    {
-        $words = explode(' ', $nama); // Pisahkan nama berdasarkan spasi
-        $alias = '';
-
-        foreach ($words as $word) {
-            if (strlen($alias . ' ' . $word) > 15) {
-                // Jika menambahkan kata akan melebihi 15 karakter, singkat dengan inisial
-                $alias .= ' ' . strtoupper(substr($word, 0, 1)) . '.';
-                break; 
-            } else {
-                $alias .= ($alias == '' ? '' : ' ') . $word;
-            }
-        }
-
-        return trim($alias);
-    }
-
     public function logout(Request $request)
     {
         Auth::logout();
@@ -119,61 +67,35 @@ class AuthController extends Controller
     public function postRegister(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'username' => 'required|min:4|max:20|unique:m_user,username',
-                'nama' => 'required|min:2|max:50',
-                'password' => 'required|min:5|max:20|confirmed',
-                'password_confirmation' => 'required',
-                'level_id' => 'required|exists:m_level,level_id',
-                'no_hp' => 'required|digits_between:4,15',
-                'email' => 'required|email|unique:m_user,email'
-            ], [
-                'username.unique' => 'Username sudah digunakan, silakan pilih username lain.',
-                'username.min' => 'Username minimal harus 4 karakter.',
-                'username.max' => 'Username maksimal 20 karakter.',
-                'nama.min' => 'Nama minimal harus 2 karakter.',
-                'nama.max' => 'Nama maksimal 50 karakter.',
-                'password.min' => 'Password minimal harus 5 karakter.',
-                'password.max' => 'Password maksimal 20 karakter.',
-                'password.confirmed' => 'Verifikasi password tidak sesuai dengan password baru.',
-                'no_hp.required' => 'Nomor handphone wajib diisi.',
-                'no_hp.digits_between' => 'Nomor handphone harus terdiri dari 4 hingga 15 digit.',
-                'email.required' => 'Email wajib diisi.',
-                'email.email' => 'Format email tidak valid.',
-                'email.unique' => 'Email sudah digunakan, silakan gunakan email lain.'
-            ]);
+            $result = UserModel::prosesRegister($request);
 
-            if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json($result);
+            }
+
+            if ($result['success']) {
+                return redirect('login')->with('success', $result['message']);
+            }
+
+            return back()->withErrors(['error' => $result['message']])->withInput();
+        } catch (ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'status' => false,
-                    'errors' => $validator->errors()
+                    'errors' => $e->errors()
                 ], 422);
             }
 
-            DB::beginTransaction();
-
-            UserModel::create([
-                'username' => $request->username,
-                'nama' => $request->nama,
-                'password' => bcrypt($request->password),
-                'level_id' => $request->level_id,
-                'no_hp' => $request->no_hp,
-                'email' => $request->email
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Register Berhasil',
-                'redirect' => url('login')
-            ]);
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json([
-                'status' => false,
-                'message' => 'Terjadi kesalahan saat memproses registrasi'
-            ], 500);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Terjadi kesalahan saat memproses registrasi: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat memproses registrasi: ' . $e->getMessage()])->withInput();
         }
     }
 }

@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class FooterModel extends BaseModel
+class FooterModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_footer';
     protected $primaryKey = 'footer_id';

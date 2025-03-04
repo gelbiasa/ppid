@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class KategoriFooterModel extends BaseModel
+class KategoriFooterModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'm_kategori_footer';
     protected $primaryKey = 'kategori_footer_id';

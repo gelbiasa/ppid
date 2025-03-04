@@ -2,13 +2,12 @@
 
 namespace App\Models\SistemInformasi\KetentuanPelaporan;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class KetentuanPelaporanModel extends BaseModel
+class KetentuanPelaporanModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'm_ketentuan_pelaporan';
     protected $primaryKey = 'ketentuan_pelaporan_id';

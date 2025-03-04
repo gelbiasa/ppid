@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\AdminWeb\MenuManagement;
 
-
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\TraitsController;
 use App\Models\Website\WebMenuModel;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class MenuManagementController extends Controller
 {
+    use TraitsController;
+
     public $breadcrumb = 'Menu Management';
     public $pagename = 'AdminWeb/MenuManagement';
     public function index()

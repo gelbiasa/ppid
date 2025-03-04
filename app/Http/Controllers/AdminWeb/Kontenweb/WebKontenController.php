@@ -1,15 +1,17 @@
 <?php
 namespace App\Http\Controllers\AdminWeb\Kontenweb;
 
-
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\TraitsController;
 use App\Models\Website\WebKontenModel;
 use App\Models\Website\WebKontenImagesModel;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class WebKontenController extends Controller
 {
+    use TraitsController;
+
     public function store(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {

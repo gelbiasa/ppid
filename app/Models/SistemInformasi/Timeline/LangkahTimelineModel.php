@@ -2,13 +2,12 @@
 
 namespace App\Models\SistemInformasi\Timeline;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class LangkahTimelineModel extends BaseModel
+class LangkahTimelineModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_langkah_timeline';
     protected $primaryKey = 'langkah_timeline_id';

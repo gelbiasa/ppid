@@ -2,14 +2,13 @@
 
 namespace App\Models\Website\InformasiPublik\Regulasi;
 
-use App\Models\BaseModel;
+use App\Models\TraitsModel;
 use App\Models\Website\WebMenuModel;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class RegulasiDinamisModel extends BaseModel
+class RegulasiDinamisModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'm_regulasi_dinamis';
     protected $primaryKey = 'regulasi_dinamis_id';
