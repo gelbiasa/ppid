@@ -4,12 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardMPUController;
+use App\Http\Controllers\DashboardSARController;
 use App\Http\Controllers\DashboardAdminController;
+use App\Http\Controllers\HakAkses\HakAksesController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
+use App\Http\Controllers\AdminWeb\Footer\FooterController;
+use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
-use App\Http\Controllers\DashboardSARController;
-use App\Http\Controllers\HakAkses\HakAksesController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 
 /*
@@ -62,6 +64,24 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}/delete', [MenuManagementController::class, 'delete'])->middleware('permission:delete');;
         Route::get('/{id}/detail_menu', [MenuManagementController::class, 'detail_menu']);
         Route::post('/reorder', [MenuManagementController::class, 'reorder']); // New route for drag-drop reordering
+    });
+    Route::group(['prefix' => 'adminweb/kategori-footer', 'middleware' => 'authorize:ADM'], function () {
+        Route::get('/', [KategoriFooterController::class, 'index']);
+        Route::post('/list', [KategoriFooterController::class, 'list']); 
+        Route::get('/create', [KategoriFooterController::class, 'create']); 
+        Route::post('/store', [KategoriFooterController::class, 'store']); 
+        Route::get('/{id}/edit', [KategoriFooterController::class, 'edit']); 
+        Route::put('/{id}/update', [KategoriFooterController::class, 'update']); 
+        Route::delete('/{id}/delete', [KategoriFooterController::class, 'delete']); 
+    });
+    Route::group(['prefix' => 'adminweb/footer', 'middleware' => 'authorize:ADM'], function () {
+        Route::get('/', [FooterController::class, 'index']);
+        Route::post('/list', [FooterController::class, 'list']); // Untuk DataTables
+        Route::get('/create', [FooterController::class, 'create']); // Modal tambah
+        Route::post('/store', [FooterController::class, 'store']); // Proses simpan
+        Route::get('/{id}/edit', [FooterController::class, 'edit']); // Modal edit
+        Route::put('/{id}/update', [FooterController::class, 'update']); // Proses update
+        Route::delete('/{id}/delete', [FooterController::class, 'delete']); // Proses hapus
     });
 
 
