@@ -2,17 +2,15 @@
 
 namespace App\Models\SistemInformasi\EForm;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
-class FormPiOrangLainModel extends BaseModel
+class FormPiOrangLainModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_form_pi_orang_lain';
     protected $primaryKey = 'form_pi_orang_lain_id';

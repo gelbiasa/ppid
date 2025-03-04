@@ -2,14 +2,12 @@
 
 namespace App\Models\SistemInformasi\EForm;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-
-class FormPkOrangLainModel extends BaseModel
+class FormPkOrangLainModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_form_pk_orang_lain';
     protected $primaryKey = 'form_pk_orang_lain_id';

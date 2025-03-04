@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\Publikasi\Berita;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class BeritaDinamisModel extends BaseModel
+class BeritaDinamisModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'm_berita_dinamis';
     protected $primaryKey = 'berita_dinamis_id';

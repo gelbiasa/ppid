@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\LayananInformasi;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class LIDUploadModel extends BaseModel
+class LIDUploadModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_lid_upload';
     protected $primaryKey = 'lid_upload_id';

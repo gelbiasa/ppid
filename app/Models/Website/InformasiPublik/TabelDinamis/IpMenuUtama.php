@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\InformasiPublik\TabelDinamis;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class IpMenuUtama extends BaseModel
+class IpMenuUtama extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_ip_menu_utama';
     protected $primaryKey = 'ip_menu_utama_id';

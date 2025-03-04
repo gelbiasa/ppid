@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\Footer;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class FooterModel extends BaseModel
+class FooterModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 'm_kategori_footer';
     protected $primaryKey = 'kategori_footer_id';

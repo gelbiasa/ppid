@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class DashboardAdminController extends Controller
 {
+    use TraitsController;
+    
     public function index() {
         $breadcrumb = (object) [
             'title' => 'Selamat Datang Pengguna',
@@ -14,6 +16,6 @@ class DashboardAdminController extends Controller
 
         $activeMenu = 'dashboard';
 
-        return view('dashboardAdmin', ['breadcrumb' => $breadcrumb, 'activeMenu' => $activeMenu]);
+        return view('dashboardADM', ['breadcrumb' => $breadcrumb, 'activeMenu' => $activeMenu]);
     }
 }

@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\InformasiPublik\KontenDinamis;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class IpUploadKontenModel extends BaseModel
+class IpUploadKontenModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_ip_upload_konten';
     protected $primaryKey = 'ip_upload_konten_id';

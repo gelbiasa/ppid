@@ -2,13 +2,12 @@
 
 namespace App\Models\Website\Publikasi\Pengumuman;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class UploadPengumumanModel extends BaseModel
+class UploadPengumumanModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_upload_pengumuman';
     protected $primaryKey = 'upload_pengumuman_id';

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class DashboardRespondenController extends Controller
 {
+    use TraitsController;
+
     public function index() {
         $breadcrumb = (object) [
             'title' => 'Selamat Datang Pengguna',
@@ -14,6 +16,6 @@ class DashboardRespondenController extends Controller
 
         $activeMenu = 'dashboard';
 
-        return view('dashboardResponden', ['breadcrumb' => $breadcrumb, 'activeMenu' => $activeMenu]);
+        return view('dashboardRPN', ['breadcrumb' => $breadcrumb, 'activeMenu' => $activeMenu]);
     }
 }

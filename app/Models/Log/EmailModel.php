@@ -1,26 +1,23 @@
 <?php
 
-namespace App\Models\SistemInformasi\DinamisEForm;
+namespace App\Models\Log;
 
-use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class FormDinamsimModel extends BaseModel
+class EmailModel extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 't_form_dinamis';
-    protected $primaryKey = 'form_dinamis_id';
+    protected $table = 'log_email';
+    protected $primaryKey = 'log_email_id';
     protected $fillable = [
-        'fd_nama',
+        'log_email_status',
+        'log_email_nama_pengirim',
+        'log_email_tujuan',
+        'log_email_tanggal_dikirim'
     ];
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
-    }
 
     public static function selectData()
     {

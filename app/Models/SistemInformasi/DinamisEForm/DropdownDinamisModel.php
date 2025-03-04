@@ -2,13 +2,12 @@
 
 namespace App\Models\SistemInformasi\DinamisEForm;
 
-use App\Models\BaseModel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\TraitsModel;
+use Illuminate\Database\Eloquent\Model;
 
-class DropdownDinamisModel extends BaseModel
+class DropdownDinamisModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use TraitsModel;
 
     protected $table = 't_dropdown_dinamis';
     protected $primaryKey = 'dropdown_dinamis_id';
