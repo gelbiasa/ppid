@@ -26,7 +26,7 @@ class BaseApiController extends Controller
     protected const AUTH_USER_NOT_FOUND = 'User tidak ditemukan';
     protected const AUTH_TOKEN_EXPIRED = 'Token telah kadaluarsa';
     protected const AUTH_TOKEN_INVALID = 'Token tidak valid';
-    protected const AUTH_INVALID_CREDENTIALS = 'Kredensial tidak valid';
+    protected const AUTH_INVALID_CREDENTIALS = 'Login gagal. Pastikan username dan password yang Anda masukkan benar.';
     protected const AUTH_LOGIN_SUCCESS = 'Login berhasil';
     protected const AUTH_REGISTER_SUCCESS = 'Registrasi berhasil';
     protected const AUTH_LOGOUT_SUCCESS = 'Logout berhasil, token telah dihapus';
@@ -73,79 +73,66 @@ class BaseApiController extends Controller
      * @param string $actionType Jenis aksi (get, create, update, delete, dll)
      * @return JsonResponse
      */
-    protected function execute(callable $action, string $resourceName, string $actionType = self::ACTION_GET): JsonResponse
+    // untuk Akses publik tanpa autentikasi
+     protected function eksekusi(callable $aksi, string $namaSumber, string $jenisAksi = self::ACTION_GET): JsonResponse
     {
         try {
-            // Eksekusi aksi yang diberikan
-            $result = $action();
-            // Ambil pesan sukses berdasarkan jenis aksi
-            $message = sprintf($this->messageTemplates[$actionType]['success'], $resourceName);
-            return $this->successResponse($result, $message);
+            $hasil = $aksi();
+            $pesan = sprintf($this->messageTemplates[$jenisAksi]['success'], $namaSumber);
+            return $this->responSukses($hasil, $pesan);
         } catch (\Exception $e) {
-            // Log error untuk debugging
-            $this->logError('Execute error', $e);
+            $this->catatKesalahan('Kesalahan eksekusi', $e);
             
-            // Ambil pesan error berdasarkan jenis aksi
-            $message = sprintf($this->messageTemplates[$actionType]['error'], $resourceName);
-            return $this->errorResponse($message, $e->getMessage(), 500);
+            $pesan = sprintf($this->messageTemplates[$jenisAksi]['error'], $namaSumber);
+            return $this->responKesalahan($pesan, $e->getMessage(), 500);
         }
     }
     
     /**
-     * Mengeksekusi aksi yang membutuhkan autentikasi JWT dan memberikan respons terstandarisasi.
-     * @param callable $action Fungsi yang akan dieksekusi jika autentikasi berhasil
-     * @param string $resourceName Nama resource (contoh: 'menu', 'user')
-     * @param string $actionType Jenis aksi (get, create, update, delete, dll)
-     * @return JsonResponse
+     * untuk route api perlu token (auth:api)  terautentikasi
+     * 
      */
-    protected function executeWithAuth(callable $action, string $resourceName, string $actionType = self::ACTION_GET): JsonResponse
+    protected function eksekusiDenganOtentikasi(callable $aksi, string $namaSumber, string $jenisAksi = self::ACTION_GET): JsonResponse
     {
         try {
-            // Cek keberadaan token
             if (!JWTAuth::getToken()) {
-                return $this->errorResponse(self::AUTH_TOKEN_NOT_FOUND, null, 401);
+                return $this->responKesalahan(self::AUTH_TOKEN_NOT_FOUND, null, 401);
             }
 
-            // Autentikasi user dari token
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return $this->errorResponse(self::AUTH_USER_NOT_FOUND, null, 401);
+            $pengguna = JWTAuth::parseToken()->authenticate();
+            if (!$pengguna) {
+                return $this->responKesalahan(self::AUTH_USER_NOT_FOUND, null, 401);
             }
             
-            // Eksekusi aksi dengan menyertakan user
-            return $this->execute(
-                function() use ($action, $user) {
-                    return $action($user);
+            return $this->eksekusi(
+                function() use ($aksi, $pengguna) {
+                    return $aksi($pengguna);
                 },
-                $resourceName,
-                $actionType
+                $namaSumber,
+                $jenisAksi
             );
             
         } catch (TokenExpiredException $e) {
-            return $this->errorResponse(self::AUTH_TOKEN_EXPIRED, null, 401);
+            return $this->responKesalahan(self::AUTH_TOKEN_EXPIRED, null, 401);
         } catch (TokenInvalidException $e) {
-            return $this->errorResponse(self::AUTH_TOKEN_INVALID, null, 401);
+            return $this->responKesalahan(self::AUTH_TOKEN_INVALID, null, 401);
         } catch (JWTException $e) {
-            $this->logError('JWT error', $e);
-            return $this->errorResponse(self::AUTH_TOKEN_INVALID, $e->getMessage(), 401);
+            $this->catatKesalahan('Kesalahan JWT', $e);
+            return $this->responKesalahan(self::AUTH_TOKEN_INVALID, $e->getMessage(), 401);
         } catch (\Exception $e) {
-            $this->logError('Auth action error', $e);
-            $message = sprintf($this->messageTemplates[$actionType]['error'], $resourceName);
-            return $this->errorResponse($message, $e->getMessage(), 500);
+            $this->catatKesalahan('Kesalahan aksi otentikasi', $e);
+            $pesan = sprintf($this->messageTemplates[$jenisAksi]['error'], $namaSumber);
+            return $this->responKesalahan($pesan, $e->getMessage(), 500);
         }
     }
     
     /**
-     * Mengeksekusi aksi validasi form dan memberikan respons terstandarisasi.
-     * @param callable $validatorAction Fungsi yang akan menghasilkan validator
-     * @param callable $successAction Fungsi yang akan dieksekusi jika validasi berhasil
-     * @param string $actionType Jenis aksi (login, register, dll)
-     * @return JsonResponse
+     * untuk route api memerlukan validasi atau memvalidasi input (login & register)
      */
-    protected function executeWithValidation(callable $validatorAction, callable $successAction, string $actionType): JsonResponse
+    protected function eksekusiDenganValidasi(callable $aksiValidator, callable $aksiSukses, string $jenisAksi): JsonResponse
     {
         try {
-            $validator = $validatorAction();
+            $validator = $aksiValidator();
             
             if ($validator->fails()) {
                 return response()->json([
@@ -155,86 +142,56 @@ class BaseApiController extends Controller
                 ], 422);
             }
             
-            $result = $successAction();
-            $message = $this->messageTemplates[$actionType]['success'];
+            $hasil = $aksiSukses();
+            $pesan = $this->messageTemplates[$jenisAksi]['success'];
             
-            return $this->successResponse($result, $message);
+            return $this->responSukses($hasil, $pesan);
         } catch (\Exception $e) {
-            $this->logError('Validation action error', $e);
-            return $this->errorResponse(self::SERVER_ERROR, $e->getMessage(), 500);
+            $this->catatKesalahan('Kesalahan validasi aksi', $e);
+            return $this->responKesalahan(self::SERVER_ERROR, $e->getMessage(), 500);
         }
     }
     
     /**
-     * Mengembalikan respons sukses dalam format JSON.
-     *
-     * @param mixed $data Data yang akan dikirim dalam respons
-     * @param string $message Pesan sukses (default: 'Operasi berhasil')
-     * @param int $statusCode HTTP status code (default: 200)
-     * @return JsonResponse
+     * Kembalikan respons sukses dalam format JSON.
      */
-    protected function successResponse($data, string $message = 'Operasi berhasil', int $statusCode = 200): JsonResponse
+    protected function responSukses($data, string $pesan = 'Operasi berhasil', int $kodeStatus = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'message' => $message,
+            'message' => $pesan,
             'data' => $data
-        ], $statusCode);
+        ], $kodeStatus);
     }
     
     /**
-     * Mengembalikan respons error dalam format JSON.
-     * @param string $message Pesan error (default: 'Terjadi kesalahan')
-     * @param mixed $error Detail kesalahan (opsional)
-     * @param int $statusCode HTTP status code (default: 500)
-     * @return JsonResponse
+     * Kembalikan respons kesalahan dalam format JSON.
      */
-    protected function errorResponse(string $message = 'Terjadi kesalahan', $error = null, int $statusCode = 500): JsonResponse
+    protected function responKesalahan(string $pesan = 'Terjadi kesalahan', $kesalahan = null, int $kodeStatus = 500): JsonResponse
     {
-        $response = [
+        $respons = [
             'success' => false,
-            'message' => $message
+            'message' => $pesan
         ];
         
-        if ($error !== null && config('app.debug')) {
-            $response['error'] = $error;
+        if ($kesalahan !== null && config('app.debug')) {
+            $respons['error'] = $kesalahan;
         }
         
-        return response()->json($response, $statusCode);
+        return response()->json($respons, $kodeStatus);
     }
     
     /**
-     * Mencatat error ke log sistem.
-     * @param string $context Konteks error
-     * @param \Exception $exception Objek exception
-     * @return void
+     * Catat kesalahan ke log sistem.
      */
-    protected function logError(string $context, \Exception $exception): void
+    protected function catatKesalahan(string $konteks, \Exception $pengecualian): void
     {
         if (class_exists('Log')) {
-            Log::error($context, [
-                'error' => $exception->getMessage(),
-                'trace' => $exception->getTraceAsString()
+            Log::error($konteks, [
+                'error' => $pengecualian->getMessage(),
+                'trace' => $pengecualian->getTraceAsString()
             ]);
         }
     }
     
-    /**
-     * Generate alias dari nama pengguna
-     */
-    protected function generateAlias(string $name): string
-    {
-        $words = explode(' ', $name);
-        $alias = '';
-
-        foreach ($words as $word) {
-            if (strlen($alias . ' ' . $word) > 15) {
-                $alias .= ' ' . strtoupper(substr($word, 0, 1)) . '.';
-                break;
-            }
-            $alias .= ($alias === '' ? '' : ' ') . $word;
-        }
-
-        return trim($alias);
-    }
 }

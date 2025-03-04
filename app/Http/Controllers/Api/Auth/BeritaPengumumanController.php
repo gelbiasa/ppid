@@ -9,7 +9,7 @@ class BeritaPengumumanController extends BaseApiController
 {
     public function getBeritaPengumuman()
     {
-        return $this->executeWithAuth(
+        return $this->eksekusiDenganOtentikasi(
             function() {
                 $beritaPengumuman = WebMenuModel::selectBeritaPengumuman();
                 return  $beritaPengumuman ;

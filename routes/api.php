@@ -21,7 +21,7 @@ use Spatie\FlareClient\Api;
 Route::prefix('auth')->group(function () {
     // Public routes (tidak perlu autentikasi)
     Route::post('login', [ApiAuthController::class, 'login']);
-    Route::post('register', [ApiAuthController::class, 'register']);
+    // Route::post('register', [ApiAuthController::class, 'register']);
     
     // Protected routes (perlu autentikasi)
     Route::middleware('auth:api')->group(function () {

@@ -9,7 +9,7 @@ class PublicMenuController extends BaseApiController
 {
     public function getPublicMenus()
     {
-        return $this->execute(
+        return $this->eksekusi(
             function() {
                 $menus = WebMenuModel::selectData();
                 return $this->buildMenuTree($menus);

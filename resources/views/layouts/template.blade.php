@@ -7,7 +7,8 @@
   <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
 
   <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- Untuk mengirimkan token laravel CSRF pada setiap request ajax -->
-
+   <!--tambahan-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
@@ -90,6 +91,21 @@
 <script> 
     //Untuk Mengirimkan token laravel CSRF pada setiap request ajax
     $.ajaxSetup({headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+    // Konfigurasi toastr global
+    toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "preventDuplicates": false,
+    "showDuration": "100",
+    "hideDuration": "300",
+    "timeOut": "3000",
+    "extendedTimeOut": "500"
+}
 </script>
 @stack('js') 
 </body>
