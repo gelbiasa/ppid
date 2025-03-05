@@ -10,7 +10,15 @@
         </p>
         <p>
             <a href="{{ url()->previous() }}" class="btn btn-warning">Kembali</a>
-            <a href="{{ url('/') }}" class="btn btn-primary">Kembali ke Dashboard</a>
+            @php
+                // Tentukan URL dashboard berdasarkan level pengguna
+                $dashboardUrl = '/';
+                if (Auth::check()) {
+                    $levelKode = Auth::user()->level->level_kode;
+                    $dashboardUrl = '/dashboard' . $levelKode;
+                }
+            @endphp
+            <a href="{{ url($dashboardUrl) }}" class="btn btn-primary">Kembali ke Dashboard</a>
         </p>
     </div>
 </div>

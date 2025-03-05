@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Auth;
 use App\Models\Log\NotifAdminModel;
 use App\Models\Log\NotifVerifikatorModel;
+use App\Helpers\MenuHelper;
 
 // Hitung total notifikasi belum dibaca
 $totalNotifikasiVFR = NotifAdminModel::where('sudah_dibaca_notif_admin', null)->count();
@@ -71,7 +72,7 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                 </li>
                 <li class="nav-header">Website / Portal</li>
                 <!-- Menu Utama -->
-                @if(App\Helpers\MenuHelper::shouldShowInSidebar('adminweb/menu-management'))
+                @if(MenuHelper::shouldShowInSidebar('adminweb/menu-management'))
                 <li class="nav-item {{ request()->is('adminweb/menu-utama*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('adminweb/menu-utama*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cog"></i>
