@@ -89,6 +89,20 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                 <p>Menu Management</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ url('/adminweb/kategori-footer') }}"
+                                class="nav-link {{ $activeMenu == 'kategori-footer' ? 'active' : '' }}">
+                                <i class="fas fa-tasks nav-icon"></i>
+                                <p>Kategori-Footer</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('/adminweb/footer') }}"
+                                class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
+                                <i class="fas fa-tasks nav-icon"></i>
+                                <p>Footer</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 @endif

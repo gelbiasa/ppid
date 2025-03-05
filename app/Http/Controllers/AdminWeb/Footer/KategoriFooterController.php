@@ -11,6 +11,8 @@ use Yajra\DataTables\Facades\DataTables;
 class KategoriFooterController extends Controller
 {
     use TraitsController;
+    public $breadcrumb = 'Menu Kategori-Footer';
+    public $pagename = 'AdminWeb/kategori-footer';
     // Halaman index kategori footer
     public function index()
     {

@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\AdminWeb\Footer;
 
-use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Yajra\DataTables\Facades\DataTables;
+use App\Http\Controllers\TraitsController;
 use App\Models\Website\Footer\FooterModel;
 use App\Models\Website\Footer\KategoriFooterModel;
-use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class FooterController extends Controller
 {
-     public $breadcrumb = 'Menu Footer';
+    use TraitsController;
+    public $breadcrumb = 'Menu Footer';
     public $pagename = 'AdminWeb/footer';
     // Halaman index footer
     public function index()
