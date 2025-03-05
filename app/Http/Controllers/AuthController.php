@@ -21,7 +21,7 @@ class AuthController extends Controller
             $levelCode = Auth::user()->level->level_kode;
             return redirect('/dashboard' . $levelCode);
         }
-        return view('auth.login');
+        return view('sisfo::auth.login');
     }
 
     public function postlogin(Request $request)
@@ -34,19 +34,10 @@ class AuthController extends Controller
         return redirect('auth.auth');
     }
 
-    public function getSessionData()
+
+    public function getData()
     {
-        return response()->json([
-            'user_id' => session('user_id'),
-            'nama_pengguna' => session('nama_pengguna'),
-            'alamat_pengguna' => session('alamat_pengguna'),
-            'no_hp_pengguna' => session('no_hp_pengguna'),
-            'email_pengguna' => session('email_pengguna'),
-            'pekerjaan_pengguna' => session('pekerjaan_pengguna'),
-            'nik_pengguna' => session('nik_pengguna'),
-            'upload_nik_pengguna' => session('upload_nik_pengguna'),
-            'alias' => session('alias'),
-        ]);
+        return response()->json(UserModel::getDataUser());
     }
 
     public function logout(Request $request)
@@ -61,7 +52,7 @@ class AuthController extends Controller
     public function register()
     {
         $level = LevelModel::all(); // Fetch level from database
-        return view('auth.register', compact('level')); // Pass levels to the view
+        return view('sisfo::auth.register', compact('level')); // Pass levels to the view
     }
 
     public function postRegister(Request $request)

@@ -85,18 +85,9 @@ class UserModel extends Authenticatable implements JWTSubject
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::login($user);
 
-            // Simpan data ke sesi
-            session([
-                'user_id' => $user->user_id,
-                'nama_pengguna' => $user->nama_pengguna,
-                'alamat_pengguna' => $user->alamat_pengguna,
-                'no_hp_pengguna' => $user->no_hp_pengguna,
-                'email_pengguna' => $user->email_pengguna,
-                'pekerjaan_pengguna' => $user->pekerjaan_pengguna,
-                'nik_pengguna' => $user->nik_pengguna,
-                'upload_nik_pengguna' => $user->upload_nik_pengguna,
-                'alias' => self::generateAlias($user->nama_pengguna), // Alias dari nama pengguna
-            ]);
+            // Simpan data ke sesi menggunakan method getDataUser
+            $userData = self::getDataUser($user);
+            session($userData);
 
             // Perbaikan routing - sesuaikan dengan definisi route yang ada
             $levelCode = $user->level->level_kode;
@@ -112,6 +103,25 @@ class UserModel extends Authenticatable implements JWTSubject
         return [
             'status' => false,
             'message' => 'Login Gagal, Periksa Kredensial Anda',
+        ];
+    }
+
+    public static function getDataUser($user = null)
+    {
+        if (!$user) {
+            $user = Auth::user();
+        }
+
+        return [
+            'user_id' => $user->user_id,
+            'nama_pengguna' => $user->nama_pengguna,
+            'alamat_pengguna' => $user->alamat_pengguna,
+            'no_hp_pengguna' => $user->no_hp_pengguna,
+            'email_pengguna' => $user->email_pengguna,
+            'pekerjaan_pengguna' => $user->pekerjaan_pengguna,
+            'nik_pengguna' => $user->nik_pengguna,
+            'upload_nik_pengguna' => $user->upload_nik_pengguna,
+            'alias' => self::generateAlias($user->nama_pengguna), // Alias dari nama pengguna
         ];
     }
 
