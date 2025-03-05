@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\AdminWeb\Footer;
 
-use App\Http\Controllers\TraitsController;
-use App\Models\Website\Footer\KategoriFooterModel;
+
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Yajra\DataTables\Facades\DataTables;
+use App\Http\Controllers\TraitsController;
+use App\Models\Website\Footer\KategoriFooterModel;
 
 class KategoriFooterController extends Controller
 {
@@ -34,21 +34,11 @@ class KategoriFooterController extends Controller
         ]);
     }
 
-    // Endpoint untuk DataTables
+    // 
     public function list(Request $request)
     {
-        $kategoriFooter = KategoriFooterModel::select('*');
+        return KategoriFooterModel::getDataTableList();
 
-        return DataTables::of($kategoriFooter)
-            ->addIndexColumn()
-            ->addColumn('aksi', function ($row) {
-                $btn = '<div class="btn-group">';
-                $btn .= '<button onclick="modalAction(\'' . url('/adminweb/kategori-footer/' . $row->kategori_footer_id . '/edit') . '\')" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></button>';
-                $btn .= '<button onclick="deleteKategoriFooter(' . $row->kategori_footer_id . ')" class="btn btn-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>';
-                return $btn . '</div>';
-            })
-            ->rawColumns(['aksi'])
-            ->make(true);
     }
 
     // Modal tambah kategori footer
@@ -70,6 +60,11 @@ class KategoriFooterController extends Controller
         $result = KategoriFooterModel::updateData($request, $id);
         return response()->json($result);
     }
+    public function detail_kategoriFooter($id)
+    {
+            $result = KategoriFooterModel::getDetailData($id);
+            return response()->json($result);
+    }
     public function edit($id)
     {
         $result = KategoriFooterModel::getEditData($id);
@@ -80,7 +75,6 @@ class KategoriFooterController extends Controller
                 'kategoriFooter' => $result['kategori_footer']
             ]);
         }
-
         // Tangani kasus gagal
         return response()->json($result);
     }

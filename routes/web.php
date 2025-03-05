@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminWeb\Footer\FooterController;
 use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
+use App\Models\Website\Footer\KategoriFooterModel;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,20 +69,22 @@ Route::middleware('auth')->group(function () {
     Route::group(['prefix' => 'adminweb/kategori-footer', 'middleware' => 'authorize:ADM'], function () {
         Route::get('/', [KategoriFooterController::class, 'index']);
         Route::post('/list', [KategoriFooterController::class, 'list']); 
-        Route::get('/create', [KategoriFooterController::class, 'create']); 
+        Route::get('/create', [KategoriFooterController::class, 'create']);
         Route::post('/store', [KategoriFooterController::class, 'store']); 
         Route::get('/{id}/edit', [KategoriFooterController::class, 'edit']); 
-        Route::put('/{id}/update', [KategoriFooterController::class, 'update']); 
-        Route::delete('/{id}/delete', [KategoriFooterController::class, 'delete']); 
+        Route::put('/{id}/update', [KategoriFooterController::class, 'update']);
+        Route::delete('/{id}/delete', [KategoriFooterController::class, 'delete']);
+        Route::get('{id}/detail_kategoriFooter', [KategoriFooterController::class, 'detail_kategoriFooter']);
     });
     Route::group(['prefix' => 'adminweb/footer', 'middleware' => 'authorize:ADM'], function () {
         Route::get('/', [FooterController::class, 'index']);
-        Route::post('/list', [FooterController::class, 'list']); // Untuk DataTables
-        Route::get('/create', [FooterController::class, 'create']); // Modal tambah
-        Route::post('/store', [FooterController::class, 'store']); // Proses simpan
-        Route::get('/{id}/edit', [FooterController::class, 'edit']); // Modal edit
-        Route::put('/{id}/update', [FooterController::class, 'update']); // Proses update
-        Route::delete('/{id}/delete', [FooterController::class, 'delete']); // Proses hapus
+        Route::post('/list', [FooterController::class, 'list']); 
+        Route::get('/create', [FooterController::class, 'create']); 
+        Route::post('/store', [FooterController::class, 'store']);
+        Route::get('/{id}/edit', [FooterController::class, 'edit']);
+        Route::put('/{id}/update', [FooterController::class, 'update']); 
+        Route::delete('/{id}/delete', [FooterController::class, 'delete']);
+        Route::get('/{id}/detail_footer', [FooterController::class, 'detail_footer']);
     });
 
 

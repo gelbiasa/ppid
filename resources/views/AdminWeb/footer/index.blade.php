@@ -10,13 +10,6 @@
             </div>
         </div>
         <div class="card-body">
-            @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if (session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
-            
             <div class="row mb-3">
                 <div class="col-md-4">
                     <select id="kategori-filter" class="form-control">
@@ -44,25 +37,157 @@
             </table>
         </div>
     </div>
-    
+
     <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static"
         data-keyboard="false" data-width="75%" aria-hidden="true"></div>
 @endsection
 
-@push('css')
-   
-@endpush
-
 @push('js')
     <script>
+        //  variable untuk DataTable
+        var footerTable;
+
+        // Fungsi untuk membuka modal
         function modalAction(url = '') {
-            $('#myModal').load(url, function() {
+            $('#myModal').load(url, function(response) {
                 $('#myModal').modal('show');
+            }).fail(function() {
+                toastr.error('Gagal memuat konten modal');
+            });
+        }
+        
+        // Lihat detail footer
+        function showDetailFooter(id) {
+            $.ajax({
+                url: `{{ url('/adminweb/footer') }}/${id}/detail_footer`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $('#myModal').html(`
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title"><i class="fas fa-info-circle"></i> Detail Footer</h5>
+                                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th style="width: 40%">Judul</th>
+                                                <td>${response.footer.f_judul_footer}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Kategori</th>
+                                                <td>${response.footer.kategori_footer}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>URL</th>
+                                                <td>${response.footer.f_url_footer ? `<a href="${response.footer.f_url_footer}" target="_blank">${response.footer.f_url_footer}</a>` : '-'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Ikon</th>
+                                                <td>${response.footer.f_icon_footer ? `<img src="{{ asset('storage/') }}/${response.footer.f_icon_footer}" class="img-fluid" style="max-height: 100px;" alt="Icon">` : '-'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Dibuat Oleh</th>
+                                                <td>${response.footer.created_by}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tanggal Dibuat</th>
+                                                <td>${response.footer.created_at}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Diperbarui Oleh</th>
+                                                <td>${response.footer.updated_by || '-'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tanggal Diperbarui</th>
+                                                <td>${response.footer.updated_at || '-'}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                        $('#myModal').modal('show');
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Gagal mengambil detail footer', 'error');
+                }
             });
         }
 
+        // Fungsi untuk menghapus footer
+        function deleteFooter(id) {
+            $.ajax({
+                url: `{{ url('/adminweb/footer') }}/${id}/detail_footer`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const judulFooter = response.footer.f_judul_footer;
+                        
+                        // Tampilkan konfirmasi dengan judul footer bold
+                        Swal.fire({
+                            title: 'Konfirmasi Hapus',
+                            html: `Apakah Anda yakin ingin menghapus footer <strong>"${judulFooter}"</strong>?`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Ya, Hapus!',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: `{{ url('adminweb/footer') }}/${id}/delete`,
+                                    type: 'DELETE',
+                                    data: {
+                                        _token: '{{ csrf_token() }}'
+                                    },
+                                    success: function(response) {
+                                        if (response.success) {
+                                            Swal.fire({
+                                                title: 'Terhapus!',
+                                                html: `Footer <strong>"${judulFooter}"</strong> berhasil dihapus.`,
+                                                icon: 'success'
+                                            });
+                                            footerTable.ajax.reload();
+                                        } else {
+                                            Swal.fire(
+                                                'Gagal!',
+                                                response.message,
+                                                'error'
+                                            );
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        Swal.fire(
+                                            'Error!',
+                                            'Gagal menghapus footer',
+                                            'error'
+                                        );
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error', 'Gagal mengambil detail footer', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Gagal mengambil detail footer', 'error');
+                }
+            });
+        }
+
+        // Inisialisasi DataTable
         $(document).ready(function() {
-            // Initialize DataTable
             footerTable = $('#table_footer').DataTable({
                 serverSide: true,
                 ajax: {
@@ -81,7 +206,7 @@
                         searchable: false
                     },
                     {
-                        data: "kategori_footer.kt_footer_nama",
+                        data: "kategori_footer",
                         className: "",
                         orderable: true,
                         searchable: true
@@ -110,7 +235,7 @@
                         searchable: false,
                         render: function(data) {
                             return data ? 
-                                `<img src="{{ asset('storage/') }}/${data}" class="footer-icon" alt="Icon">` : 
+                                `<img src="{{ asset('storage/') }}/${data}" class="img-thumbnail" style="max-height: 50px;" alt="Icon">` : 
                                 '-';
                         }
                     },
@@ -128,29 +253,5 @@
                 footerTable.ajax.reload();
             });
         });
-
-        // Function to handle delete
-        function deleteFooter(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus footer ini?')) {
-                $.ajax({
-                    url: `{{ url('adminweb/footer') }}/${id}/delete`,
-                    type: 'DELETE',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            footerTable.ajax.reload();
-                            toastr.success(response.message);
-                        } else {
-                            toastr.error(response.message);
-                        }
-                    },
-                    error: function() {
-                        toastr.error('Gagal menghapus footer');
-                    }
-                });
-            }
-        }
     </script>
 @endpush
