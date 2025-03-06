@@ -46,9 +46,9 @@
                             <label>Ikon Footer <small class="text-muted">(Opsional)</small></label>
                             <div class="custom-file">
                                 <input type="file" name="f_icon_footer" class="custom-file-input" id="customFile">
-                                <label class="custom-file-label" for="customFile">Pilih file ikon (boleh tidak dipilih)</label>
+                                <label class="custom-file-label" for="customFile">Pilih file ikon (boleh tidak diisi)</label>
                             </div>
-                            <small class="text-muted">Maksimal icon/gambar 2MB</small>
+                            <small class="text-muted">Maksimal icon/gambar 2MB, Dengan fomat jpeg,png,jpg,gif,svg</small>
                         </div>
                     </div>
                 </div>

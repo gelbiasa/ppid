@@ -69,9 +69,8 @@ class FooterModel extends Model
             // Proses upload ikon
             if ($request->hasFile('f_icon_footer')) {
                 $iconPath = $request->file('f_icon_footer')->store('footer_icons', 'public');
-                $data['f_icon_footer'] = $iconPath;
+                $data['f_icon_footer'] = basename($iconPath);
             }
-
             // Buat record
             $saveData = self::create($data);
 
@@ -216,13 +215,19 @@ class FooterModel extends Model
     }
 
     // Validasi data
+// Validasi data
 public static function validasiData($request, $id = null)
 {
     $rules = [
         'fk_m_kategori_footer' => 'required|exists:m_kategori_footer,kategori_footer_id',
         'f_judul_footer' => 'required|max:100',
         'f_url_footer' => 'nullable|url|max:100', // Tetap nullable
-        'f_icon_footer' => 'nullable|image|max:2048', // Tetap nullable
+        'f_icon_footer' => [
+            'nullable', 
+            'image', 
+            'mimes:jpeg,png,jpg,gif,svg', // Tambahkan tipe file yang diizinkan
+            'max:2048' // Tetap batasan ukuran 2MB
+        ],
     ];
 
     $messages = [
@@ -233,6 +238,7 @@ public static function validasiData($request, $id = null)
         'f_url_footer.url' => 'URL footer harus berupa URL yang valid',
         'f_url_footer.max' => 'URL footer maksimal 100 karakter',
         'f_icon_footer.image' => 'Ikon harus berupa gambar',
+        'f_icon_footer.mimes' => 'Ikon hanya boleh berupa file: jpeg, png, jpg, gif, atau svg',
         'f_icon_footer.max' => 'Ukuran ikon maksimal 2MB',
     ];
 

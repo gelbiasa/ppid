@@ -25,7 +25,7 @@ class CheckUserPermission
         if (!Auth::check()) {
             return redirect('login')->with('error', 'Silakan login terlebih dahulu');
         }
-
+    
         $user = Auth::user();
         
         // Super Admin selalu punya akses penuh
@@ -33,33 +33,24 @@ class CheckUserPermission
             return $next($request);
         }
         
-        // Dapatkan URL saat ini
-        $currentPath = $request->path();
+        // Dapatkan URL saat ini dan hilangkan prefix adminweb/menu-management
+        $currentPath = str_replace('adminweb/menu-management/', '', $request->path());
         
-        // Coba cari menu berdasarkan URL secara langsung
+        // Debugging
+        Log::info('Current Path: ' . $currentPath);
+        Log::info('Full Path: ' . $request->path());
+        Log::info('User ID: ' . $user->user_id);
+        
+        // Cari menu berdasarkan URL
         $menu = WebMenuModel::where('wm_menu_url', $currentPath)
+            ->orWhere('wm_menu_url', $request->path())
             ->where('wm_status_menu', 'aktif')
             ->where('isDeleted', 0)
             ->first();
-            
-        // Jika tidak ditemukan, coba cek apakah URL ini berisi URL menu lain sebagai prefix
-        if (!$menu) {
-            // Ambil semua menu aktif
-            $allMenus = WebMenuModel::where('wm_status_menu', 'aktif')
-                ->where('isDeleted', 0)
-                ->get();
-                
-            // Cek apakah URL saat ini merupakan bagian dari URL menu yang ada
-            foreach ($allMenus as $menuItem) {
-                if (!empty($menuItem->wm_menu_url) && strpos($currentPath, $menuItem->wm_menu_url) === 0) {
-                    $menu = $menuItem;
-                    break;
-                }
-            }
-        }
         
-        // Jika masih tidak ditemukan, izinkan akses (untuk route non-menu)
+        // Jika tidak ditemukan, izinkan akses
         if (!$menu) {
+            Log::warning('Menu tidak ditemukan: ' . $currentPath);
             return $next($request);
         }
         
@@ -67,11 +58,18 @@ class CheckUserPermission
         $hakAkses = HakAksesModel::where('ha_pengakses', $user->user_id)
             ->where('fk_web_menu', $menu->web_menu_id)
             ->first();
-            
+        
         // Buat prefix untuk kolom hak akses
         $hakField = 'ha_' . $permission;
         
+        // Debugging hak akses
+        Log::info('Menu ID: ' . $menu->web_menu_id);
+        Log::info('Hak Akses Field: ' . $hakField);
+        Log::info('Hak Akses: ' . ($hakAkses ? $hakAkses->$hakField : 'Tidak Ada'));
+        
         if (!$hakAkses || $hakAkses->$hakField != 1) {
+            Log::error('Akses Ditolak: ' . $permission);
+            
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,

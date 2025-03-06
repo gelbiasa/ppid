@@ -6,7 +6,8 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <form id="formEditFooter" action="{{ url('/adminweb/footer/'.$footer->footer_id.'/update') }}" method="POST" enctype="multipart/form-data">
+        <form id="formEditFooter" action="{{ url('/adminweb/footer/' . $footer->footer_id . '/update') }}" method="POST"
+            enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="modal-body">
@@ -16,7 +17,7 @@
                             <label>Kategori Footer <span class="text-danger">*</span></label>
                             <select name="fk_m_kategori_footer" class="form-control" required>
                                 <option value="">Pilih Kategori</option>
-                                @foreach($kategoriFooters as $kategori)
+                                @foreach ($kategoriFooters as $kategori)
                                     <option value="{{ $kategori->kategori_footer_id }}"
                                         {{ $footer->fk_m_kategori_footer == $kategori->kategori_footer_id ? 'selected' : '' }}>
                                         {{ $kategori->kt_footer_nama }}
@@ -28,10 +29,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Judul Footer <span class="text-danger">*</span></label>
-                            <input type="text" name="f_judul_footer" class="form-control" required 
-                                   placeholder="Masukkan judul footer" 
-                                   value="{{ $footer->f_judul_footer }}"
-                                   maxlength="100">
+                            <input type="text" name="f_judul_footer" class="form-control" required
+                                placeholder="Masukkan judul footer" value="{{ $footer->f_judul_footer }}"
+                                maxlength="100">
                         </div>
                     </div>
                 </div>
@@ -39,10 +39,8 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>URL Footer</label>
-                            <input type="url" name="f_url_footer" class="form-control" 
-                                   placeholder="https://example.com"
-                                   value="{{ $footer->f_url_footer }}"
-                                   maxlength="100">
+                            <input type="url" name="f_url_footer" class="form-control"
+                                placeholder="https://example.com" value="{{ $footer->f_url_footer }}" maxlength="100">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -55,11 +53,11 @@
                                 </label>
                             </div>
                             <small class="text-muted">Maksimal 2MB, format gambar</small>
-                            
-                            @if($footer->f_icon_footer)
+
+                            @if ($footer->f_icon_footer)
                                 <div class="mt-2">
-                                    <img src="{{ asset('storage/'.$footer->f_icon_footer) }}" 
-                                         class="img-thumbnail" style="max-width: 150px;">
+                                    <img src="{{ asset('storage/footer_icons/' . $footer->f_icon_footer) }}"
+                                        class="img-thumbnail" style="max-width: 150px;">
                                 </div>
                             @endif
                         </div>
@@ -75,89 +73,89 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // Custom file input label
-    $(".custom-file-input").on("change", function() {
-        var fileName = $(this).val().split("\\").pop();
-        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-    });
+    $(document).ready(function() {
+        // Custom file input label
+        $(".custom-file-input").on("change", function() {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
 
-    // Submit form handling
-    $('#formEditFooter').on('submit', function(e) {
-        e.preventDefault();
-        var formData = new FormData(this);
+        // Submit form handling
+        $('#formEditFooter').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
 
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST', // Laravel PUT method is simulated via POST
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    // Tutup modal
-                    $('#myModal').modal('hide');
-                    
-                    // Tampilkan SweetAlert sukses
-                    Swal.fire(
-                        'Berhasil!',
-                        response.message,
-                        'success'
-                    );
-                    
-                    // Reload DataTable
-                    if (typeof footerTable !== 'undefined') {
-                        footerTable.ajax.reload();
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST', // Laravel PUT method is simulated via POST
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Tutup modal
+                        $('#myModal').modal('hide');
+
+                        // Tampilkan SweetAlert sukses
+                        Swal.fire(
+                            'Berhasil!',
+                            response.message,
+                            'success'
+                        );
+
+                        // Reload DataTable
+                        if (typeof footerTable !== 'undefined') {
+                            footerTable.ajax.reload();
+                        }
+                    } else {
+                        // Jika validasi gagal atau ada kesalahan
+                        if (response.errors) {
+                            // Tampilkan error validasi
+                            let errorMessage = '';
+                            $.each(response.errors, function(field, messages) {
+                                errorMessage += messages[0] + '<br>';
+                            });
+
+                            Swal.fire(
+                                'Gagal!',
+                                errorMessage,
+                                'error'
+                            );
+                        } else {
+                            // Tampilkan pesan error dari server
+                            Swal.fire(
+                                'Gagal!',
+                                response.message,
+                                'error'
+                            );
+                        }
                     }
-                } else {
-                    // Jika validasi gagal atau ada kesalahan
-                    if (response.errors) {
-                        // Tampilkan error validasi
+                },
+                error: function(xhr) {
+                    // Tangani kesalahan AJAX
+                    if (xhr.status === 422) {
+                        // Error validasi
                         let errorMessage = '';
-                        $.each(response.errors, function(field, messages) {
+                        var errors = xhr.responseJSON.errors;
+                        $.each(errors, function(field, messages) {
                             errorMessage += messages[0] + '<br>';
                         });
-                        
+
                         Swal.fire(
-                            'Gagal!',
+                            'Error!',
                             errorMessage,
                             'error'
                         );
                     } else {
-                        // Tampilkan pesan error dari server
+                        // Error umum
                         Swal.fire(
-                            'Gagal!',
-                            response.message,
+                            'Error!',
+                            'Terjadi kesalahan saat menyimpan data',
                             'error'
                         );
                     }
                 }
-            },
-            error: function(xhr) {
-                // Tangani kesalahan AJAX
-                if (xhr.status === 422) {
-                    // Error validasi
-                    let errorMessage = '';
-                    var errors = xhr.responseJSON.errors;
-                    $.each(errors, function(field, messages) {
-                        errorMessage += messages[0] + '<br>';
-                    });
-                    
-                    Swal.fire(
-                        'Error!',
-                        errorMessage,
-                        'error'
-                    );
-                } else {
-                    // Error umum
-                    Swal.fire(
-                        'Error!',
-                        'Terjadi kesalahan saat menyimpan data',
-                        'error'
-                    );
-                }
-            }
+            });
         });
     });
-});
 </script>

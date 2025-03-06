@@ -14,7 +14,7 @@
                 <div class="col-md-4">
                     <select id="kategori-filter" class="form-control">
                         <option value="">Semua Kategori</option>
-                        @foreach($kategoriFooters as $kategori)
+                        @foreach ($kategoriFooters as $kategori)
                             <option value="{{ $kategori->kategori_footer_id }}">
                                 {{ $kategori->kt_footer_nama }}
                             </option>
@@ -55,7 +55,7 @@
                 toastr.error('Gagal memuat konten modal');
             });
         }
-        
+
         // Lihat detail footer
         function showDetailFooter(id) {
             $.ajax({
@@ -86,7 +86,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Ikon</th>
-                                                <td>${response.footer.f_icon_footer ? `<img src="{{ asset('storage/') }}/${response.footer.f_icon_footer}" class="img-fluid" style="max-height: 100px;" alt="Icon">` : '-'}</td>
+                                                <td>${response.footer.f_icon_footer ? `<img src="{{ asset('storage/${response.footer.f_icon_footer}') }}" class="img-fluid" style="max-height: 100px;" alt="Icon">` : '-'}</td>
                                             </tr>
                                             <tr>
                                                 <th>Dibuat Oleh</th>
@@ -131,7 +131,7 @@
                 success: function(response) {
                     if (response.success) {
                         const judulFooter = response.footer.f_judul_footer;
-                        
+
                         // Tampilkan konfirmasi dengan judul footer bold
                         Swal.fire({
                             title: 'Konfirmasi Hapus',
@@ -198,8 +198,7 @@
                         d.kategori = $('#kategori-filter').val();
                     }
                 },
-                columns: [
-                    {
+                columns: [{
                         data: "DT_RowIndex",
                         className: "text-center",
                         orderable: false,
@@ -223,8 +222,8 @@
                         orderable: true,
                         searchable: true,
                         render: function(data) {
-                            return data ? 
-                                `<a href="${data}" target="_blank">${data}</a>` : 
+                            return data ?
+                                `<a href="${data}" target="_blank">${data}</a>` :
                                 '-';
                         }
                     },
@@ -234,8 +233,8 @@
                         orderable: false,
                         searchable: false,
                         render: function(data) {
-                            return data ? 
-                                `<img src="{{ asset('storage/') }}/${data}" class="img-thumbnail" style="max-height: 50px;" alt="Icon">` : 
+                            return data ?
+                                `<img src="{{ asset('storage/footer_icons/') }}/${data}" class="img-thumbnail" style="max-height: 50px;" alt="Icon">` :
                                 '-';
                         }
                     },
