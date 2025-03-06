@@ -116,7 +116,7 @@
             type: form.method,
             data: $(form).serialize(),
             success: function (response) {
-              if (response.status) {
+              if (response.success) {
                 Swal.fire({
                   icon: 'success',
                   title: 'Berhasil',

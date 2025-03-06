@@ -281,7 +281,7 @@
                             }
                         },
                         error: function (xhr) {
-                            if (xhr.status === 422) {
+                            if (xhr.success === 422) {
                                 const errors = xhr.responseJSON.errors;
                                 // Handle error messages with the m_user prefix
                                 Object.keys(errors).forEach(function (key) {

@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/simpanHakAkses', [HakAksesController::class, 'simpan'])->middleware('authorize:SAR');
     Route::get('/getHakAkses/{user_id}/{menu}', [HakAksesController::class, 'getHakAkses'])->middleware('authorize:SAR');
 
-    Route::get('/session', [AuthController::class, 'getSessionData']);
+    Route::get('/session', [AuthController::class, 'getData']);
 
     Route::group(['prefix' => 'profile'], function () {
         Route::get('/', [ProfileController::class, 'index']);

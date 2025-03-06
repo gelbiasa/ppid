@@ -7,9 +7,6 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class ApiAuthController extends BaseApiController
 {
-    /**
-     * Login user dan generate JWT token
-     */
     public function login(Request $request)
     {
         return $this->eksekusi(
@@ -18,16 +15,26 @@ class ApiAuthController extends BaseApiController
                 $loginResult = UserModel::prosesLogin($request);
 
                 // Checking if login was successful
-                if (!$loginResult['status']) {
+                if (!$loginResult['success']) {
                     return $this->responKesalahan(self::AUTH_INVALID_CREDENTIALS, $loginResult['message'], 401);
                 }
 
-                // If login is successful, return the result with JWT token (or redirect URL if required)
+                // Generate token
+                $user = UserModel::where('nik_pengguna', $request->username)
+                    ->orWhere('email_pengguna', $request->username)
+                    ->orWhere('no_hp_pengguna', $request->username)
+                    ->first();
+
+                // Generate token
+                $token = JWTAuth::fromUser($user);
+
+                // Jika login berhasil, kembalikan token dan informasi
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => $loginResult['message'],
-                    'redirect' => $loginResult['redirect'],  // Optional: include a redirect URL if needed
-                    'token' => JWTAuth::fromUser($loginResult['user'])  // Generate and return the JWT token
+                    'redirect' => $loginResult['redirect'],
+                    'token' => $token,
+                    'user' => UserModel::getDataUser($user)
                 ]);
             },
             'login',
@@ -63,13 +70,13 @@ class ApiAuthController extends BaseApiController
                 $registerResult = UserModel::prosesRegister($request);
 
                 // If registration is successful, return the success message
-                if (!$registerResult['status']) {
+                if (!$registerResult['success']) {
                     return $this->responKesalahan(self::AUTH_REGISTRATION_FAILED, $registerResult['message'], 400);
                 }
 
                 // Successful registration response
                 return response()->json([
-                    'status' => true,
+                    'success' => true,
                     'message' => $registerResult['message'],
                     'redirect' => $registerResult['redirect']  // Optional: include a redirect URL
                 ]);
@@ -82,12 +89,12 @@ class ApiAuthController extends BaseApiController
     /**
      * Get data user yang sedang login
      */
-    public function getUser()
+    public function getData()
     {
         return $this->eksekusiDenganOtentikasi(
             function($user) {
                 // Return user data for the logged-in user
-                return $user->getDataUser();
+                return UserModel::getDataUser($user);
             },
             'user'
         );

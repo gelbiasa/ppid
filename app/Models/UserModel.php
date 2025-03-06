@@ -7,7 +7,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -94,14 +93,15 @@ class UserModel extends Authenticatable implements JWTSubject
             $redirectUrl = url('/dashboard' . $levelCode);
 
             return [
-                'status' => true,
+                'success' => true,
                 'message' => 'Login Berhasil',
                 'redirect' => $redirectUrl,
+                'user' => $user  // Tambahkan user ke dalam array hasil
             ];
         }
 
         return [
-            'status' => false,
+            'success' => false,
             'message' => 'Login Gagal, Periksa Kredensial Anda',
         ];
     }
