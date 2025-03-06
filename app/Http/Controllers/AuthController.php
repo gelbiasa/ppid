@@ -7,7 +7,6 @@ use illuminate\Support\Facades\Auth;
 use App\Models\UserModel;
 use App\Models\LevelModel;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -17,7 +16,7 @@ class AuthController extends Controller
     public function login()
     {
         if (Auth::check()) {
-            // Redirect sesuai level pengguna yang login
+            // Arahkan sesuai level pengguna yang login
             $levelCode = Auth::user()->level->level_kode;
             return redirect('/dashboard' . $levelCode);
         }
@@ -26,27 +25,34 @@ class AuthController extends Controller
 
     public function postlogin(Request $request)
     {
-        if ($request->ajax() || $request->wantsJson()) {
+        try {
             $result = UserModel::prosesLogin($request);
-            return response()->json($result);
-        }
 
-        return redirect('auth.auth');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json($result);
+            }
+
+            if ($result['success']) {
+                // Arahkan sesuai level pengguna yang login
+                return $this->redirectSuccess($result['redirect'], $result['message']);
+            }
+
+            return $this->redirectError($result['message']);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat login: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return $this->redirectException($e, 'Terjadi kesalahan saat login');
+        }
     }
 
-    public function getSessionData()
+    public function getData()
     {
-        return response()->json([
-            'user_id' => session('user_id'),
-            'nama_pengguna' => session('nama_pengguna'),
-            'alamat_pengguna' => session('alamat_pengguna'),
-            'no_hp_pengguna' => session('no_hp_pengguna'),
-            'email_pengguna' => session('email_pengguna'),
-            'pekerjaan_pengguna' => session('pekerjaan_pengguna'),
-            'nik_pengguna' => session('nik_pengguna'),
-            'upload_nik_pengguna' => session('upload_nik_pengguna'),
-            'alias' => session('alias'),
-        ]);
+        return response()->json(UserModel::getDataUser());
     }
 
     public function logout(Request $request)
@@ -55,13 +61,13 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('login');
+        return $this->redirectSuccess('login', 'Berhasil logout');
     }
 
     public function register()
     {
-        $level = LevelModel::all(); // Fetch level from database
-        return view('auth.register', compact('level')); // Pass levels to the view
+        $level = LevelModel::all(); // Ambil level dari basis data
+        return view('auth.register', compact('level')); // Kirim level ke view
     }
 
     public function postRegister(Request $request)
@@ -74,28 +80,29 @@ class AuthController extends Controller
             }
 
             if ($result['success']) {
-                return redirect('login')->with('success', $result['message']);
+                return $this->redirectSuccess('login', $result['message']);
             }
 
-            return back()->withErrors(['error' => $result['message']])->withInput();
+            return $this->redirectError($result['message']);
         } catch (ValidationException $e) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
+                    'message' => 'Validation error',
                     'errors' => $e->errors()
                 ], 422);
             }
 
-            return back()->withErrors($e->errors())->withInput();
+            return $this->redirectValidationError($e);
         } catch (\Exception $e) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
-                    'status' => false,
+                    'success' => false,
                     'message' => 'Terjadi kesalahan saat memproses registrasi: ' . $e->getMessage()
                 ], 500);
             }
 
-            return back()->withErrors(['error' => 'Terjadi kesalahan saat memproses registrasi: ' . $e->getMessage()])->withInput();
+            return $this->redirectException($e, 'Terjadi kesalahan saat memproses registrasi');
         }
     }
 }

@@ -26,7 +26,7 @@ Route::prefix('auth')->group(function () {
     // Protected routes (perlu autentikasi)
     Route::middleware('auth:api')->group(function () {
         Route::post('logout', [ApiAuthController::class, 'logout']);
-        Route::get('user', [ApiAuthController::class, 'getUser']);
+        Route::get('user', [ApiAuthController::class, 'getData']);
         Route::get('menus', [AuthMenuController::class, 'getAuthMenus']);
         Route::get('berita-pengumuman', [BeritaPengumumanController::class, 'getBeritaPengumuman']);
     });
