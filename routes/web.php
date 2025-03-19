@@ -12,8 +12,14 @@ use App\Http\Controllers\DashboardVerifikatorController;
 use App\Http\Controllers\AdminWeb\Footer\FooterController;
 use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
+use App\Http\Controllers\Notifikasi\NotifAdminController;
+use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
-use App\Models\Website\Footer\KategoriFooterModel;
+use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
+use App\Http\Controllers\SistemInformasi\EForm\PernyataanKeberatanController;
+use App\Http\Controllers\SistemInformasi\EForm\WBSController;
+use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
+use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,9 +49,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboardMPU', [DashboardMPUController::class, 'index'])->middleware('authorize:MPU');
     Route::get('/dashboardVFR', [DashboardVerifikatorController::class, 'index'])->middleware('authorize:VFR');
 
+    Route::get('/getHakAksesData/{param1}/{param2?}', [HakAksesController::class, 'edit'])->middleware('authorize:SAR');
     Route::get('/HakAkses', [HakAksesController::class, 'index'])->middleware('authorize:SAR');
-    Route::post('/simpanHakAkses', [HakAksesController::class, 'simpan'])->middleware('authorize:SAR');
-    Route::get('/getHakAkses/{user_id}/{menu}', [HakAksesController::class, 'getHakAkses'])->middleware('authorize:SAR');
+    Route::post('/updateData', [HakAksesController::class, 'update'])->middleware('authorize:SAR');
 
     Route::get('/session', [AuthController::class, 'getData']);
 
@@ -66,37 +72,132 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/detail_menu', [MenuManagementController::class, 'detail_menu']);
         Route::post('/reorder', [MenuManagementController::class, 'reorder']); // New route for drag-drop reordering
     });
-    Route::group(['prefix' => 'adminweb/kategori-footer', 'middleware' => 'authorize:ADM'], function () {
+    Route::group(['prefix' => 'adminweb/kategori-footer', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [KategoriFooterController::class, 'index']);
-        Route::post('/list', [KategoriFooterController::class, 'list']); 
-        Route::get('/create', [KategoriFooterController::class, 'create']);
-        Route::post('/store', [KategoriFooterController::class, 'store']); 
-        Route::get('/{id}/edit', [KategoriFooterController::class, 'edit']); 
-        Route::put('/{id}/update', [KategoriFooterController::class, 'update']);
-        Route::delete('/{id}/delete', [KategoriFooterController::class, 'delete']);
-        Route::get('{id}/detail_kategoriFooter', [KategoriFooterController::class, 'detail_kategoriFooter']);
+        Route::get('/getData', [KategoriFooterController::class, 'getData']);
+        Route::get('/addData', [KategoriFooterController::class, 'addData']);
+        Route::post('/createData', [KategoriFooterController::class, 'createData']);
+        Route::get('/editData/{id}', [KategoriFooterController::class, 'editData']);
+        Route::post('/updateData/{id}', [KategoriFooterController::class, 'updateData']);
+        Route::get('/detailData/{id}', [KategoriFooterController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [KategoriFooterController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KategoriFooterController::class, 'deleteData']);
     });
     Route::group(['prefix' => 'adminweb/footer', 'middleware' => 'authorize:ADM'], function () {
         Route::get('/', [FooterController::class, 'index']);
-        Route::post('/list', [FooterController::class, 'list']); 
-        Route::get('/create', [FooterController::class, 'create']); 
-        Route::post('/store', [FooterController::class, 'store']);
-        Route::get('/{id}/edit', [FooterController::class, 'edit']);
-        Route::put('/{id}/update', [FooterController::class, 'update']); 
-        Route::delete('/{id}/delete', [FooterController::class, 'delete']);
-        Route::get('/{id}/detail_footer', [FooterController::class, 'detail_footer']);
+        Route::get('/getData', [FooterController::class, 'getData']);
+        Route::get('/addData', [FooterController::class, 'addData']);
+        Route::post('/createData', [FooterController::class, 'createData']);
+        Route::get('/editData/{id}', [FooterController::class, 'editData']);
+        Route::post('/updateData/{id}', [FooterController::class, 'updateData']);
+        Route::get('/detailData/{id}', [FooterController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [FooterController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [FooterController::class, 'deleteData']);
     });
 
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);
-        Route::get('/create', [PermohonanInformasiController::class, 'create']);
-        Route::post('/store', [PermohonanInformasiController::class, 'store']);
+        Route::get('/getData', [PermohonanInformasiController::class, 'getData']);
+        Route::get('/addData', [PermohonanInformasiController::class, 'addData']);
+        Route::post('/createData', [PermohonanInformasiController::class, 'createData']);
     });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PermohonanInformasi', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);
-        Route::get('/create', [PermohonanInformasiController::class, 'create']);
-        Route::post('/store', [PermohonanInformasiController::class, 'store']);
+        Route::get('/getData', [PermohonanInformasiController::class, 'getData']);
+        Route::get('/addData', [PermohonanInformasiController::class, 'addData']);
+        Route::post('/createData', [PermohonanInformasiController::class, 'createData']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PernyataanKeberatan', 'middleware' => ['authorize:RPN']], function () {
+        Route::get('/', [PernyataanKeberatanController::class, 'index']);
+        Route::get('/getData', [PernyataanKeberatanController::class, 'getData']);
+        Route::get('/addData', [PernyataanKeberatanController::class, 'addData']);
+        Route::post('/createData', [PernyataanKeberatanController::class, 'createData']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PernyataanKeberatan', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PernyataanKeberatanController::class, 'index']);
+        Route::get('/getData', [PernyataanKeberatanController::class, 'getData']);
+        Route::get('/addData', [PernyataanKeberatanController::class, 'addData']);
+        Route::post('/createData', [PernyataanKeberatanController::class, 'createData']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PengaduanMasyarakat', 'middleware' => ['authorize:RPN']], function () {
+        Route::get('/', [PengaduanMasyarakatController::class, 'index']);
+        Route::get('/getData', [PengaduanMasyarakatController::class, 'getData']);
+        Route::get('/addData', [PengaduanMasyarakatController::class, 'addData']);
+        Route::post('/createData', [PengaduanMasyarakatController::class, 'createData']);
+    });
+    
+    Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PengaduanMasyarakat', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PengaduanMasyarakatController::class, 'index']);
+        Route::get('/getData', [PengaduanMasyarakatController::class, 'getData']);
+        Route::get('/addData', [PengaduanMasyarakatController::class, 'addData']);
+        Route::post('/createData', [PengaduanMasyarakatController::class, 'createData']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/RPN/WBS', 'middleware' => ['authorize:RPN']], function () {
+        Route::get('/', [WBSController::class, 'index']);
+        Route::get('/getData', [WBSController::class, 'getData']);
+        Route::get('/addData', [WBSController::class, 'addData']);
+        Route::post('/createData', [WBSController::class, 'createData']);
+    });
+    
+    Route::group(['prefix' => 'SistemInformasi/EForm/ADM/WBS', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [WBSController::class, 'index']);
+        Route::get('/getData', [WBSController::class, 'getData']);
+        Route::get('/addData', [WBSController::class, 'addData']);
+        Route::post('/createData', [WBSController::class, 'createData']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanPerawatan', 'middleware' => ['authorize:RPN']], function () {
+        Route::get('/', [PermohonanPerawatanController::class, 'index']);
+        Route::get('/getData', [PermohonanPerawatanController::class, 'getData']);
+        Route::get('/addData', [PermohonanPerawatanController::class, 'addData']);
+        Route::post('/createData', [PermohonanPerawatanController::class, 'createData']);
+    });
+    
+    Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PermohonanPerawatan', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PermohonanPerawatanController::class, 'index']);
+        Route::get('/getData', [PermohonanPerawatanController::class, 'getData']);
+        Route::get('/addData', [PermohonanPerawatanController::class, 'addData']);
+        Route::post('/createData', [PermohonanPerawatanController::class, 'createData']);
+    });
+
+    Route::group(['prefix' => 'Notifikasi/NotifAdmin', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [NotifAdminController::class, 'index']);
+        Route::get('/notifPI', [NotifAdminController::class, 'notifikasiPermohonan']);
+        Route::post('/tandai-dibaca/{id}', [NotifAdminController::class, 'tandaiDibaca'])->name('NotifAdmin.tandaiDibaca');
+        Route::delete('/hapus/{id}', [NotifAdminController::class, 'hapusNotifikasi'])->name('NotifAdmin.hapus');
+        Route::post('/tandai-semua-dibaca', [NotifAdminController::class, 'tandaiSemuaDibaca']);
+        Route::delete('/hapus-semua-dibaca', [NotifAdminController::class, 'hapusSemuaDibaca']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/Timeline', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [TimelineController::class, 'index']);
+        Route::get('/getData', [TimelineController::class, 'getData']);
+        Route::get('/addData', [TimelineController::class, 'addData']);
+        Route::post('/createData', [TimelineController::class, 'createData']);
+        Route::get('/editData/{id}', [TimelineController::class, 'editData']);
+        Route::post('/updateData/{id}', [TimelineController::class, 'updateData']);
+        Route::get('/detailData/{id}', [TimelineController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [TimelineController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [TimelineController::class, 'deleteData']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/KetentuanPelaporan', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [KetentuanPelaporanController::class, 'index']);
+        Route::get('/getData', [KetentuanPelaporanController::class, 'getData']);
+        Route::get('/addData', [KetentuanPelaporanController::class, 'addData']);
+        Route::post('/createData', [KetentuanPelaporanController::class, 'createData']);
+        Route::get('/editData/{id}', action: [KetentuanPelaporanController::class, 'editData']);
+        Route::post('/updateData/{id}', [KetentuanPelaporanController::class, 'updateData']);
+        Route::get('/detailData/{id}', [KetentuanPelaporanController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [KetentuanPelaporanController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KetentuanPelaporanController::class, 'deleteData']);
+        Route::post('/uploadImage', [KetentuanPelaporanController::class, 'uploadImage']);
+        Route::post('/removeImage', [KetentuanPelaporanController::class, 'removeImage']);
     });
 });

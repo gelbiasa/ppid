@@ -1,3 +1,4 @@
+<!-- pengisian form halaman admin -->
 @extends('layouts.template')
 @section('content')
     <div class="card">
@@ -20,7 +21,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/ADM/PermohonanInformasi/store') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/ADM/PermohonanInformasi/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 <div class="form-group">

@@ -37,12 +37,12 @@ class FormPiOrangLainModel extends Model
     public static function createData($request)
     {
         // Upload file untuk pengguna informasi
-        $fileNamePelapor = self::uploadFile(
+        $uploadNikPelaporFile = self::uploadFile(
             $request->file('pi_upload_nik_pengguna_penginput'),
             'pi_identitas_pelapor_ol'
         );
 
-        $fileName = self::uploadFile(
+        $uploadNikFile = self::uploadFile(
             $request->file('pi_upload_nik_pengguna_informasi'),
             'pi_ol_upload_nik'
         );
@@ -53,17 +53,16 @@ class FormPiOrangLainModel extends Model
             $userLevel = Auth::user()->level->level_kode;
 
             if ($userLevel === 'RPN') {
-                $$data = [
-                    'pi_nama_pengguna' => Auth::user()->nama_pengguna,
-                    'pi_alamat_pengguna' => Auth::user()->alamat_pengguna,
-                    'pi_no_hp_pengguna' => Auth::user()->no_hp_pengguna,
-                    'pi_email_pengguna' => Auth::user()->email_pengguna,
-                    'pi_upload_nik_pengguna' => Auth::user()->upload_nik_pengguna,
-                ];
+                $data['pi_nama_pengguna_penginput'] = Auth::user()->nama_pengguna;
+                $data['pi_alamat_pengguna_penginput'] = Auth::user()->alamat_pengguna;
+                $data['pi_no_hp_pengguna_penginput'] = Auth::user()->no_hp_pengguna;
+                $data['pi_email_pengguna_penginput'] = Auth::user()->email_pengguna;
+                $data['pi_upload_nik_pengguna_penginput'] = Auth::user()->upload_nik_pengguna;
             } else if ($userLevel === 'ADM') {
-                $data['pi_upload_nik_pengguna_penginput'] = $fileNamePelapor;
+                $data['pi_upload_nik_pengguna_penginput'] = $uploadNikPelaporFile;
             }
-            $data['pi_upload_nik_pengguna_informasi'] = $fileNamePelapor;
+            $data['pi_upload_nik_pengguna_informasi'] = $uploadNikFile;
+
             $saveData = self::create($data);
 
             $result = [
@@ -74,23 +73,19 @@ class FormPiOrangLainModel extends Model
             return $result;
         } catch (\Exception $e) {
             // Jika terjadi kesalahan, hapus file yang sudah diupload
-            self::removeFile($fileName);
-            self::removeFile($fileNamePelapor);
+            self::removeFile($uploadNikFile);
+            self::removeFile($uploadNikPelaporFile);
             throw $e;
         }
     }
 
     public static function validasiData($request)
     {
-        $rules = [
-            't_form_pi_orang_lain.pi_nama_pengguna_informasi' => 'required',
-            't_form_pi_orang_lain.pi_alamat_pengguna_informasi' => 'required',
-            't_form_pi_orang_lain.pi_no_hp_pengguna_informasi' => 'required',
-            't_form_pi_orang_lain.pi_email_pengguna_informasi' => 'required|email',
-            'pi_upload_nik_pengguna_informasi' => 'required|image|max:10240',
-        ];
+        // Inisialisasi rules dan messages
+        $rules = [];
+        $message = [];
 
-        // Tambahkan validasi untuk data penginput jika user adalah ADM
+        // Jika user adalah ADM, tambahkan validasi untuk penginput
         if (Auth::user()->level->level_kode === 'ADM') {
             $rules = array_merge($rules, [
                 't_form_pi_orang_lain.pi_nama_pengguna_penginput' => 'required',
@@ -99,31 +94,43 @@ class FormPiOrangLainModel extends Model
                 't_form_pi_orang_lain.pi_email_pengguna_penginput' => 'required|email',
                 'pi_upload_nik_pengguna_penginput' => 'required|image|max:10240',
             ]);
+
+            $message = array_merge($message, [
+                't_form_pi_orang_lain.pi_nama_pengguna_penginput.required' => 'Nama penginput wajib diisi',
+                't_form_pi_orang_lain.pi_alamat_pengguna_penginput.required' => 'Alamat penginput wajib diisi',
+                't_form_pi_orang_lain.pi_no_hp_pengguna_penginput.required' => 'Nomor HP penginput wajib diisi',
+                't_form_pi_orang_lain.pi_email_pengguna_penginput.required' => 'Email penginput wajib diisi',
+                't_form_pi_orang_lain.pi_email_pengguna_penginput.email' => 'Format email penginput tidak valid',
+                'pi_upload_nik_pengguna_penginput.required' => 'Upload NIK penginput wajib diisi',
+                'pi_upload_nik_pengguna_penginput.image' => 'File NIK penginput harus berupa gambar',
+                'pi_upload_nik_pengguna_penginput.max' => 'Ukuran file NIK penginput tidak boleh lebih dari 10MB',
+            ]);
         }
 
-        $messages = [
+        // Tambahkan rules untuk pengguna informasi (berlaku untuk semua level)
+        $rules = array_merge($rules, [
+            't_form_pi_orang_lain.pi_nama_pengguna_informasi' => 'required',
+            't_form_pi_orang_lain.pi_alamat_pengguna_informasi' => 'required',
+            't_form_pi_orang_lain.pi_no_hp_pengguna_informasi' => 'required',
+            't_form_pi_orang_lain.pi_email_pengguna_informasi' => 'required|email',
+            'pi_upload_nik_pengguna_informasi' => 'required|image|max:10240',
+        ]);
+
+        $message = array_merge($message, [
             't_form_pi_orang_lain.pi_nama_pengguna_informasi.required' => 'Nama pengguna informasi wajib diisi',
             't_form_pi_orang_lain.pi_alamat_pengguna_informasi.required' => 'Alamat pengguna informasi wajib diisi',
             't_form_pi_orang_lain.pi_no_hp_pengguna_informasi.required' => 'Nomor HP pengguna informasi wajib diisi',
             't_form_pi_orang_lain.pi_email_pengguna_informasi.required' => 'Email pengguna informasi wajib diisi',
-            't_form_pi_orang_lain.pi_email_pengguna_informasi.email' => 'Format email tidak valid',
+            't_form_pi_orang_lain.pi_email_pengguna_informasi.email' => 'Format email pengguna informasi tidak valid',
             'pi_upload_nik_pengguna_informasi.required' => 'Upload NIK pengguna informasi wajib diisi',
-            'pi_upload_nik_pengguna_informasi.image' => 'File harus berupa gambar',
-            'pi_upload_nik_pengguna_informasi.max' => 'Ukuran file tidak boleh lebih dari 10MB',
+            'pi_upload_nik_pengguna_informasi.image' => 'File NIK pengguna informasi harus berupa gambar',
+            'pi_upload_nik_pengguna_informasi.max' => 'Ukuran file NIK pengguna informasi tidak boleh lebih dari 10MB',
+        ]);
 
-            // Pesan untuk data penginput (ADM)
-            't_form_pi_orang_lain.pi_nama_pengguna_penginput.required' => 'Nama penginput wajib diisi',
-            't_form_pi_orang_lain.pi_alamat_pengguna_penginput.required' => 'Alamat penginput wajib diisi',
-            't_form_pi_orang_lain.pi_no_hp_pengguna_penginput.required' => 'Nomor HP penginput wajib diisi',
-            't_form_pi_orang_lain.pi_email_pengguna_penginput.required' => 'Email penginput wajib diisi',
-            't_form_pi_orang_lain.pi_email_pengguna_penginput.email' => 'Format email penginput tidak valid',
-            'pi_upload_nik_pengguna_penginput.required' => 'Upload NIK penginput wajib diisi',
-            'pi_upload_nik_pengguna_penginput.image' => 'File NIK penginput harus berupa gambar',
-            'pi_upload_nik_pengguna_penginput.max' => 'Ukuran file NIK penginput tidak boleh lebih dari 10MB',
-        ];
+        // Lakukan validasi
+        $validator = Validator::make($request->all(), $rules, $message);
 
-        $validator = Validator::make($request->all(), $rules, $messages);
-
+        // Lemparkan exception jika validasi gagal
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }

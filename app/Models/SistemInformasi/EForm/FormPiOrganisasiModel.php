@@ -31,14 +31,14 @@ class FormPiOrganisasiModel extends Model
 
     public static function createData($request)
     {
-        $fileName = self::uploadFile(
+        $uploadNikPelaporFile = self::uploadFile(
             $request->file('pi_identitas_narahubung'),
             'pi_organisasi_identitas'
         );
 
         try {
             $data = $request->t_form_pi_organisasi;
-            $data['pi_identitas_narahubung'] = $fileName;
+            $data['pi_identitas_narahubung'] = $uploadNikPelaporFile;
             $saveData = self::create($data);
 
             $result = [
@@ -49,33 +49,42 @@ class FormPiOrganisasiModel extends Model
             return $result;
         } catch (\Exception $e) {
             // Jika terjadi kesalahan, hapus file yang sudah diupload
-            self::removeFile($fileName);
+            self::removeFile($uploadNikPelaporFile);
             throw $e;
         }
     }
 
     public static function validasiData($request)
-    {
-        $validator = Validator::make($request->all(), [
-            't_form_pi_organisasi.pi_nama_organisasi' => 'required',
-            't_form_pi_organisasi.pi_no_telp_organisasi' => 'required',
-            't_form_pi_organisasi.pi_email_atau_medsos_organisasi' => 'required',
-            't_form_pi_organisasi.pi_nama_narahubung' => 'required',
-            't_form_pi_organisasi.pi_no_telp_narahubung' => 'required',
-            'pi_identitas_narahubung' => 'required|image|max:10240',
-        ], [
-            't_form_pi_organisasi.pi_nama_organisasi.required' => 'Nama organisasi wajib diisi',
-            't_form_pi_organisasi.pi_no_telp_organisasi.required' => 'Nomor telepon organisasi wajib diisi',
-            't_form_pi_organisasi.pi_email_atau_medsos_organisasi.required' => 'Email atau media sosial organisasi wajib diisi',
-            't_form_pi_organisasi.pi_nama_narahubung.required' => 'Nama narahubung wajib diisi',
-            't_form_pi_organisasi.pi_no_telp_narahubung.required' => 'Nomor telepon narahubung wajib diisi',
-            'pi_identitas_narahubung.required' => 'Identitas narahubung wajib diisi',
-            'pi_identitas_narahubung.image' => 'File harus berupa gambar',
-            'pi_identitas_narahubung.max' => 'Ukuran file tidak boleh lebih dari 10MB',
-        ]);
+{
+    // rules validasi untuk form organisasi
+    $rules = [
+        't_form_pi_organisasi.pi_nama_organisasi' => 'required',
+        't_form_pi_organisasi.pi_no_telp_organisasi' => 'required',
+        't_form_pi_organisasi.pi_email_atau_medsos_organisasi' => 'required|email',
+        't_form_pi_organisasi.pi_nama_narahubung' => 'required',
+        't_form_pi_organisasi.pi_no_telp_narahubung' => 'required',
+        'pi_identitas_narahubung' => 'required|image|max:10240',
+    ];
 
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
+    // message validasi
+    $message = [
+        't_form_pi_organisasi.pi_nama_organisasi.required' => 'Nama organisasi wajib diisi',
+        't_form_pi_organisasi.pi_no_telp_organisasi.required' => 'Nomor telepon organisasi wajib diisi',
+        't_form_pi_organisasi.pi_email_atau_medsos_organisasi.required' => 'Email atau media sosial organisasi wajib diisi',
+        't_form_pi_organisasi.pi_email_atau_medsos_organisasi.email' => 'Format email atau media sosial organisasi tidak valid',
+        't_form_pi_organisasi.pi_nama_narahubung.required' => 'Nama narahubung wajib diisi',
+        't_form_pi_organisasi.pi_no_telp_narahubung.required' => 'Nomor telepon narahubung wajib diisi',
+        'pi_identitas_narahubung.required' => 'Identitas narahubung wajib diisi',
+        'pi_identitas_narahubung.image' => 'File harus berupa gambar',
+        'pi_identitas_narahubung.max' => 'Ukuran file tidak boleh lebih dari 10MB',
+    ];
+
+    // Lakukan validasi
+    $validator = Validator::make($request->all(), $rules, $message);
+
+    // Lemparkan exception jika validasi gagal
+    if ($validator->fails()) {
+        throw new ValidationException($validator);
     }
+}
 }

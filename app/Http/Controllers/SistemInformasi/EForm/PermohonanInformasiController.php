@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 class PermohonanInformasiController extends Controller
 {
     use TraitsController;
-    
+
     public $breadcrumb = 'Permohonan Informasi';
     public $pagename = 'SistemInformasi/EForm/PermohonanInformasi';
 
@@ -38,7 +38,18 @@ class PermohonanInformasiController extends Controller
         ]);
     }
 
-    public function create()
+    public function getData()
+    {
+        $timeline = PermohonanInformasiModel::getTimeline();
+        $ketentuanPelaporan = PermohonanInformasiModel::getKetentuanPelaporan();
+
+        return [
+            'timeline' => $timeline,
+            'ketentuanPelaporan' => $ketentuanPelaporan
+        ];
+    }
+
+    public function addData()
     {
         $folder = $this->getUserFolder();
 
@@ -60,7 +71,7 @@ class PermohonanInformasiController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function createData(Request $request)
     {
         try {
             $folder = $this->getUserFolder();

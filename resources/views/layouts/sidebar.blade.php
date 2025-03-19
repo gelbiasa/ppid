@@ -5,8 +5,8 @@ use App\Models\Log\NotifVerifikatorModel;
 use App\Helpers\MenuHelper;
 
 // Hitung total notifikasi belum dibaca
-$totalNotifikasiVFR = NotifAdminModel::where('sudah_dibaca_notif_admin', null)->count();
-$totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', null)->count();
+$totalNotifikasiADM = NotifAdminModel::where('sudah_dibaca_notif_admin', null)->count();
+$totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', null)->count();
 ?>
 
 <div class="sidebar">
@@ -27,8 +27,7 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
             <!-- Menu untuk setiap level_kode -->
             @if (Auth::user()->level->level_kode == 'ADM')
                 <li class="nav-item">
-                    <a href="{{ url('/dashboardADM') }}"
-                        class="nav-link {{ $activeMenu == 'dashboard' ? 'active' : '' }} ">
+                    <a href="{{ url('/dashboardADM') }}" class="nav-link {{ $activeMenu == 'dashboard' ? 'active' : '' }} ">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
@@ -40,7 +39,8 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ url('/notifAdmin') }}" class="nav-link {{ $activeMenu == 'notifikasi' ? 'active' : '' }}">
+                    <a href="{{ url('/Notifikasi/NotifAdmin') }}"
+                        class="nav-link {{ $activeMenu == 'notifikasi' ? 'active' : '' }}">
                         <i class="nav-icon fas fa-bell"></i>
                         <p>Notifikasi</p>
                         @if ($totalNotifikasiADM > 0)
@@ -73,38 +73,38 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                 <li class="nav-header">Website / Portal</li>
                 <!-- Menu Utama -->
                 @if(MenuHelper::shouldShowInSidebar('adminweb/menu-management'))
-                <li class="nav-item {{ request()->is('adminweb/menu-utama*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('adminweb/menu-utama*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-cog"></i>
-                        <p>
-                            Manajemen Menu
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ url('/adminweb/menu-management') }}"
-                                class="nav-link {{ $activeMenu == 'menumanagement' ? 'active' : '' }}">
-                                <i class="fas fa-tasks nav-icon"></i>
-                                <p>Menu Management</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url('/adminweb/kategori-footer') }}"
-                                class="nav-link {{ $activeMenu == 'kategori-footer' ? 'active' : '' }}">
-                                <i class="fas fa-tasks nav-icon"></i>
-                                <p>Kategori-Footer</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url('/adminweb/footer') }}"
-                                class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
-                                <i class="fas fa-tasks nav-icon"></i>
-                                <p>Footer</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="nav-item {{ request()->is('adminweb/menu-utama*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->is('adminweb/menu-utama*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>
+                                Manajemen Menu
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ url('/adminweb/menu-management') }}"
+                                    class="nav-link {{ $activeMenu == 'menumanagement' ? 'active' : '' }}">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>Menu Management</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/adminweb/kategori-footer') }}"
+                                    class="nav-link {{ $activeMenu == 'kategori-footer' ? 'active' : '' }}">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>Kategori-Footer</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/adminweb/footer') }}"
+                                    class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>Footer</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 @endif
 
                 <li class="nav-header">Sistem Informasi</li>
@@ -134,15 +134,55 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                             <a href="{{ url('SistemInformasi/EForm/ADM/PengaduanMasyarakat') }}"
                                 class="nav-link {{ $activeMenu == 'PengaduanMasyarakat' ? 'active' : '' }}">
                                 <i class="fas fa-file-alt nav-icon"></i>
-                                <p>Pengaduan Masyarakat </p>
+                                <p>Pengaduan Masyarakat</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/ADM/WBS') }}"
+                                class="nav-link {{ $activeMenu == 'WBS' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Whistle Blowing System</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/ADM/PermohonanPerawatan') }}"
+                                class="nav-link {{ $activeMenu == 'WBS' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Permohonan Perawatan SarPras</p>
                             </a>
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-folder-open"></i>
+                        <p> Petunjuk E-Form
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/Timeline') }}"
+                                class="nav-link {{ $activeMenu == 'Timeline' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Pengaturan Timeline</p>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/KetentuanPelaporan') }}"
+                                class="nav-link {{ $activeMenu == 'KetentuanPelaporan' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Pengaturan Ketentuan Pelaporan</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
             @elseif (Auth::user()->level->level_kode == 'SAR')
                 <li class="nav-item">
-                    <a href="{{ url('/dashboardSAR') }}"
-                        class="nav-link {{ $activeMenu == 'dashboard' ? 'active' : '' }} ">
+                    <a href="{{ url('/dashboardSAR') }}" class="nav-link {{ $activeMenu == 'dashboard' ? 'active' : '' }} ">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
@@ -230,8 +270,7 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                 </li>
             @elseif (Auth::user()->level->level_kode == 'RPN')
                 <li class="nav-item">
-                    <a href="{{ url('/dashboardRPN') }}"
-                        class="nav-link {{ $activeMenu == 'dashboard' ? 'active' : '' }}">
+                    <a href="{{ url('/dashboardRPN') }}" class="nav-link {{ $activeMenu == 'dashboard' ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
@@ -269,6 +308,20 @@ $totalNotifikasiADM = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                 class="nav-link {{ $activeMenu == 'PengaduanMasyarakat' ? 'active' : '' }}">
                                 <i class="fas fa-file-alt nav-icon"></i>
                                 <p>Pengaduan Masyarakat </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/RPN/WBS') }}"
+                                class="nav-link {{ $activeMenu == 'WBS' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Whistle Blowing System</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/EForm/RPN/PermohonanPerawatan') }}"
+                                class="nav-link {{ $activeMenu == 'WBS' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Permohonan Perawatan SarPras</p>
                             </a>
                         </li>
                     </ul>

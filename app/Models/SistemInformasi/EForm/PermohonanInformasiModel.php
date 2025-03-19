@@ -5,6 +5,8 @@ namespace App\Models\SistemInformasi\EForm;
 use App\Models\Log\NotifAdminModel;
 use App\Models\Log\NotifVerifikatorModel;
 use App\Models\Log\TransactionModel;
+use App\Models\SistemInformasi\KategoriForm\KategoriFormModel;
+use App\Models\SistemInformasi\Timeline\TimelineModel;
 use App\Models\TraitsModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -58,12 +60,12 @@ class PermohonanInformasiModel extends Model
 
     public static function selectData()
     {
-      //
+        //
     }
 
     public static function createData($request)
     {
-        $fileName = self::uploadFile(
+        $buktiAduanFile = self::uploadFile(
             $request->file('pi_bukti_aduan'),
             'pi_bukti_aduan'
         );
@@ -76,7 +78,7 @@ class PermohonanInformasiModel extends Model
             $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
 
             if ($userLevel === 'ADM') {
-                $data['pi_bukti_aduan'] = $fileName;
+                $data['pi_bukti_aduan'] = $buktiAduanFile;
             }
 
             switch ($kategoriPemohon) {
@@ -98,7 +100,7 @@ class PermohonanInformasiModel extends Model
 
             $data['pi_kategori_pemohon'] = $kategoriPemohon;
             $data['pi_kategori_aduan'] = $kategoriAduan;
-            $data['pi_bukti_aduan'] = $fileName;
+            $data['pi_bukti_aduan'] = $buktiAduanFile;
             $data['pi_status'] = 'Masuk';
 
             $data[$child['pkField']] = $child['id'];
@@ -124,11 +126,11 @@ class PermohonanInformasiModel extends Model
             return $result;
         } catch (ValidationException $e) {
             DB::rollBack();
-            self::removeFile($fileName);
+            self::removeFile($buktiAduanFile);
             return self::responValidatorError($e);
         } catch (\Exception $e) {
             DB::rollBack();
-            self::removeFile($fileName);
+            self::removeFile($buktiAduanFile);
             return self::responFormatError($e, 'Terjadi kesalahan saat mengajukan permohonan');
         }
     }
@@ -145,39 +147,41 @@ class PermohonanInformasiModel extends Model
 
     public static function validasiData($request)
     {
-        $userLevel = Auth::user()->level->level_kode;
-
+        // rules validasi dasar untuk permohonan informasi
         $rules = [
             't_permohonan_informasi.pi_kategori_pemohon' => 'required',
             't_permohonan_informasi.pi_informasi_yang_dibutuhkan' => 'required',
             't_permohonan_informasi.pi_alasan_permohonan_informasi' => 'required',
             't_permohonan_informasi.pi_sumber_informasi' => 'required',
             't_permohonan_informasi.pi_alamat_sumber_informasi' => 'required',
-
         ];
 
-        if ($userLevel === 'ADM') {
-            $rules['pi_bukti_aduan'] = 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240';
-        }
-
-        $messages = [
+        // message validasi dasar
+        $message = [
             't_permohonan_informasi.pi_kategori_pemohon.required' => 'Kategori pemohon wajib diisi',
             't_permohonan_informasi.pi_informasi_yang_dibutuhkan.required' => 'Informasi yang dibutuhkan wajib diisi',
             't_permohonan_informasi.pi_alasan_permohonan_informasi.required' => 'Alasan permohonan informasi wajib diisi',
             't_permohonan_informasi.pi_sumber_informasi.required' => 'Sumber informasi wajib diisi',
             't_permohonan_informasi.pi_alamat_sumber_informasi.required' => 'Alamat sumber informasi wajib diisi',
-            'pi_bukti_aduan.required' => 'Bukti aduan wajib diupload untuk Admin',
-            'pi_bukti_aduan.file' => 'Bukti aduan harus berupa file',
-            'pi_bukti_aduan.mimes' => 'Format file bukti aduan tidak valid. Format yang diizinkan: PDF, JPG, JPEG, PNG, SVG, DOC, DOCX',
-            'pi_bukti_aduan.max' => 'Ukuran file bukti aduan maksimal 10MB',
         ];
 
-        $validasiDasar = Validator::make($request->all(), $rules, $messages);
-
-        if ($validasiDasar->fails()) {
-            throw new ValidationException($validasiDasar);
+        // Tambahkan validasi untuk admin jika diperlukan
+        if (Auth::user()->level->level_kode === 'ADM') {
+            $rules['pi_bukti_aduan'] = 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240';
+            $message['pi_bukti_aduan.required'] = 'Bukti aduan wajib diupload untuk Admin';
+            $message['pi_bukti_aduan.file'] = 'Bukti aduan harus berupa file';
+            $message['pi_bukti_aduan.mimes'] = 'Format file bukti aduan tidak valid';
+            $message['pi_bukti_aduan.max'] = 'Ukuran file bukti aduan maksimal 10MB';
         }
 
+        // Validasi berdasarkan kategori pemohon
+        $validator = Validator::make($request->all(), $rules, $message);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        // Validasi detail berdasarkan kategori pemohon
         $kategoriPemohon = $request->t_permohonan_informasi['pi_kategori_pemohon'];
         switch ($kategoriPemohon) {
             case 'Diri Sendiri':
@@ -192,5 +196,44 @@ class PermohonanInformasiModel extends Model
         }
 
         return true;
+    }
+
+    public static function getTimeline()
+    {
+
+        // Ambil ID kategori form untuk 'Permohonan Informasi'
+        $kategoriForm = KategoriFormModel::where('kf_nama', 'Permohonan Informasi')
+            ->where('isDeleted', 0)
+            ->first();
+
+        // Jika kategori form ditemukan, cari timeline terkait
+        $timeline = null;
+        if ($kategoriForm) {
+            $timeline = TimelineModel::with('langkahTimeline')
+                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
+                ->where('isDeleted', 0)
+                ->first();
+        }
+
+        return $timeline;
+    }
+
+    public static function getKetentuanPelaporan()
+    {
+        // Ambil ID kategori form untuk 'Permohonan Informasi'
+        $kategoriForm = KategoriFormModel::where('kf_nama', 'Permohonan Informasi')
+            ->where('isDeleted', 0)
+            ->first();
+
+        // Jika kategori form ditemukan, cari ketentuan pelaporan terkait
+        $ketentuanPelaporan = null;
+        if ($kategoriForm) {
+            $ketentuanPelaporan = DB::table('m_ketentuan_pelaporan')
+                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
+                ->where('isDeleted', 0)
+                ->first();
+        }
+
+        return $ketentuanPelaporan;
     }
 }

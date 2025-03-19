@@ -39,7 +39,7 @@
                     <!-- Pilih Level -->
                     <div class="input-group mb-3">
                         <select class="form-control" id="level_id" name="m_user[fk_m_level]" required>
-                            <option value="5">Responden</option> 
+                            <option value="2">Responden</option> 
                         </select>
                         <div class="input-group-append">
                             <div class="input-group-text">
