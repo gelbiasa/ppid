@@ -26,14 +26,36 @@ class MenuManagementController extends Controller
             ];
 
             $activeMenu = 'menumanagement';
+            
+            // Dapatkan daftar jenis menu
+            $jenisMenuList = WebMenuModel::getJenisMenuList();
+            
+            // Dapatkan menu dikelompokkan berdasarkan jenis menu
+            $menusByJenis = [];
+            foreach ($jenisMenuList as $kode => $nama) {
+                $menusByJenis[$kode] = [
+                    'nama' => $nama,
+                    'menus' => WebMenuModel::where('wm_jenis_menu', $kode)
+                        ->whereNull('wm_parent_id')
+                        ->where('isDeleted', 0)
+                        ->orderBy('wm_urutan_menu')
+                        ->with(['children' => function($query) {
+                            $query->where('isDeleted', 0)->orderBy('wm_urutan_menu');
+                        }])
+                        ->get()
+                ];
+            }
+            
+            // Untuk dropdown di form
             $menus = WebMenuModel::getMenusWithChildren();
 
-            return view('adminweb.MenuManagement.index', compact('breadcrumb', 'page', 'menus', 'activeMenu'));
+            return view('adminweb.MenuManagement.index', compact('breadcrumb', 'page', 'menus', 'activeMenu', 'menusByJenis', 'jenisMenuList'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error loading menu management page');
+            return redirect()->back()->with('error', 'Error loading menu management page: ' . $e->getMessage());
         }
     }
 
+    // Method lain tetap sama
     public function store(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {

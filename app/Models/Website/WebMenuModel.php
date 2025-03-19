@@ -21,6 +21,7 @@ class WebMenuModel extends Model
 
     protected $fillable = [
         'wm_parent_id',
+        'wm_jenis_menu',
         'wm_urutan_menu',
         'wm_menu_nama',
         'wm_menu_url',
@@ -50,12 +51,23 @@ class WebMenuModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
+    public static function getJenisMenuList()
+    {
+        return [
+            'ADM' => 'Administrator',
+            'MPU' => 'Manajemen dan Pimpinan Unit',
+            'VFR' => 'Verifikator',
+            'RPN' => 'Responden'
+        ];
+    }
+
     public static function selectData()
     {
         $arr_data =  self::query()
             ->select([
                 'web_menu_id',
                 'wm_parent_id',
+                'wm_jenis_menu',  // Menambahkan jenis menu ke data yang diambil
                 'wm_menu_url',
                 'wm_menu_nama',
                 'wm_urutan_menu'
@@ -68,6 +80,7 @@ class WebMenuModel extends Model
                 return [
                     'id' => $menu->web_menu_id,
                     'wm_parent_id' => $menu->wm_parent_id,
+                    'wm_jenis_menu' => $menu->wm_jenis_menu,  // Menambahkan jenis menu ke data yang di-map
                     'wm_menu_url' => $menu->wm_menu_url,
                     'wm_menu_nama' => $menu->wm_menu_nama,
                     'wm_urutan_menu' => $menu->wm_urutan_menu
@@ -81,6 +94,7 @@ class WebMenuModel extends Model
             ->select([
                 'web_menu_id',
                 'wm_parent_id',
+                'wm_jenis_menu',  // Menambahkan jenis menu ke data yang diambil
                 'wm_menu_url',
                 'wm_menu_nama',
                 'wm_urutan_menu'
@@ -94,6 +108,7 @@ class WebMenuModel extends Model
                 return [
                     'id' => $menu->web_menu_id,
                     'wm_parent_id' => $menu->wm_parent_id,
+                    'wm_jenis_menu' => $menu->wm_jenis_menu,  // Menambahkan jenis menu ke data yang di-map
                     'wm_menu_url' => $menu->wm_menu_url,
                     'wm_menu_nama' => $menu->wm_menu_nama,
                     'wm_urutan_menu' => $menu->wm_urutan_menu
@@ -314,6 +329,7 @@ class WebMenuModel extends Model
             'web_menu.wm_menu_nama' => 'required|string|max:60',
             'web_menu.wm_parent_id' => 'nullable|exists:web_menu,web_menu_id',
             'web_menu.wm_status_menu' => 'required|in:aktif,nonaktif',
+            'web_menu.wm_jenis_menu' => 'required|in:ADM,MPU,VFR,RPN',  // Validasi untuk jenis menu
         ];
 
         $messages = [
@@ -322,6 +338,8 @@ class WebMenuModel extends Model
             'web_menu.wm_parent_id.exists' => 'Parent menu tidak valid',
             'web_menu.wm_status_menu.required' => 'Status menu wajib diisi',
             'web_menu.wm_status_menu.in' => 'Status menu harus aktif atau nonaktif',
+            'web_menu.wm_jenis_menu.required' => 'Jenis menu wajib diisi',  // Pesan error untuk jenis menu
+            'web_menu.wm_jenis_menu.in' => 'Jenis menu tidak valid',        // Pesan error untuk jenis menu
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -385,6 +403,9 @@ class WebMenuModel extends Model
                 ];
             }
 
+            // Dapatkan nama jenis menu
+            $jenisMenu = self::getJenisMenuList()[$menu->wm_jenis_menu] ?? $menu->wm_jenis_menu;
+
             $result = [
                 'success' => true,
                 'menu' => [
@@ -393,6 +414,8 @@ class WebMenuModel extends Model
                     'wm_status_menu' => $menu->wm_status_menu,
                     'wm_parent_id' => $menu->wm_parent_id,
                     'wm_urutan_menu' => $menu->wm_urutan_menu,
+                    'wm_jenis_menu' => $menu->wm_jenis_menu,         // Kode jenis menu
+                    'jenis_menu_nama' => $jenisMenu,                 // Nama jenis menu
                     'parent_menu_nama' => $menu->parentMenu ? $menu->parentMenu->wm_menu_nama : null,
                     'created_by' => $menu->created_by,
                     'created_at' => $menu->created_at->format('Y-m-d H:i:s'),
@@ -415,23 +438,67 @@ class WebMenuModel extends Model
     {
         try {
             DB::beginTransaction();
-            foreach ($data as $position => $item) {
-                $menu = self::find($item['id']);
-                if ($menu) {
-                    $menu->update([
-                        'wm_parent_id' => $item['parent_id'] ?? null,
-                        'wm_urutan_menu' => $position + 1,
-                    ]);
 
-                    if (isset($item['children'])) {
-                        foreach ($item['children'] as $childPosition => $child) {
-                            $childMenu = self::find($child['id']);
-                            if ($childMenu) {
-                                $childMenu->update([
-                                    'wm_parent_id' => $item['id'],
-                                    'wm_urutan_menu' => $childPosition + 1,
-                                ]);
-                            }
+            // Pertama, kita perlu mendapatkan kategori asal dari setiap menu di data
+            $menuIds = [];
+            $menuJenis = [];
+
+            // Kumpulkan semua ID menu untuk memudahkan pengecekan
+            foreach ($data as $item) {
+                $menuIds[] = $item['id'];
+
+                if (isset($item['children'])) {
+                    foreach ($item['children'] as $child) {
+                        $menuIds[] = $child['id'];
+                    }
+                }
+            }
+
+            // Ambil informasi jenis menu asli dari database
+            $originalMenus = self::whereIn('web_menu_id', $menuIds)->get()->keyBy('web_menu_id');
+
+            // Menentukan jenis menu baru untuk setiap menu
+            foreach ($data as $position => $item) {
+                $menu = $originalMenus[$item['id']] ?? null;
+
+                if (!$menu) continue;
+
+                // Menentukan parent dan jenis menu
+                $parentId = $item['parent_id'] ?? null;
+                $updateData = [
+                    'wm_parent_id' => $parentId,
+                    'wm_urutan_menu' => $position + 1,
+                ];
+
+                // Jika menu ini adalah menu utama (parent_id = null),
+                // maka kita perlu memperhatikan kategori tempat menu ini berada
+                if (!$parentId) {
+                    // Jika menu ini dipindahkan ke kategori dropdown lain
+                    // kita perlu mendapatkan kategori dari data-jenis yang dikirim dari frontend
+                    $jenisMenuBaru = isset($item['jenis']) ? $item['jenis'] : $menu->wm_jenis_menu;
+                    $updateData['wm_jenis_menu'] = $jenisMenuBaru;
+                } else if ($parentId) {
+                    // Jika menu ini memiliki parent, adopsi jenis menu dari parent
+                    $parentMenu = $originalMenus[$parentId] ?? null;
+                    if ($parentMenu) {
+                        $updateData['wm_jenis_menu'] = $parentMenu->wm_jenis_menu;
+                    }
+                }
+
+                // Update menu
+                $menu->update($updateData);
+
+                // Memperbarui jenis menu anak-anak
+                if (isset($item['children'])) {
+                    foreach ($item['children'] as $childPosition => $child) {
+                        $childMenu = $originalMenus[$child['id']] ?? null;
+                        if ($childMenu) {
+                            // Update anak menu dengan jenis menu yang sama dengan parent
+                            $childMenu->update([
+                                'wm_parent_id' => $item['id'],
+                                'wm_urutan_menu' => $childPosition + 1,
+                                'wm_jenis_menu' => $menu->wm_jenis_menu // Mengambil jenis menu dari parent yang sudah diupdate
+                            ]);
                         }
                     }
                 }

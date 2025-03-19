@@ -1,9 +1,16 @@
-<li class="dd-item" data-id="{{ $menu->web_menu_id }}">
+{{-- resources/views/adminweb/MenuManagement/menu-item.blade.php --}}
+<li class="dd-item" data-id="{{ $menu->web_menu_id }}" data-jenis="{{ $menu->wm_jenis_menu }}">
     <div class="dd-handle">
         <span class="menu-text">{{ $menu->wm_menu_nama }}</span>
         <span class="float-right">
             <span class="badge {{ $menu->wm_status_menu == 'aktif' ? 'badge-success' : 'badge-danger' }}">
                 {{ $menu->wm_status_menu }}
+            </span>
+            <span class="badge badge-info">
+                @php
+                    $jenisMenuList = \App\Models\Website\WebMenuModel::getJenisMenuList();
+                    echo $jenisMenuList[$menu->wm_jenis_menu] ?? $menu->wm_jenis_menu;
+                @endphp
             </span>
             
             <!-- Tombol Detail selalu tampil karena hanya untuk melihat -->
