@@ -1,256 +1,124 @@
 @extends('layouts.template')
+
 @section('content')
-    <div class="card card-outline card-primary">
-        <div class="card-header">
+  <div class="card card-outline card-primary">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-md-6">
             <h3 class="card-title">{{ $page->title }}</h3>
-            <div class="card-tools">
-                <button onclick="modalAction('{{ url('/adminweb/footer/create') }}')" class="btn btn-sm btn-success mt-1">
-                    <i class="fas fa-plus"></i> Tambah Footer
-                </button>
-            </div>
+          </div>
+          <div class="col-md-6 text-right">
+            <button onclick="modalAction('{{ url('adminweb/footer/addData') }}')" 
+                    class="btn btn-sm btn-success">
+              <i class="fas fa-plus"></i> Tambah
+            </button>   
+          </div>
         </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <select id="kategori-filter" class="form-control">
-                        <option value="">Semua Kategori</option>
-                        @foreach ($kategoriFooters as $kategori)
-                            <option value="{{ $kategori->kategori_footer_id }}">
-                                {{ $kategori->kt_footer_nama }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <form id="searchForm" class="d-flex">
+              <input type="text" name="search" class="form-control" 
+                     placeholder="Cari judul atau kategori" 
+                     value="{{ $search ?? '' }}">
+              <button type="submit" class="btn btn-primary ml-2">
+                <i class="fas fa-search"></i>
+              </button>
+            </form>
+          </div>
+        </div>
 
-            <table class="table table-bordered table-striped table-hover table-sm" id="table_footer">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Kategori</th>
-                        <th>Judul</th>
-                        <th>URL</th>
-                        <th>Ikon</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-            </table>
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+    
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
+        <div class="table-responsive" id="table-container">
+          @include('AdminWeb.Footer.data')
         </div>
+      </div>
+  </div>
+  
+  <!-- Modal for CRUD operations -->
+  <div id="myModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <!-- Modal content will be loaded here -->
+      </div>
     </div>
-
-    <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static"
-        data-keyboard="false" data-width="75%" aria-hidden="true"></div>
+  </div>
 @endsection
 
+@push('css')
+<style>
+  .pagination {
+    justify-content: flex-start; /* Ubah ke kiri */
+  }
+</style>
+@endpush
+
 @push('js')
-    <script>
-        //  variable untuk DataTable
-        var footerTable;
+  <script>
+    // Script tetap sama seperti sebelumnya
+    $(document).ready(function() {
+      // Handle search form submission
+      $('#searchForm').on('submit', function(e) {
+        e.preventDefault();
+        var search = $(this).find('input[name="search"]').val();
+        loadFooterData(1, search);
+      });
 
-        // Fungsi untuk membuka modal
-        function modalAction(url = '') {
-            $('#myModal').load(url, function(response) {
-                $('#myModal').modal('show');
-            }).fail(function() {
-                toastr.error('Gagal memuat konten modal');
-            });
+      // Handle pagination links with delegation
+      $(document).on('click', '.pagination a', function(e) {
+        e.preventDefault();
+        var page = $(this).attr('href').split('page=')[1];
+        var search = $('#searchForm input[name="search"]').val();
+        loadFooterData(page, search);
+      });
+    });
+    
+    function loadFooterData(page, search) {
+      $.ajax({
+        url: '{{ url("adminweb/footer/getData") }}',
+        type: 'GET',
+        data: {
+          page: page,
+          search: search
+        },
+        success: function(response) {
+          $('#table-container').html(response);
+        },
+        error: function(xhr) {
+          alert('Terjadi kesalahan saat memuat data');
         }
-
-        // Lihat detail footer
-        function showDetailFooter(id) {
-            $.ajax({
-                url: `{{ url('/adminweb/footer') }}/${id}/detail_footer`,
-                method: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        $('#myModal').html(`
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-primary text-white">
-                                        <h5 class="modal-title"><i class="fas fa-info-circle"></i> Detail Footer</h5>
-                                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <table class="table table-bordered">
-                                            <tr>
-                                                <th style="width: 40%">Judul</th>
-                                                <td>${response.footer.f_judul_footer}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Kategori</th>
-                                                <td>${response.footer.kategori_footer}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>URL</th>
-                                                <td>${response.footer.f_url_footer ? `<a href="${response.footer.f_url_footer}" target="_blank">${response.footer.f_url_footer}</a>` : '-'}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Ikon</th>
-                                                <td>${response.footer.f_icon_footer ? `<img src="{{ asset('storage/${response.footer.f_icon_footer}') }}" class="img-fluid" style="max-height: 100px;" alt="Icon">` : '-'}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Dibuat Oleh</th>
-                                                <td>${response.footer.created_by}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Tanggal Dibuat</th>
-                                                <td>${response.footer.created_at}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Diperbarui Oleh</th>
-                                                <td>${response.footer.updated_by || '-'}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Tanggal Diperbarui</th>
-                                                <td>${response.footer.updated_at || '-'}</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                                    </div>
-                                </div>
-                            </div>
-                        `);
-                        $('#myModal').modal('show');
-                    } else {
-                        Swal.fire('Error', response.message, 'error');
-                    }
-                },
-                error: function() {
-                    Swal.fire('Error', 'Gagal mengambil detail footer', 'error');
-                }
-            });
+      });
+    }
+    
+    function modalAction(url) {
+      $('#myModal .modal-content').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading...</p></div>');
+      $('#myModal').modal('show');
+      
+      $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+          $('#myModal .modal-content').html(response);
+        },
+        error: function(xhr) {
+          $('#myModal .modal-content').html('<div class="modal-header"><h5 class="modal-title">Error</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><div class="alert alert-danger">Terjadi kesalahan saat memuat data. Silakan coba lagi.</div></div>');
         }
-
-        // Fungsi untuk menghapus footer
-        function deleteFooter(id) {
-            $.ajax({
-                url: `{{ url('/adminweb/footer') }}/${id}/detail_footer`,
-                method: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        const judulFooter = response.footer.f_judul_footer;
-
-                        // Tampilkan konfirmasi dengan judul footer bold
-                        Swal.fire({
-                            title: 'Konfirmasi Hapus',
-                            html: `Apakah Anda yakin ingin menghapus footer <strong>"${judulFooter}"</strong>?`,
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Ya, Hapus!',
-                            cancelButtonText: 'Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $.ajax({
-                                    url: `{{ url('adminweb/footer') }}/${id}/delete`,
-                                    type: 'DELETE',
-                                    data: {
-                                        _token: '{{ csrf_token() }}'
-                                    },
-                                    success: function(response) {
-                                        if (response.success) {
-                                            Swal.fire({
-                                                title: 'Terhapus!',
-                                                html: `Footer <strong>"${judulFooter}"</strong> berhasil dihapus.`,
-                                                icon: 'success'
-                                            });
-                                            footerTable.ajax.reload();
-                                        } else {
-                                            Swal.fire(
-                                                'Gagal!',
-                                                response.message,
-                                                'error'
-                                            );
-                                        }
-                                    },
-                                    error: function(xhr) {
-                                        Swal.fire(
-                                            'Error!',
-                                            'Gagal menghapus footer',
-                                            'error'
-                                        );
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        Swal.fire('Error', 'Gagal mengambil detail footer', 'error');
-                    }
-                },
-                error: function() {
-                    Swal.fire('Error', 'Gagal mengambil detail footer', 'error');
-                }
-            });
-        }
-
-        // Inisialisasi DataTable
-        $(document).ready(function() {
-            footerTable = $('#table_footer').DataTable({
-                serverSide: true,
-                ajax: {
-                    "url": "{{ url('adminweb/footer/list') }}",
-                    "dataType": "json",
-                    "type": "POST",
-                    "data": function(d) {
-                        d.kategori = $('#kategori-filter').val();
-                    }
-                },
-                columns: [{
-                        data: "DT_RowIndex",
-                        className: "text-center",
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: "kategori_footer",
-                        className: "",
-                        orderable: true,
-                        searchable: true
-                    },
-                    {
-                        data: "f_judul_footer",
-                        className: "",
-                        orderable: true,
-                        searchable: true
-                    },
-                    {
-                        data: "f_url_footer",
-                        className: "",
-                        orderable: true,
-                        searchable: true,
-                        render: function(data) {
-                            return data ?
-                                `<a href="${data}" target="_blank">${data}</a>` :
-                                '-';
-                        }
-                    },
-                    {
-                        data: "f_icon_footer",
-                        className: "text-center",
-                        orderable: false,
-                        searchable: false,
-                        render: function(data) {
-                            return data ?
-                                `<img src="{{ asset('storage/footer_icons/') }}/${data}" class="img-thumbnail" style="max-height: 50px;" alt="Icon">` :
-                                '-';
-                        }
-                    },
-                    {
-                        data: "aksi",
-                        className: "text-center",
-                        orderable: false,
-                        searchable: false
-                    }
-                ]
-            });
-
-            // Kategori filter change event
-            $('#kategori-filter').on('change', function() {
-                footerTable.ajax.reload();
-            });
-        });
-    </script>
+      });
+    }
+    
+    function reloadTable() {
+      var currentPage = $('.pagination .active .page-link').text();
+      currentPage = currentPage || 1;
+      var search = $('#searchForm input[name="search"]').val();
+      loadFooterData(currentPage, search);
+    }
+  </script>
 @endpush

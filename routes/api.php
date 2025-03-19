@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\Api\ApiAuthController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Auth\AuthMenuController;
-use App\Http\Controllers\Api\Auth\BeritaPengumumanController;
-use App\Http\Controllers\Api\Public\PublicMenuController;
 use Spatie\FlareClient\Api;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ApiAuthController;
+use App\Http\Controllers\Api\Auth\AuthMenuController;
+use App\Http\Controllers\Api\Auth\ApiFooterController;
+use App\Http\Controllers\Api\Public\PublicMenuController;
+use App\Http\Controllers\Api\Auth\BeritaPengumumanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,7 @@ Route::prefix('auth')->group(function () {
         Route::get('user', [ApiAuthController::class, 'getData']);
         Route::get('menus', [AuthMenuController::class, 'getAuthMenus']);
         Route::get('berita-pengumuman', [BeritaPengumumanController::class, 'getBeritaPengumuman']);
+        Route::get('footerData', [ApiFooterController::class, 'getDataFooter']);
     });
 });
 

@@ -1,116 +1,107 @@
-<div class="modal-dialog modal-lg">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h4 class="modal-title">Tambah Kategori Footer Baru</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <form id="formKategoriFooter" action="{{ url('/adminweb/kategori-footer/store') }}" method="POST">
-            @csrf
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Kode Kategori Footer <span class="text-danger">*</span></label>
-                            <input type="text" name="kt_footer_kode" class="form-control" required 
-                                   placeholder="Masukkan kode kategori" 
-                                   maxlength="20">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Nama Kategori Footer <span class="text-danger">*</span></label>
-                            <input type="text" name="kt_footer_nama" class="form-control" required 
-                                   placeholder="Masukkan nama kategori"
-                                   maxlength="100">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-            </div>
-        </form>
-    </div>
+<!-- views/AdminWeb/KategoriFooter/create.blade.php -->
+
+<div class="modal-header">
+    <h5 class="modal-title">Tambah Kategori Footer</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
 </div>
 
-<script>
-$(document).ready(function() {
-    $('#formKategoriFooter').on('submit', function(e) {
-        e.preventDefault();
-        var formData = $(this).serialize();
+<form id="form-create-kategori-footer">
+    <div class="modal-body">
+        <div class="form-group">
+            <label for="kt_footer_kode">Kode Footer <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="kt_footer_kode" name="kt_footer_kode" required maxlength="20">
+            <div class="invalid-feedback" id="error-kt_footer_kode"></div>
+        </div>
+        
+        <div class="form-group">
+            <label for="kt_footer_nama">Nama Footer <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="kt_footer_nama" name="kt_footer_nama" required maxlength="100">
+            <div class="invalid-feedback" id="error-kt_footer_nama"></div>
+        </div>
+    </div>
+    
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-primary" id="btn-save">Simpan</button>
+    </div>
+</form>
 
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    // Tutup modal
-                    $('#myModal').modal('hide');
-                    
-                    // Tampilkan SweetAlert sukses
-                    Swal.fire(
-                        'Berhasil!',
-                        response.message,
-                        'success'
-                    );
-                    
-                    // Reload DataTable
-                    if (typeof kategoriFooterTable !== 'undefined') {
-                        kategoriFooterTable.ajax.reload();
-                    }
-                } else {
-                    // Jika validasi gagal atau ada kesalahan
-                    if (response.errors) {
-                        // Tampilkan error validasi
-                        let errorMessage = '';
-                        $.each(response.errors, function(field, messages) {
-                            errorMessage += messages[0] + '<br>';
+<script>
+    $(document).ready(function() {
+        // Reset form on modal close
+        $('#myModal').on('hidden.bs.modal', function() {
+            $('#form-create-kategori-footer')[0].reset();
+            $('.is-invalid').removeClass('is-invalid');
+        });
+        
+        // Form submission
+        $('#form-create-kategori-footer').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Reset error messages
+            $('.is-invalid').removeClass('is-invalid');
+            
+            // Disable button to prevent multiple submissions
+            $('#btn-save').attr('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...');
+            
+            // Submit form data via AJAX
+            $.ajax({
+                url: '{{ url("adminweb/kategori-footer/createData") }}',
+                type: 'POST',
+                data: $(this).serialize(),
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            // Close modal and refresh data table
+                            $('#myModal').modal('hide');
+                            $('#table_kategori_footer').DataTable().ajax.reload();
+                        });
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            title: 'Gagal!',
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
                         });
                         
-                        Swal.fire(
-                            'Gagal!',
-                            errorMessage,
-                            'error'
-                        );
+                        // Enable button
+                        $('#btn-save').attr('disabled', false).html('Simpan');
+                    }
+                },
+                error: function(xhr) {
+                    // Enable button
+                    $('#btn-save').attr('disabled', false).html('Simpan');
+                    
+                    // Handle validation errors
+                    if (xhr.status === 422) {
+                        var errors = xhr.responseJSON.errors;
+                        $.each(errors, function(key, value) {
+                            $('#' + key).addClass('is-invalid');
+                            $('#error-' + key).text(value[0]);
+                        });
                     } else {
-                        // Tampilkan pesan error dari server
-                        Swal.fire(
-                            'Gagal!',
-                            response.message,
-                            'error'
-                        );
+                        // Show general error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan saat menyimpan data.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 }
-            },
-            error: function(xhr) {
-                // Tangani kesalahan AJAX
-                if (xhr.status === 422) {
-                    // Error validasi
-                    let errorMessage = '';
-                    var errors = xhr.responseJSON.errors;
-                    $.each(errors, function(field, messages) {
-                        errorMessage += messages[0] + '<br>';
-                    });
-                    
-                    Swal.fire(
-                        'Error!',
-                        errorMessage,
-                        'error'
-                    );
-                } else {
-                    // Error umum
-                    Swal.fire(
-                        'Error!',
-                        'Terjadi kesalahan saat menyimpan data',
-                        'error'
-                    );
-                }
-            }
+            });
         });
     });
-});
 </script>

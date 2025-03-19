@@ -13,26 +13,9 @@ class AuthMenuController extends BaseApiController
         return $this->eksekusiDenganOtentikasi(
             function() {
                 $menus = WebMenuModel::selectData();
-                return $this->buildMenuTree($menus);
+                return $menus;
             },
             'menu' // hanya penanda data yang akan diambil
         );
-    }
-    private function buildMenuTree(array $menus, $parentId = null): array
-    {
-        $tree = [];
-
-        foreach ($menus as $menu) {
-            if ($menu['wm_parent_id'] == $parentId) {
-                // Rekursi untuk mencari anak dari menu saat ini
-                $children = $this->buildMenuTree($menus, $menu['id']);
-                if (!empty($children)) {
-                    $menu['children'] = $children;
-                }
-                $tree[] = $menu;
-            }
-        }
-
-        return $tree;
     }
 }
