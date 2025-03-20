@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ApiAuthController;
 use App\Http\Controllers\Api\Auth\AuthMenuController;
 use App\Http\Controllers\Api\Auth\ApiFooterController;
 use App\Http\Controllers\Api\Public\PublicMenuController;
+use App\Http\Controllers\Api\Public\ApiAksesCepatController;
 use App\Http\Controllers\Api\Auth\BeritaPengumumanController;
 
 /*
@@ -31,10 +32,12 @@ Route::prefix('auth')->group(function () {
         Route::get('menus', [AuthMenuController::class, 'getAuthMenus']);
         Route::get('berita-pengumuman', [BeritaPengumumanController::class, 'getBeritaPengumuman']);
         Route::get('footerData', [ApiFooterController::class, 'getDataFooter']);
+        
     });
 });
 
 // route publik
 Route::group(['prefix' => 'public'], function () {
     Route::get('menus', [PublicMenuController::class, 'getPublicMenus']);
+    Route::get('getDataAksesCepat',[ApiAksesCepatController::class,'getDataAksesCepat']);
 });

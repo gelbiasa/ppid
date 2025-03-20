@@ -89,21 +89,55 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                     <p>Menu Management</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ url('/adminweb/kategori-footer') }}"
-                                    class="nav-link {{ $activeMenu == 'kategori-footer' ? 'active' : '' }}">
-                                    <i class="fas fa-tasks nav-icon"></i>
-                                    <p>Kategori-Footer</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url('/adminweb/footer') }}"
-                                    class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
-                                    <i class="fas fa-tasks nav-icon"></i>
-                                    <p>Footer</p>
-                                </a>
-                            </li>
                         </ul>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p> Footer
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/kategori-footer') }}"
+                                        class="nav-link {{ $activeMenu == 'kategori-footer' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Kategori-Footer</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/footer') }}"
+                                        class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Footer</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p> Pintasan&AksesCepat
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/kategori-akses') }}"
+                                        class="nav-link {{ $activeMenu == 'kategori-akses' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Kategori-Akses</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/akses-cepat') }}"
+                                        class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Akses Cepat</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     </li>
                 @endif
 
