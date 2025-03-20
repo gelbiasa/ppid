@@ -49,18 +49,10 @@ class KetentuanPelaporanController extends Controller
             $row[] = $ketentuanPelaporan->PelaporanKategoriForm->kf_nama ?? '-';
             $row[] = $ketentuanPelaporan->kp_judul;
             
-            $actions = '
-                <button class="btn btn-sm btn-info" onclick="modalAction(\'' . url("SistemInformasi/KetentuanPelaporan/editData/{$ketentuanPelaporan->ketentuan_pelaporan_id}") . '\')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-primary" onclick="modalAction(\'' . url("SistemInformasi/KetentuanPelaporan/detailData/{$ketentuanPelaporan->ketentuan_pelaporan_id}") . '\')">
-                    <i class="fas fa-eye"></i> Detail
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="modalAction(\'' . url("SistemInformasi/KetentuanPelaporan/deleteData/{$ketentuanPelaporan->ketentuan_pelaporan_id}") . '\')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>';
-            
-            $row[] = $actions;
+            $row[] = $this->generateActionButtons(
+                'SistemInformasi/KetentuanPelaporan', 
+                $ketentuanPelaporan->ketentuan_pelaporan_id
+            );
             $data[] = $row;
         }
         
@@ -81,12 +73,16 @@ class KetentuanPelaporanController extends Controller
         try {
             KetentuanPelaporanModel::validasiData($request);
             $result = KetentuanPelaporanModel::createData($request);
-
-            return response()->json($result);
+            
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Ketentuan pelaporan berhasil dibuat'
+            );
         } catch (ValidationException $e) {
-            return response()->json(KetentuanPelaporanModel::responValidatorError($e));
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(KetentuanPelaporanModel::responFormatError($e, 'Terjadi kesalahan saat membuat ketentuan pelaporan'));
+            return $this->jsonError($e, 'Terjadi kesalahan saat membuat ketentuan pelaporan');
         }
     }
 
@@ -106,12 +102,16 @@ class KetentuanPelaporanController extends Controller
         try {
             KetentuanPelaporanModel::validasiData($request);
             $result = KetentuanPelaporanModel::updateData($request, $id);
-
-            return response()->json($result);
+            
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Ketentuan pelaporan berhasil diperbarui'
+            );
         } catch (ValidationException $e) {
-            return response()->json(KetentuanPelaporanModel::responValidatorError($e));
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(KetentuanPelaporanModel::responFormatError($e, 'Terjadi kesalahan saat memperbarui ketentuan pelaporan'));
+            return $this->jsonError($e, 'Terjadi kesalahan saat memperbarui ketentuan pelaporan');
         }
     }
 
@@ -137,9 +137,15 @@ class KetentuanPelaporanController extends Controller
         
         try {
             $result = KetentuanPelaporanModel::deleteData($id);
-            return response()->json($result);
+            
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Ketentuan pelaporan berhasil dihapus'
+            );
         } catch (\Exception $e) {
-            return response()->json(KetentuanPelaporanModel::responFormatError($e, 'Terjadi kesalahan saat menghapus ketentuan pelaporan'));
+            // Menggunakan method jsonError dari BaseControllerFunction
+            return $this->jsonError($e, 'Terjadi kesalahan saat menghapus ketentuan pelaporan');
         }
     }
 
@@ -153,26 +159,29 @@ class KetentuanPelaporanController extends Controller
 
             $file = $request->file('image');
             
-            // Menggunakan method uploadFile dari TraitsModel, tetapi sekarang dipanggil langsung di controller
             if (!$file) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tidak ada file yang diunggah'
-                ], 400);
+                // Menggunakan method jsonError dari BaseControllerFunction
+                return $this->jsonError(
+                    new \Exception('Tidak ada file yang diunggah'), 
+                    '', 
+                    400
+                );
             }
 
             $fileName = 'ketentuan_pelaporan/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
             $file->storeAs('public', $fileName);
             
-            return response()->json([
-                'success' => true,
-                'url' => asset('storage/' . $fileName)
-            ]);
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                ['url' => asset('storage/' . $fileName)], 
+                'Gambar berhasil diunggah'
+            );
+        } catch (ValidationException $e) {
+            // Menggunakan method jsonValidationError dari BaseControllerFunction
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            // Menggunakan method jsonError dari BaseControllerFunction
+            return $this->jsonError($e);
         }
     }
 
@@ -198,21 +207,25 @@ class KetentuanPelaporanController extends Controller
                     unlink($filePath);
                 }
                 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Gambar berhasil dihapus'
-                ]);
+                // Menggunakan method jsonSuccess dari BaseControllerFunction
+                return $this->jsonSuccess(
+                    null, 
+                    'Gambar berhasil dihapus'
+                );
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Path gambar tidak valid'
-                ], 400);
+                // Menggunakan method jsonError dari BaseControllerFunction
+                return $this->jsonError(
+                    new \Exception('Path gambar tidak valid'), 
+                    '', 
+                    400
+                );
             }
+        } catch (ValidationException $e) {
+            // Menggunakan method jsonValidationError dari BaseControllerFunction
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            // Menggunakan method jsonError dari BaseControllerFunction
+            return $this->jsonError($e);
         }
     }
 }

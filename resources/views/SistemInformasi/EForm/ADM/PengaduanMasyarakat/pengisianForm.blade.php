@@ -22,7 +22,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/ADM/PengaduanMasyarakat/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PengaduanMasyarakat/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 

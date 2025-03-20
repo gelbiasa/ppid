@@ -4,7 +4,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/RPN/PermohonanInformasi') }}" class="btn btn-secondary">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanInformasi') }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -21,7 +21,7 @@
             </div>
         @endif
 
-            <form action="{{ url('SistemInformasi/EForm/RPN/PermohonanInformasi/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanInformasi/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 <div class="form-group">
@@ -40,14 +40,94 @@
 
                 <div id="formDiriSendiri" style="display: none;">
                     <div class="alert alert-info">
-                        Data Diri Anda seperti Nama, Alamat Email, No Hp, NIK, akan digunakan sebagai data pengajuan.
+                        Data Diri Anda seperti Nama lengkap, Alamat Email, No Hp, Foto Identitas(NIK), akan digunakan sebagai data pengajuan.
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Nama Lengkap:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->nama_pengguna }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Alamat:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->alamat_pengguna }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Email:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->email_pengguna }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Nomor HP:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->no_hp_pengguna }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Form untuk Orang Lain -->
                 <div id="formOrangLain" style="display: none;">
                     <div class="alert alert-info">
-                        Data diri Anda akan digunakan sebagai data pelapor. Silakan isi data pengguna informasi di bawah ini.
+                        Data diri Anda akan digunakan sebagai data pelapor seperti Nama lengkap, Alamat Email, No Hp, Foto Identitas(NIK), akan digunakan sebagai data pengajuan.
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Nama Lengkap:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->nama_pengguna }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Alamat:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->alamat_pengguna }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Email:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->email_pengguna }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Nomor HP:</strong>
+                                </div>
+                                <div class="col-md-9">
+                                    {{ Auth::user()->no_hp_pengguna }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="pi_nama_pengguna_informasi">Nama Pengguna Informasi <span class="text-danger">*</span></label>
@@ -211,7 +291,19 @@
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
-                <button type="submit" class="btn btn-primary">Ajukan Permohonan</button>
+
+                <div class="alert alert-info mt-3 mb-4">
+                    <p class="mb-0"><strong>Catatan:</strong> Dengan mengajukan laporan ini, Anda menyatakan bahwa informasi yang diberikan adalah benar dan Anda bersedia memberikan keterangan lebih lanjut jika diperlukan.</p>
+                </div>
+                
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="persetujuan" required>
+                        <label class="custom-control-label" for="persetujuan">Saya menyatakan bahwa informasi yang saya berikan adalah benar dan dapat dipertanggungjawabkan</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="btnSubmit" disabled>Ajukan Permohonan Informasi</button>
             </form>
         </div>
     </div>
@@ -250,6 +342,14 @@
                         $('#formDiriSendiri').show();
                     }
                 }
+
+                $('#persetujuan').change(function() {
+                    if($(this).is(':checked')) {
+                        $('#btnSubmit').prop('disabled', false);
+                    } else {
+                        $('#btnSubmit').prop('disabled', true);
+                    }
+                });
             });
         </script>
     @endpush

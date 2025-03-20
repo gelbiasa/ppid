@@ -4,7 +4,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/ADM/PermohonanInformasi') }}" class="btn btn-secondary">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanInformasi') }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -21,7 +21,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/ADM/PermohonanInformasi/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanInformasi/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 <div class="form-group">
@@ -307,7 +307,18 @@
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
-                <button type="submit" class="btn btn-primary">Ajukan Permohonan</button>
+                <div class="alert alert-info mt-3 mb-4">
+                    <p class="mb-0"><strong>Catatan:</strong> Dengan mengajukan laporan ini, Anda menyatakan bahwa informasi yang diberikan adalah benar dan Anda bersedia memberikan keterangan lebih lanjut jika diperlukan.</p>
+                </div>
+                
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="persetujuan" required>
+                        <label class="custom-control-label" for="persetujuan">Saya menyatakan bahwa informasi yang saya berikan adalah benar dan dapat dipertanggungjawabkan</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="btnSubmit" disabled>Ajukan Permohonan Informasi</button>
             </form>
         </div>
     </div>
@@ -348,6 +359,14 @@
                         $('#pi_upload_nik_pengguna').prop('required', true);
                     }
                 }
+
+                $('#persetujuan').change(function() {
+                    if($(this).is(':checked')) {
+                        $('#btnSubmit').prop('disabled', false);
+                    } else {
+                        $('#btnSubmit').prop('disabled', true);
+                    }
+                });
             });
         </script>
     @endpush

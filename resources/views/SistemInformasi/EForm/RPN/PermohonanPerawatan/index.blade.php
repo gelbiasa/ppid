@@ -68,7 +68,7 @@ $ketentuanPelaporan = $data['ketentuanPelaporan'];
         <hr class="thick-line">
         <div class="row text-center">
             <div class="col-md-4">
-                <a href="{{ url('SistemInformasi/EForm/RPN/PermohonanPerawatan/addData') }}" class="custom-button d-block p-3 mb-2">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanPerawatan/addData') }}" class="custom-button d-block p-3 mb-2">
                     <i class="fas fa-edit fa-2x"></i>
                     <h5>E-Form Permohonan Perawatan Sarana Prasarana</h5>
                 </a>

@@ -5,7 +5,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/ADM/WBS') }}" class="btn btn-secondary">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/WBS') }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -22,7 +22,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/ADM/WBS/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/WBS/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 

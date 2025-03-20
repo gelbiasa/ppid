@@ -1,11 +1,11 @@
-<!-- SistemInformasi/EForm/ADM/PermohonanPerawatan/pengisianForm.blade.php-->
+<!-- SistemInformasi/EForm/RPN/PermohonanPerawatan/pengisianForm.blade.php-->
 
 @extends('layouts.template')
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/RPN/PermohonanPerawatan') }}" class="btn btn-secondary">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanPerawatan') }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -22,12 +22,49 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/ADM/PermohonanPerawatan/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanPerawatan/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 
                 <!-- Data Pelapor -->
                 <h4 class="mb-3">Data Pelapor</h4>
+
+                <div class="alert alert-info">
+                    <p class="mb-0">Data Anda seperti Nama Lengkap, Email, Nomor Handphone akan digunakan sebagai data pelapor secara otomatis.</p>
+                </div>
+
+                <!-- Preview data pengguna yang sudah login -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Nama Pengusul:</strong>
+                            </div>
+                            <div class="col-md-9">
+                                {{ Auth::user()->nama_pengguna }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Email:</strong>
+                            </div>
+                            <div class="col-md-9">
+                                {{ Auth::user()->email_pengguna }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Nomor HP:</strong>
+                            </div>
+                            <div class="col-md-9">
+                                {{ Auth::user()->no_hp_pengguna }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="pp_unit_kerja">Unit Kerja Pengusul <span class="text-danger">*</span></label>
                     <input type="text" class="form-control @error('t_permohonan_perawatan.pp_unit_kerja') is-invalid @enderror" 
@@ -93,15 +130,6 @@
                         id="pp_foto_kondisi" name="pp_foto_kondisi" accept="file/*">
                     <small class="form-text text-muted">Unggah foto kondisi jika diperlukan</small>
                     @error('pp_foto_kondisi')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="pp_bukti_aduan">Upload Bukti Aduan <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control @error('pp_bukti_aduan') is-invalid @enderror" 
-                        id="pp_bukti_aduan" name="pp_bukti_aduan" accept="file/*">
-                    @error('pp_bukti_aduan')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>

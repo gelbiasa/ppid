@@ -47,21 +47,16 @@ class TimelineController extends Controller
             $row[] = $timeline->TimelineKategoriForm->kf_nama ?? '-'; // Tampilkan nama kategori form
             $row[] = $timeline->judul_timeline;
             
-            $actions = '
-                <button class="btn btn-sm btn-info" onclick="modalAction(\'' . url("SistemInformasi/Timeline/editData/{$timeline->timeline_id}") . '\')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-primary" onclick="modalAction(\'' . url("SistemInformasi/Timeline/detailData/{$timeline->timeline_id}") . '\')">
-                    <i class="fas fa-eye"></i> Detail
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="modalAction(\'' . url("SistemInformasi/Timeline/deleteData/{$timeline->timeline_id}") . '\')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>';
+            $row[] = $this->generateActionButtons(
+                'SistemInformasi/Timeline', 
+                $timeline->timeline_id
+            );
             
-            $row[] = $actions;
             $data[] = $row;
         }
         
+        // Menggunakan model perlu menggunakan response()->json,
+        // tetapi sebaiknya buat fungsi jsonSuccess dengan parameter array data di BaseControllerFunction
         return response()->json(['data' => $data]);
     }
 
@@ -81,11 +76,17 @@ class TimelineController extends Controller
             TimelineModel::validasiData($request);
             $result = TimelineModel::createData($request);
 
-            return response()->json($result);
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Timeline berhasil dibuat'
+            );
         } catch (ValidationException $e) {
-            return response()->json(TimelineModel::responValidatorError($e));
+            // Menggunakan method jsonValidationError dari BaseControllerFunction
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(TimelineModel::responFormatError($e, 'Terjadi kesalahan saat membuat timeline'));
+            // Menggunakan method jsonError dari BaseControllerFunction
+            return $this->jsonError($e, 'Terjadi kesalahan saat membuat timeline');
         }
     }
 
@@ -114,11 +115,17 @@ class TimelineController extends Controller
             TimelineModel::validasiData($request);
             $result = TimelineModel::updateData($request, $id);
 
-            return response()->json($result);
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Timeline berhasil diperbarui'
+            );
         } catch (ValidationException $e) {
-            return response()->json(TimelineModel::responValidatorError($e));
+            // Menggunakan method jsonValidationError dari BaseControllerFunction
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(TimelineModel::responFormatError($e, 'Terjadi kesalahan saat memperbarui timeline'));
+            // Menggunakan method jsonError dari BaseControllerFunction
+            return $this->jsonError($e, 'Terjadi kesalahan saat memperbarui timeline');
         }
     }
 
@@ -144,9 +151,15 @@ class TimelineController extends Controller
         
         try {
             $result = TimelineModel::deleteData($id);
-            return response()->json($result);
+            
+            // Menggunakan method jsonSuccess dari BaseControllerFunction
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Timeline berhasil dihapus'
+            );
         } catch (\Exception $e) {
-            return response()->json(TimelineModel::responFormatError($e, 'Terjadi kesalahan saat menghapus timeline'));
+            // Menggunakan method jsonError dari BaseControllerFunction
+            return $this->jsonError($e, 'Terjadi kesalahan saat menghapus timeline');
         }
     }
 

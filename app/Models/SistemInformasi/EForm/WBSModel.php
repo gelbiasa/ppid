@@ -191,40 +191,14 @@ class WBSModel extends Model
 
     public static function getTimeline()
     {
-        // Ambil ID kategori form untuk 'Whistle Blowing System'
-        $kategoriForm = KategoriFormModel::where('kf_nama', 'Whistle Blowing System')
-            ->where('isDeleted', 0)
-            ->first();
-
-        // Jika kategori form ditemukan, cari timeline terkait
-        $timeline = null;
-        if ($kategoriForm) {
-            $timeline = TimelineModel::with('langkahTimeline')
-                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
-                ->where('isDeleted', 0)
-                ->first();
-        }
-
-        return $timeline;
+        // Menggunakan fungsi dari BaseModelFunction
+        return self::getTimelineByKategoriForm('Whistle Blowing System');
     }
 
     public static function getKetentuanPelaporan()
     {
-        // Ambil ID kategori form untuk 'Whistle Blowing System'
-        $kategoriForm = KategoriFormModel::where('kf_nama', 'Whistle Blowing System')
-            ->where('isDeleted', 0)
-            ->first();
-
-        // Jika kategori form ditemukan, cari ketentuan pelaporan terkait
-        $ketentuanPelaporan = null;
-        if ($kategoriForm) {
-            $ketentuanPelaporan = DB::table('m_ketentuan_pelaporan')
-                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
-                ->where('isDeleted', 0)
-                ->first();
-        }
-
-        return $ketentuanPelaporan;
+        // Menggunakan fungsi dari BaseModelFunction
+        return self::getKetentuanPelaporanByKategoriForm('Whistle Blowing System');
     }
 
 }

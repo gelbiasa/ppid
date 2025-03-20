@@ -131,9 +131,8 @@ class PermohonanPerawatanModel extends Model
         $rules = [
             't_permohonan_perawatan.pp_unit_kerja' => 'required',
             't_permohonan_perawatan.pp_perawatan_yang_diusulkan' => 'required',
-            't_permohonan_perawatan.pp_yang_dilaporkan' => 'required',
             't_permohonan_perawatan.pp_keluhan_kerusakan' => 'required',
-            't_permohonan_perawatan.pp_lokasi_perawatan' => 'required|date',
+            't_permohonan_perawatan.pp_lokasi_perawatan' => 'required',
             'pp_foto_kondisi' => 'nullable|image|max:10240', // Diubah dari required menjadi nullable
         ];
 
@@ -141,7 +140,6 @@ class PermohonanPerawatanModel extends Model
         $message = [
             't_permohonan_perawatan.pp_unit_kerja.required' => 'Unit Kerja wajib diisi',
             't_permohonan_perawatan.pp_perawatan_yang_diusulkan.required' => 'Perawatan yang diusulkan wajib diisi',
-            't_permohonan_perawatan.pp_yang_dilaporkan.required' => 'Yang dilaporkan wajib diisi',
             't_permohonan_perawatan.pp_keluhan_kerusakan.required' => 'Keluhan Kerusakan wajib diisi',
             't_permohonan_perawatan.pp_lokasi_perawatan.required' => 'Lokasi perawatan wajib diisi',
             'pp_foto_kondisi.image' => 'Foto Kondisi harus berupa gambar',
@@ -178,39 +176,13 @@ class PermohonanPerawatanModel extends Model
     
     public static function getTimeline()
     {
-        // Ambil ID kategori form untuk 'Permohonan Perawatan Sarana Prasarana'
-        $kategoriForm = KategoriFormModel::where('kf_nama', 'Permohonan Perawatan Sarana Prasarana')
-            ->where('isDeleted', 0)
-            ->first();
-
-        // Jika kategori form ditemukan, cari timeline terkait
-        $timeline = null;
-        if ($kategoriForm) {
-            $timeline = TimelineModel::with('langkahTimeline')
-                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
-                ->where('isDeleted', 0)
-                ->first();
-        }
-
-        return $timeline;
+        // Menggunakan fungsi dari BaseModelFunction
+        return self::getTimelineByKategoriForm('Permohonan Perawatan');
     }
 
     public static function getKetentuanPelaporan()
     {
-        // Ambil ID kategori form untuk 'Permohonan Perawatan Sarana Prasarana'
-        $kategoriForm = KategoriFormModel::where('kf_nama', 'Permohonan Perawatan Sarana Prasarana')
-            ->where('isDeleted', 0)
-            ->first();
-
-        // Jika kategori form ditemukan, cari ketentuan pelaporan terkait
-        $ketentuanPelaporan = null;
-        if ($kategoriForm) {
-            $ketentuanPelaporan = DB::table('m_ketentuan_pelaporan')
-                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
-                ->where('isDeleted', 0)
-                ->first();
-        }
-
-        return $ketentuanPelaporan;
+        // Menggunakan fungsi dari BaseModelFunction
+        return self::getKetentuanPelaporanByKategoriForm('Permohonan Perawatan');
     }
 }

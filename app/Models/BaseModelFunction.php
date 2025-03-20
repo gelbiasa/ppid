@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\SistemInformasi\KategoriForm\KategoriFormModel;
+use App\Models\SistemInformasi\Timeline\TimelineModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -138,5 +141,55 @@ trait BaseModelFunction
 
         // Menggabungkan parameter tambahan ke dalam respons
         return array_merge($response, $additionalParams);
+    }
+
+    /**
+     * Mendapatkan data timeline berdasarkan nama kategori form
+     *
+     * @param string $kategoriFormNama Nama kategori form
+     * @return mixed Timeline data atau null jika tidak ditemukan
+     */
+    protected static function getTimelineByKategoriForm($kategoriFormNama)
+    {
+        // Ambil ID kategori form berdasarkan nama kategori
+        $kategoriForm = KategoriFormModel::where('kf_nama', $kategoriFormNama)
+            ->where('isDeleted', 0)
+            ->first();
+
+        // Jika kategori form ditemukan, cari timeline terkait
+        $timeline = null;
+        if ($kategoriForm) {
+            $timeline = TimelineModel::with('langkahTimeline')
+                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
+                ->where('isDeleted', 0)
+                ->first();
+        }
+
+        return $timeline;
+    }
+
+    /**
+     * Mendapatkan data ketentuan pelaporan berdasarkan nama kategori form
+     *
+     * @param string $kategoriFormNama Nama kategori form
+     * @return mixed Ketentuan pelaporan data atau null jika tidak ditemukan
+     */
+    protected static function getKetentuanPelaporanByKategoriForm($kategoriFormNama)
+    {
+        // Ambil ID kategori form berdasarkan nama kategori
+        $kategoriForm = KategoriFormModel::where('kf_nama', $kategoriFormNama)
+            ->where('isDeleted', 0)
+            ->first();
+
+        // Jika kategori form ditemukan, cari ketentuan pelaporan terkait
+        $ketentuanPelaporan = null;
+        if ($kategoriForm) {
+            $ketentuanPelaporan = DB::table('m_ketentuan_pelaporan')
+                ->where('fk_m_kategori_form', $kategoriForm->kategori_form_id)
+                ->where('isDeleted', 0)
+                ->first();
+        }
+
+        return $ketentuanPelaporan;
     }
 }

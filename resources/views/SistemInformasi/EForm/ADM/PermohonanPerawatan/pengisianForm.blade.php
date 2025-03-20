@@ -5,7 +5,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/ADM/PermohonanPerawatan') }}" class="btn btn-secondary">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanPerawatan') }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -22,7 +22,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/ADM/PermohonanPerawatan/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanPerawatan/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 
@@ -30,11 +30,11 @@
                 <h4 class="mb-3">Data Pelapor</h4>
                 
                 <div class="form-group">
-                    <label for="pp_nama_tanpa_gelar">Nama Lengkap Pengusul<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('t_permohonan_perawatan.pp_nama_tanpa_gelar') is-invalid @enderror" 
-                        id="pp_nama_tanpa_gelar" name="t_permohonan_perawatan[pp_nama_tanpa_gelar]"
-                        value="{{ old('t_permohonan_perawatan.pp_nama_tanpa_gelar') }}">
-                    @error('t_permohonan_perawatan.pp_nama_tanpa_gelar')
+                    <label for="pp_nama_pengguna">Nama Lengkap Pengusul<span class="text-danger">*</span></label>
+                    <input type="text" class="form-control @error('t_permohonan_perawatan.pp_nama_pengguna') is-invalid @enderror" 
+                        id="pp_nama_pengguna" name="t_permohonan_perawatan[pp_nama_pengguna]"
+                        value="{{ old('t_permohonan_perawatan.pp_nama_pengguna') }}">
+                    @error('t_permohonan_perawatan.pp_nama_pengguna')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>

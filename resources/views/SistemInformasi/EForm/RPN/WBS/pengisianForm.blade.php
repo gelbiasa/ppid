@@ -5,7 +5,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/RPN/WBS') }}" class="btn btn-secondary">
+                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/WBS') }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -22,7 +22,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/RPN/WBS/createData') }}" method="POST"
+            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/WBS/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 
@@ -30,7 +30,7 @@
                 <h4 class="mb-3">Data Pelapor</h4>
                 
                 <div class="alert alert-info">
-                    <p class="mb-0">Data Anda sepertiNomor Handpohone, Email, NIK, Foto Identitas akan digunakan sebagai data pelapor secara otomatis.</p>
+                    <p class="mb-0">Data Anda seperti Nomor Handpohone, Email, NIK, Foto Identitas akan digunakan sebagai data pelapor secara otomatis.</p>
                 </div>
 
                 <!-- Preview data pengguna yang sudah login -->
@@ -55,8 +55,6 @@
                         </div>
                     </div>
                 </div>
-
-                <h4 class="mb-3">Data Diri</h4>
                 
                 <div class="form-group">
                     <label for="wbs_nama_tanpa_gelar">Nama Lengkap (Tanpa Gelar)<span class="text-danger">*</span></label>
