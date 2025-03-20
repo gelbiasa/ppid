@@ -31,7 +31,7 @@
         </div>
 
         <div class="form-group">
-            <label for="ac_static_icon">Icon Akses Cepat</label>
+            <label for="ac_static_icon">Icon Statis Akses Cepat</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="ac_static_icon" name="ac_static_icon"
                     accept="image/*">

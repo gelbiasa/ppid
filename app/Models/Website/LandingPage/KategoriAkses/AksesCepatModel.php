@@ -245,16 +245,16 @@ class AksesCepatModel extends Model
     // Jika create baru atau update dengan file baru
     if ($id === null) {
         // Untuk create baru
-        $rules['ac_static_icon'] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:3048';
-        $rules['ac_animation_icon'] = 'nullable|mimes:gif|max:3048';
+        $rules['ac_static_icon'] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+        $rules['ac_animation_icon'] = 'nullable|mimes:gif,svg|max:2500';
     } else {
         // Untuk update
         if ($request->hasFile('ac_static_icon')) {
-            $rules['ac_static_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:3048';
+            $rules['ac_static_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2500';
         }
         
         if ($request->hasFile('ac_animation_icon')) {
-            $rules['ac_animation_icon'] = 'mimes:gif|max:3048';
+            $rules['ac_animation_icon'] = 'mimes:gif|max:2500';
         }
     }
 
@@ -269,9 +269,9 @@ class AksesCepatModel extends Model
         'ac_static_icon.required' => 'Ikon statis wajib diunggah',
         'ac_static_icon.image' => 'Ikon statis harus berupa gambar',
         'ac_static_icon.mimes' => 'Ikon statis hanya boleh berupa file: jpeg, png, jpg, gif, atau svg',
-        'ac_static_icon.max' => 'Ukuran ikon statis maksimal 3MB',
+        'ac_static_icon.max' => 'Ukuran ikon statis maksimal 2.5MB',
         'ac_animation_icon.mimes' => 'Ikon animasi hanya boleh berupa file gif',
-        'ac_animation_icon.max' => 'Ukuran ikon animasi maksimal 3MB',
+        'ac_animation_icon.max' => 'Ukuran ikon animasi maksimal 2.5MB',
     ];
 
     $validator = Validator::make($request->all(), $rules, $messages);

@@ -34,13 +34,13 @@
          </div>
          
          <div class="form-group">
-             <label for="ac_static_icon">Icon Statis</label>
+             <label for="ac_static_icon">Icon Statis Akses Cepat</label>
              <div class="custom-file">
                  <input type="file" class="custom-file-input" id="ac_static_icon" name="ac_static_icon" accept="image/*">
                  <label class="custom-file-label" for="ac_static_icon">{{ $aksesCepat->ac_static_icon ? $aksesCepat->ac_static_icon : 'Pilih file' }}</label>
              </div>
              <div class="invalid-feedback" id="error-ac_static_icon"></div>
-             <small class="form-text text-muted">Format yang didukung: JPG, JPEG, PNG, SVG. Ukuran maksimal: 3MB.</small>
+             <small class="form-text text-muted">Format yang didukung: JPG, JPEG, PNG, SVG. Ukuran maksimal: 2.5MB.</small>
              
              @if($aksesCepat->ac_static_icon)
              <div id="current-static-image" class="mt-2">
@@ -62,7 +62,7 @@
                  <label class="custom-file-label" for="ac_animation_icon">{{ $aksesCepat->ac_animation_icon ? $aksesCepat->ac_animation_icon : 'Pilih file' }}</label>
              </div>
              <div class="invalid-feedback" id="error-ac_animation_icon"></div>
-             <small class="form-text text-muted">Hanya file GIF. Ukuran maksimal: 3MB.</small>
+             <small class="form-text text-muted">Hanya file GIF. Ukuran maksimal: 2.5MB.</small>
              
              @if($aksesCepat->ac_animation_icon)
              <div id="current-animation-image" class="mt-2">
