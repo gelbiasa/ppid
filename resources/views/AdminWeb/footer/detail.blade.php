@@ -63,5 +63,4 @@
  
 <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-     <button type="button" class="btn btn-warning" onclick="modalAction('{{ url('adminweb/footer/editData/' . $footer->footer_id) }}')">Edit</button>
 </div>

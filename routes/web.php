@@ -9,17 +9,19 @@ use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\HakAkses\HakAksesController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
-use App\Http\Controllers\AdminWeb\Footer\FooterController;
-use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
-use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\Notifikasi\NotifAdminController;
+use App\Http\Controllers\AdminWeb\Footer\FooterController;
+use App\Http\Controllers\SistemInformasi\EForm\WBSController;
+use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
+use App\Http\Controllers\AdminWeb\KategoriAkses\AksesCepatController;
+use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
+use App\Http\Controllers\AdminWeb\KategoriAkses\KategoriAksesController;
+use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
 use App\Http\Controllers\SistemInformasi\EForm\PernyataanKeberatanController;
-use App\Http\Controllers\SistemInformasi\EForm\WBSController;
 use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
-use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,6 +95,28 @@ Route::middleware('auth')->group(function () {
         Route::get('/detailData/{id}', [FooterController::class, 'detailData']);
         Route::get('/deleteData/{id}', [FooterController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [FooterController::class, 'deleteData']);
+    });
+    Route::group(['prefix' => 'adminweb/kategori-akses', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [KategoriAksesController::class, 'index']);
+        Route::get('/getData', [KategoriAksesController::class, 'getData']);
+        Route::get('/addData', [KategoriAksesController::class, 'addData']);
+        Route::post('/createData', [KategoriAksesController::class, 'createData']);
+        Route::get('/editData/{id}', [KategoriAksesController::class, 'editData']);
+        Route::post('/updateData/{id}', [KategoriAksesController::class, 'updateData']);
+        Route::get('/detailData/{id}', [KategoriAksesController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [KategoriAksesController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KategoriAksesController::class, 'deleteData']);
+    });
+    Route::group(['prefix' => 'adminweb/akses-cepat', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [AksesCepatController::class, 'index']);
+        Route::get('/getData', [AksesCepatController::class, 'getData']);
+        Route::get('/addData', [AksesCepatController::class, 'addData']);
+        Route::post('/createData', [AksesCepatController::class, 'createData']);
+        Route::get('/editData/{id}', [AksesCepatController::class, 'editData']);
+        Route::post('/updateData/{id}', [AksesCepatController::class, 'updateData']);
+        Route::get('/detailData/{id}', [AksesCepatController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [AksesCepatController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [AksesCepatController::class, 'deleteData']);
     });
 
 
