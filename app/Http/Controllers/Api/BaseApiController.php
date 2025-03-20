@@ -10,7 +10,6 @@ use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Log;
-
 class BaseApiController extends Controller
 {
     use TraitsController;
@@ -77,124 +76,122 @@ class BaseApiController extends Controller
      * @return JsonResponse
      */
     // untuk Akses publik tanpa autentikasi
-     protected function eksekusi(callable $aksi, string $namaSumber, string $jenisAksi = self::ACTION_GET): JsonResponse
-    {
-        try {
-            $hasil = $aksi();
-            $pesan = sprintf($this->messageTemplates[$jenisAksi]['success'], $namaSumber);
-            return $this->responSukses($hasil, $pesan);
-        } catch (\Exception $e) {
-            $this->catatKesalahan('Kesalahan eksekusi', $e);
-            
-            $pesan = sprintf($this->messageTemplates[$jenisAksi]['error'], $namaSumber);
-            return $this->responKesalahan($pesan, $e->getMessage(), 500);
-        }
+protected function execute(callable $action, string $sourceName, string $actionType = self::ACTION_GET): JsonResponse
+{
+    try {
+        $result = $action();
+        $message = sprintf($this->messageTemplates[$actionType]['success'], $sourceName);
+        return $this->successResponse($result, $message);
+    } catch (\Exception $e) {
+        $this->logError('Execution error', $e);
+        
+        $message = sprintf($this->messageTemplates[$actionType]['error'], $sourceName);
+        return $this->errorResponse($message, $e->getMessage(), 500);
     }
-    
-    /**
-     * untuk route api perlu token (auth:api)  terautentikasi
-     * 
-     */
-    protected function eksekusiDenganOtentikasi(callable $aksi, string $namaSumber, string $jenisAksi = self::ACTION_GET): JsonResponse
-    {
-        try {
-            if (!JWTAuth::getToken()) {
-                return $this->responKesalahan(self::AUTH_TOKEN_NOT_FOUND, null, 401);
-            }
+}
 
-            $pengguna = JWTAuth::parseToken()->authenticate();
-            if (!$pengguna) {
-                return $this->responKesalahan(self::AUTH_USER_NOT_FOUND, null, 401);
-            }
-            
-            return $this->eksekusi(
-                function() use ($aksi, $pengguna) {
-                    return $aksi($pengguna);
-                },
-                $namaSumber,
-                $jenisAksi
-            );
-            
-        } catch (TokenExpiredException $e) {
-            return $this->responKesalahan(self::AUTH_TOKEN_EXPIRED, null, 401);
-        } catch (TokenInvalidException $e) {
-            return $this->responKesalahan(self::AUTH_TOKEN_INVALID, null, 401);
-        } catch (JWTException $e) {
-            $this->catatKesalahan('Kesalahan JWT', $e);
-            return $this->responKesalahan(self::AUTH_TOKEN_INVALID, $e->getMessage(), 401);
-        } catch (\Exception $e) {
-            $this->catatKesalahan('Kesalahan aksi otentikasi', $e);
-            $pesan = sprintf($this->messageTemplates[$jenisAksi]['error'], $namaSumber);
-            return $this->responKesalahan($pesan, $e->getMessage(), 500);
+/**
+ * untuk rute api yang memerlukan autentikasi token (auth:api)
+ */
+protected function executeWithAuthentication(callable $action, string $sourceName, string $actionType = self::ACTION_GET): JsonResponse
+{
+    try {
+        if (!JWTAuth::getToken()) {
+            return $this->errorResponse(self::AUTH_TOKEN_NOT_FOUND, null, 401);
         }
-    }
-    
-    /**
-     * untuk route api memerlukan validasi atau memvalidasi input (login & register)
-     */
-    protected function eksekusiDenganValidasi(callable $aksiValidator, callable $aksiSukses, string $jenisAksi): JsonResponse
-    {
-        try {
-            $validator = $aksiValidator();
-            
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => self::VALIDATION_FAILED,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-            
-            $hasil = $aksiSukses();
-            $pesan = $this->messageTemplates[$jenisAksi]['success'];
-            
-            return $this->responSukses($hasil, $pesan);
-        } catch (\Exception $e) {
-            $this->catatKesalahan('Kesalahan validasi aksi', $e);
-            return $this->responKesalahan(self::SERVER_ERROR, $e->getMessage(), 500);
-        }
-    }
-    
-    /**
-     * Kembalikan respons sukses dalam format JSON.
-     */
-    protected function responSukses($data, string $pesan = 'Operasi berhasil', int $kodeStatus = 200): JsonResponse
-    {
-        return response()->json([
-            'success' => true,
-            'message' => $pesan,
-            'data' => $data
-        ], $kodeStatus);
-    }
-    
-    /**
-     * Kembalikan respons kesalahan dalam format JSON.
-     */
-    protected function responKesalahan(string $pesan = 'Terjadi kesalahan', $kesalahan = null, int $kodeStatus = 500): JsonResponse
-    {
-        $respons = [
-            'success' => false,
-            'message' => $pesan
-        ];
-        
-        if ($kesalahan !== null && config('app.debug')) {
-            $respons['error'] = $kesalahan;
+
+        $user = JWTAuth::parseToken()->authenticate();
+        if (!$user) {
+            return $this->errorResponse(self::AUTH_USER_NOT_FOUND, null, 401);
         }
         
-        return response()->json($respons, $kodeStatus);
+        return $this->execute(
+            function() use ($action, $user) {
+                return $action($user);
+            },
+            $sourceName,
+            $actionType
+        );
+        
+    } catch (TokenExpiredException $e) {
+        return $this->errorResponse(self::AUTH_TOKEN_EXPIRED, null, 401);
+    } catch (TokenInvalidException $e) {
+        return $this->errorResponse(self::AUTH_TOKEN_INVALID, null, 401);
+    } catch (JWTException $e) {
+        $this->logError('JWT Error', $e);
+        return $this->errorResponse(self::AUTH_TOKEN_INVALID, $e->getMessage(), 401);
+    } catch (\Exception $e) {
+        $this->logError('Authentication action error', $e);
+        $message = sprintf($this->messageTemplates[$actionType]['error'], $sourceName);
+        return $this->errorResponse($message, $e->getMessage(), 500);
     }
-    
-    /**
-     * Catat kesalahan ke log sistem.
-     */
-    protected function catatKesalahan(string $konteks, \Exception $pengecualian): void
-    {
-        if (class_exists('Log')) {
-            Log::error($konteks, [
-                'error' => $pengecualian->getMessage(),
-                'trace' => $pengecualian->getTraceAsString()
-            ]);
+}
+
+/**
+ * for api routes requiring validation or validating input (login & register)
+ */
+protected function executeWithValidation(callable $validatorAction, callable $successAction, string $actionType): JsonResponse
+{
+    try {
+        $validator = $validatorAction();
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => self::VALIDATION_FAILED,
+                'errors' => $validator->errors()
+            ], 422);
         }
+        
+        $result = $successAction();
+        $message = $this->messageTemplates[$actionType]['success'];
+        
+        return $this->successResponse($result, $message);
+    } catch (\Exception $e) {
+        $this->logError('Action validation error', $e);
+        return $this->errorResponse(self::SERVER_ERROR, $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Return success response in JSON format.
+ */
+protected function successResponse($data, string $message = 'Operation successful', int $statusCode = 200): JsonResponse
+{
+    return response()->json([
+        'success' => true,
+        'message' => $message,
+        'data' => $data
+    ], $statusCode);
+}
+
+/**
+ * Return error response in JSON format.
+ */
+protected function errorResponse(string $message = 'An error occurred', $error = null, int $statusCode = 500): JsonResponse
+{
+    $response = [
+        'success' => false,
+        'message' => $message
+    ];
+    
+    if ($error !== null && config('app.debug')) {
+        $response['error'] = $error;
     }
     
+    return response()->json($response, $statusCode);
+}
+
+/**
+ * Log error to system log.
+ */
+protected function logError(string $context, \Exception $exception): void
+{
+    if (class_exists('Log')) {
+        Log::error($context, [
+            'error' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString()
+        ]);
+    }
+}
 }
