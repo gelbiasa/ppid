@@ -138,6 +138,30 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                 </li>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p> Pengumuman
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/PengumumanDinamis') }}"
+                                        class="nav-link {{ $activeMenu == 'PengumumanDinamis' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Kategori Pengumuman</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ url('/AdminWeb/Pengumuman') }}"
+                                        class="nav-link {{ $activeMenu == 'Pengumuman' ? 'active' : '' }}">
+                                        <i class="fas fa-newspaper nav-icon"></i>
+                                        <p>Pengumuman</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     </li>
                 @endif
 
@@ -194,6 +218,15 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url('SistemInformasi/KategoriForm') }}"
+                                class="nav-link {{ $activeMenu == 'KategoriForm' ? 'active' : '' }}">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Pengaturan Kategori Form</p>
+                            </a>
+                        </li>
+                    </ul>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ url('SistemInformasi/Timeline') }}"

@@ -56,6 +56,7 @@ class FooterModel extends Model
     
         return $query->paginate($perPage);
     }
+
     // Fungsi untuk membuat data baru
     public static function createData($request)
     {

@@ -177,12 +177,12 @@ class PermohonanPerawatanModel extends Model
     public static function getTimeline()
     {
         // Menggunakan fungsi dari BaseModelFunction
-        return self::getTimelineByKategoriForm('Permohonan Perawatan');
+        return self::getTimelineByKategoriForm('Permohonan Perawatan Sarana Prasarana');
     }
 
     public static function getKetentuanPelaporan()
     {
         // Menggunakan fungsi dari BaseModelFunction
-        return self::getKetentuanPelaporanByKategoriForm('Permohonan Perawatan');
+        return self::getKetentuanPelaporanByKategoriForm('Permohonan Perawatan Sarana Prasarana');
     }
 }

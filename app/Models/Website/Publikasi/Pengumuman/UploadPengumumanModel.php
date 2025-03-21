@@ -4,6 +4,7 @@ namespace App\Models\Website\Publikasi\Pengumuman;
 
 use App\Models\TraitsModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class UploadPengumumanModel extends Model
 {
@@ -15,7 +16,8 @@ class UploadPengumumanModel extends Model
         'fk_t_pengumuman',
         'up_thumbnail',
         'up_type',
-        'up_value'
+        'up_value',
+        'up_konten',
     ];
 
     public function Pengumuman()
@@ -29,28 +31,50 @@ class UploadPengumumanModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function selectData()
+    // Method untuk upload file (thumbnail atau nilai)
+    public static function uploadFile($file, $folder)
     {
-      //
+        if (!$file) {
+            return null;
+        }
+        
+        $fileName = $folder . '/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('public', $fileName);
+        
+        return $fileName;
     }
 
-    public static function createData()
+    // Method untuk menghapus file
+    public static function removeFile($fileName)
     {
-      //
+        if ($fileName) {
+            $filePath = storage_path('app/public/' . $fileName);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+                return true;
+            }
+        }
+        
+        return false;
     }
-
-    public static function updateData()
+    
+    // Method untuk mendapatkan URL thumbnail
+    public function getThumbnailUrlAttribute()
     {
-        //
+        if ($this->up_thumbnail) {
+            return asset('storage/' . $this->up_thumbnail);
+        }
+        
+        return null;
     }
-
-    public static function deleteData()
+    
+    // Method untuk mendapatkan URL file
+    public function getFileUrlAttribute()
     {
-        //
-    }
-
-    public static function validasiData()
-    {
-        //
+        if ($this->up_value && $this->up_type == 'file') {
+            return asset('storage/' . $this->up_value);
+        }
+        
+        return null;
     }
 }

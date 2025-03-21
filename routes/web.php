@@ -17,10 +17,13 @@ use App\Http\Controllers\AdminWeb\KategoriAkses\AksesCepatController;
 use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\KategoriAksesController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
+use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanController;
+use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanDinamisController;
 use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
 use App\Http\Controllers\SistemInformasi\EForm\PernyataanKeberatanController;
+use App\Http\Controllers\SistemInformasi\KategoriForm\KategoriFormController;
 use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
 
 /*
@@ -223,5 +226,43 @@ Route::middleware('auth')->group(function () {
         Route::delete('/deleteData/{id}', [KetentuanPelaporanController::class, 'deleteData']);
         Route::post('/uploadImage', [KetentuanPelaporanController::class, 'uploadImage']);
         Route::post('/removeImage', [KetentuanPelaporanController::class, 'removeImage']);
+    });
+
+    Route::group(['prefix' => 'SistemInformasi/KategoriForm', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [KategoriFormController::class, 'index']);
+        Route::get('/getData', [KategoriFormController::class, 'getData']);
+        Route::get('/addData', [KategoriFormController::class, 'addData']);
+        Route::post('/createData', [KategoriFormController::class, 'createData']);
+        Route::get('/editData/{id}', [KategoriFormController::class, 'editData']);
+        Route::post('/updateData/{id}', [KategoriFormController::class, 'updateData']);
+        Route::get('/detailData/{id}', [KategoriFormController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [KategoriFormController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KategoriFormController::class, 'deleteData']);
+    });
+
+    Route::group(['prefix' => 'adminweb/PengumumanDinamis', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PengumumanDinamisController::class, 'index']);
+        Route::get('/getData', [PengumumanDinamisController::class, 'getData']);
+        Route::get('/addData', [PengumumanDinamisController::class, 'addData']);
+        Route::post('/createData', [PengumumanDinamisController::class, 'createData']);
+        Route::get('/editData/{id}', [PengumumanDinamisController::class, 'editData']);
+        Route::post('/updateData/{id}', [PengumumanDinamisController::class, 'updateData']);
+        Route::get('/detailData/{id}', [PengumumanDinamisController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [PengumumanDinamisController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [PengumumanDinamisController::class, 'deleteData']);
+    });
+
+    Route::group(['prefix' => 'AdminWeb/Pengumuman', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PengumumanController::class, 'index']);
+        Route::get('/getData', [PengumumanController::class, 'getData']);
+        Route::get('/addData', [PengumumanController::class, 'addData']);
+        Route::post('/createData', [PengumumanController::class, 'createData']);
+        Route::get('/editData/{id}', [PengumumanController::class, 'editData']);
+        Route::post('/updateData/{id}', [PengumumanController::class, 'updateData']);
+        Route::get('/detailData/{id}', [PengumumanController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [PengumumanController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [PengumumanController::class, 'deleteData']);
+        Route::post('/uploadImage', [PengumumanController::class, 'uploadImage']);
+        Route::post('/removeImage', [PengumumanController::class, 'removeImage']);
     });
 });
