@@ -81,17 +81,17 @@ class AksesCepatController extends Controller
 
      public function editData($id)
      {
-          try {
-               $aksesCepat = AksesCepatModel::findOrFail($id);
-               $kategoriAkses = KategoriAksesModel::where('isDeleted', 0)->get();
+         try {
+             $aksesCepat = AksesCepatModel::findOrFail($id);
+             $kategoriAkses = KategoriAksesModel::where('mka_judul_kategori', 'Akses Menu Cepat')->first();
      
-               return view('AdminWeb.AksesCepat.update', [
-                    'aksesCepat' => $aksesCepat,
-                    'kategoriAkses' => $kategoriAkses
-               ]);
-          } catch (\Exception $e) {
-               return response()->json(AksesCepatModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
-          }
+             return view('AdminWeb.AksesCepat.update', [
+                 'aksesCepat' => $aksesCepat,
+                 'kategoriAkses' => $kategoriAkses
+             ]);
+         } catch (\Exception $e) {
+             return response()->json(AksesCepatModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
+         }
      }
      // Proses update akses cepat
      public function updateData(Request $request, $id)

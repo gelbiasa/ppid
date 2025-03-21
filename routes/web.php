@@ -10,15 +10,17 @@ use App\Http\Controllers\HakAkses\HakAksesController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
 use App\Http\Controllers\Notifikasi\NotifAdminController;
+use App\Http\Controllers\AdminWeb\Berita\BeritaController;
 use App\Http\Controllers\AdminWeb\Footer\FooterController;
 use App\Http\Controllers\SistemInformasi\EForm\WBSController;
+use App\Http\Controllers\AdminWeb\Berita\BeritaDinamisController;
 use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
+use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\AksesCepatController;
 use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\KategoriAksesController;
-use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
-use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanDinamisController;
+use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
@@ -121,7 +123,30 @@ Route::middleware('auth')->group(function () {
         Route::get('/deleteData/{id}', [AksesCepatController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [AksesCepatController::class, 'deleteData']);
     });
-
+    Route::group(['prefix' => 'adminweb/berita-dinamis', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [BeritaDinamisController::class, 'index']);
+        Route::get('/getData', [BeritaDinamisController::class, 'getData']);
+        Route::get('/addData', [BeritaDinamisController::class, 'addData']);
+        Route::post('/createData', [BeritaDinamisController::class, 'createData']);
+        Route::get('/editData/{id}', [BeritaDinamisController::class, 'editData']);
+        Route::post('/updateData/{id}', [BeritaDinamisController::class, 'updateData']);
+        Route::get('/detailData/{id}', [BeritaDinamisController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [BeritaDinamisController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [BeritaDinamisController::class, 'deleteData']);
+    });
+    // Route::group(['prefix' => 'adminweb/upload-berita', 'middleware' => ['authorize:ADM']], function () {
+    //     Route::get('/', [BeritaController::class, 'index']);
+    //     Route::get('/getData', [BeritaController::class, 'getData']);
+    //     Route::get('/addData', [BeritaController::class, 'addData']);
+    //     Route::post('/createData', [BeritaController::class, 'createData']);
+    //     Route::get('/editData/{id}', [BeritaController::class, 'editData']);
+    //     Route::post('/updateData/{id}', [BeritaController::class, 'updateData']);
+    //     Route::get('/detailData/{id}', [BeritaController::class, 'detailData']);
+    //     Route::get('/deleteData/{id}', [BeritaController::class, 'deleteData']);
+    //     Route::delete('/deleteData/{id}', [BeritaController::class, 'deleteData']);
+    //     Route::post('/uploadImage', [BeritaController::class, 'uploadImage']);
+    //     Route::post('/removeImage', [BeritaController::class, 'removeImage']);
+    // });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);

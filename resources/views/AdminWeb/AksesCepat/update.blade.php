@@ -9,16 +9,12 @@
  
  <form id="form-update-akses-cepat" enctype="multipart/form-data">
      <div class="modal-body">
-         <div class="form-group">
-             <label for="fk_m_kategori_akses">Kategori Akses Cepat <span class="text-danger">*</span></label>
-             <select class="form-control" id="fk_m_kategori_akses" name="fk_m_kategori_akses" required>
-                 <option value="">Pilih Kategori</option>
-                 @foreach($kategoriAkses as $kategori)
-                     <option value="{{ $kategori->kategori_akses_id }}" {{ $aksesCepat->fk_m_kategori_akses == $kategori->kategori_akses_id ? 'selected' : '' }}>{{ $kategori->mka_judul_kategori }}</option>
-                 @endforeach
-             </select>
-             <div class="invalid-feedback" id="error-fk_m_kategori_akses"></div>
-         </div>
+          <div class="form-group">
+               <label for="fk_m_kategori_akses">Kategori Akses Cepat</label>
+               <input type="hidden" name="fk_m_kategori_akses" value="{{ $kategoriAkses->kategori_akses_id }}">
+               <input type="text" class="form-control" value="{{ $kategoriAkses->mka_judul_kategori }}" readonly>
+               <div class="invalid-feedback" id="error-fk_m_kategori_akses"></div>
+           </div>
          
          <div class="form-group">
              <label for="ac_judul">Judul Akses Cepat <span class="text-danger">*</span></label>
@@ -56,26 +52,26 @@
          </div>
          
          <div class="form-group">
-             <label for="ac_animation_icon">Icon Animasi (GIF)</label>
-             <div class="custom-file">
-                 <input type="file" class="custom-file-input" id="ac_animation_icon" name="ac_animation_icon" accept="image/gif">
-                 <label class="custom-file-label" for="ac_animation_icon">{{ $aksesCepat->ac_animation_icon ? $aksesCepat->ac_animation_icon : 'Pilih file' }}</label>
-             </div>
-             <div class="invalid-feedback" id="error-ac_animation_icon"></div>
-             <small class="form-text text-muted">Hanya file GIF. Ukuran maksimal: 2.5MB.</small>
-             
-             @if($aksesCepat->ac_animation_icon)
-             <div id="current-animation-image" class="mt-2">
-                 <p>Icon animasi saat ini:</p>
-                 <img src="{{ asset('storage/' . $aksesCepat::ANIMATION_ICON_PATH . '/' . $aksesCepat->ac_animation_icon) }}" alt="Current Animation Icon" class="img-thumbnail" style="height: 100px;">
-             </div>
-             @endif
-             
-             <div id="animation-image-preview" class="mt-2 d-none">
-                 <p>Icon animasi baru:</p>
-                 <img src="" alt="Preview" class="img-thumbnail" style="height: 100px;">
-             </div>
-         </div>
+          <label for="ac_animation_icon">Icon Hover Akses Cepat</label>
+          <div class="custom-file">
+              <input type="file" class="custom-file-input" id="ac_animation_icon" name="ac_animation_icon" accept="image/*">
+              <label class="custom-file-label" for="ac_animation_icon">{{ $aksesCepat->ac_animation_icon ? $aksesCepat->ac_animation_icon : 'Pilih file' }}</label>
+          </div>
+          <div class="invalid-feedback" id="error-ac_animation_icon"></div>
+          <small class="form-text text-muted">Format yang didukung: JPG, JPEG, PNG, SVG, GIF. Ukuran maksimal: 2.5MB.</small>
+          
+          @if($aksesCepat->ac_animation_icon)
+          <div id="current-animation-image" class="mt-2">
+              <p>Icon animasi saat ini:</p>
+              <img src="{{ asset('storage/' . $aksesCepat::ANIMATION_ICON_PATH . '/' . $aksesCepat->ac_animation_icon) }}" alt="Current Animation Icon" class="img-thumbnail" style="height: 100px;">
+          </div>
+          @endif
+          
+          <div id="animation-image-preview" class="mt-2 d-none">
+              <p>Icon animasi baru:</p>
+              <img src="" alt="Preview" class="img-thumbnail" style="height: 100px;">
+          </div>
+      </div>
      </div>
      
      <div class="modal-footer">

@@ -234,54 +234,55 @@ class AksesCepatModel extends Model
      * Metode untuk validasi data
      */
     public static function validasiData($request, $id = null)
-{
-    // Aturan validasi dasar
-    $rules = [
-        'fk_m_kategori_akses' => 'required|exists:m_kategori_akses,kategori_akses_id',
-        'ac_judul' => 'required|max:100',
-        'ac_url' => 'required|url|max:100',
-    ];
-
-    // Jika create baru atau update dengan file baru
-    if ($id === null) {
-        // Untuk create baru
-        $rules['ac_static_icon'] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
-        $rules['ac_animation_icon'] = 'nullable|mimes:gif,svg|max:2500';
-    } else {
-        // Untuk update
-        if ($request->hasFile('ac_static_icon')) {
-            $rules['ac_static_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+    {
+        // Aturan validasi dasar
+        $rules = [
+            'fk_m_kategori_akses' => 'required|exists:m_kategori_akses,kategori_akses_id',
+            'ac_judul' => 'required|max:100',
+            'ac_url' => 'required|url|max:100',
+        ];
+    
+        // Jika create baru atau update dengan file baru
+        if ($id === null) {
+            // Untuk create baru
+            $rules['ac_static_icon'] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+            $rules['ac_animation_icon'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+        } else {
+            // Untuk update
+            if ($request->hasFile('ac_static_icon')) {
+                $rules['ac_static_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+            }
+            
+            if ($request->hasFile('ac_animation_icon')) {
+                $rules['ac_animation_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+            }
         }
-        
-        if ($request->hasFile('ac_animation_icon')) {
-            $rules['ac_animation_icon'] = 'mimes:gif|max:2500';
+    
+        $messages = [
+            'fk_m_kategori_akses.required' => 'Kategori akses wajib dipilih',
+            'fk_m_kategori_akses.exists' => 'Kategori akses tidak valid',
+            'ac_judul.required' => 'Judul akses cepat wajib diisi',
+            'ac_judul.max' => 'Judul akses cepat maksimal 100 karakter',
+            'ac_url.required' => 'URL akses cepat wajib diisi',
+            'ac_url.url' => 'URL akses cepat harus berupa URL yang valid',
+            'ac_url.max' => 'URL akses cepat maksimal 100 karakter',
+            'ac_static_icon.required' => 'Ikon statis wajib diunggah',
+            'ac_static_icon.image' => 'Ikon statis harus berupa gambar',
+            'ac_static_icon.mimes' => 'Ikon statis hanya boleh berupa file: jpeg, png, jpg, gif, atau svg',
+            'ac_static_icon.max' => 'Ukuran ikon statis maksimal 2.5MB',
+            'ac_animation_icon.image' => 'Ikon animasi harus berupa gambar',
+            'ac_animation_icon.mimes' => 'Ikon animasi hanya boleh berupa file: jpeg, png, jpg, gif, atau svg',
+            'ac_animation_icon.max' => 'Ukuran ikon animasi maksimal 2.5MB',
+        ];
+    
+        $validator = Validator::make($request->all(), $rules, $messages);
+    
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
         }
+    
+        return true;
     }
-
-    $messages = [
-        'fk_m_kategori_akses.required' => 'Kategori akses wajib dipilih',
-        'fk_m_kategori_akses.exists' => 'Kategori akses tidak valid',
-        'ac_judul.required' => 'Judul akses cepat wajib diisi',
-        'ac_judul.max' => 'Judul akses cepat maksimal 100 karakter',
-        'ac_url.required' => 'URL akses cepat wajib diisi',
-        'ac_url.url' => 'URL akses cepat harus berupa URL yang valid',
-        'ac_url.max' => 'URL akses cepat maksimal 100 karakter',
-        'ac_static_icon.required' => 'Ikon statis wajib diunggah',
-        'ac_static_icon.image' => 'Ikon statis harus berupa gambar',
-        'ac_static_icon.mimes' => 'Ikon statis hanya boleh berupa file: jpeg, png, jpg, gif, atau svg',
-        'ac_static_icon.max' => 'Ukuran ikon statis maksimal 2.5MB',
-        'ac_animation_icon.mimes' => 'Ikon animasi hanya boleh berupa file gif',
-        'ac_animation_icon.max' => 'Ukuran ikon animasi maksimal 2.5MB',
-    ];
-
-    $validator = Validator::make($request->all(), $rules, $messages);
-
-    if ($validator->fails()) {
-        throw new ValidationException($validator);
-    }
-
-    return true;
-}
 
     /**
      * Helper method untuk menghapus file ikon

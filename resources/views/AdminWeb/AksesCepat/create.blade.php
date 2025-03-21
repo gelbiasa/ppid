@@ -38,21 +38,21 @@
                 <label class="custom-file-label" for="ac_static_icon">Pilih file</label>
             </div>
             <div class="invalid-feedback" id="error-ac_static_icon"></div>
-            <small class="form-text text-muted">Format yang didukung: JPG, JPEG, PNG, SVG. Ukuran maksimal: 2.5MB.</small>
+            <small class="form-text text-muted">Format yang didukung: JPG, JPEG, PNG, SVG,GIF. Ukuran maksimal: 2.5MB.</small>
             <div id="static-image-preview" class="mt-2 d-none">
                 <img src="" alt="Preview" class="img-thumbnail" style="height: 100px;">
             </div>
         </div>
 
         <div class="form-group">
-            <label for="ac_animation_icon">Icon Animasi Akses Cepat (GIF)</label>
+            <label for="ac_animation_icon">Icon Hover Akses Cepat</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="ac_animation_icon" name="ac_animation_icon"
-                    accept="image/gif">
+                    accept="image/*">
                 <label class="custom-file-label" for="ac_animation_icon">Pilih file</label>
             </div>
             <div class="invalid-feedback" id="error-ac_animation_icon"></div>
-            <small class="form-text text-muted">Hanya file GIF. Ukuran maksimal: 2.5MB.</small>
+            <small class="form-text text-muted">Format yang didukung: JPG, JPEG, PNG, SVG,GIF. Ukuran maksimal: 2.5MB.</small>
             <div id="animation-image-preview" class="mt-2 d-none">
                 <img src="" alt="Preview" class="img-thumbnail" style="height: 100px;">
             </div>

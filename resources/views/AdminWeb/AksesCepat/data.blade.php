@@ -37,7 +37,6 @@
                 @endif
             </td>
             <td>
-                <div class="btn-group" role="group">
                     <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/akses-cepat/editData/{$item->akses_cepat_id}") }}')">
                          <i class="fas fa-edit"></i> Edit
                      </button>
@@ -47,12 +46,11 @@
                      <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/akses-cepat/deleteData/{$item->akses_cepat_id}") }}')">
                          <i class="fas fa-trash"></i> Hapus
                      </button>
-                </div>
             </td>
         </tr>
         @empty
         <tr>
-            <td colspan="6" class="text-center">
+            <td colspan="4" class="text-center">
                 @if(!empty($search))
                     Tidak ada data yang cocok dengan pencarian "{{ $search }}"
                 @else
