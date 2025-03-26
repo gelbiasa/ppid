@@ -45,7 +45,60 @@ class PengumumanModel extends Model
             ->where('isDeleted', 0)
             ->get();
     }
-
+    public static function getDataPengumumanLandingPage()
+    {
+        $arr_data = self::query()
+            ->select([
+                'pengumuman_id',
+                'peg_judul',
+                'peg_slug',
+                'fk_m_pengumuman_dinamis',
+                'created_at'
+            ])
+            ->with(['PengumumanDinamis', 'UploadPengumuman'])
+            ->whereHas('PengumumanDinamis', function($query) {
+                $query->where('isDeleted', 0)
+                      ->where('pd_nama_submenu', 'Pengumuman PPID');
+            })
+            ->where('isDeleted', 0)
+            ->where('status_pengumuman', 'aktif')
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function ($pengumuman) {
+                // Proses thumbnail
+                $thumbnail = null;
+                $uploadPengumuman = $pengumuman->UploadPengumuman;
+                
+                if ($uploadPengumuman && $uploadPengumuman->up_thumbnail) {
+                    $thumbnail = asset('storage/' . $uploadPengumuman->up_thumbnail);
+                }
+    
+                // Proses value 
+                $value = $uploadPengumuman ? $uploadPengumuman->up_value : null;
+                if ($uploadPengumuman && $uploadPengumuman->up_type === 'file') {
+                    $value = asset('storage/' . $value);
+                }
+                
+                // Format tanggal sesuai desain
+                $formattedDate = \Carbon\Carbon::parse($pengumuman->created_at)->translatedFormat('d F Y');
+    
+                return [
+                    'id' => $pengumuman->pengumuman_id,
+                    'judul' => $pengumuman->peg_judul,
+                    'slug' => $pengumuman->peg_slug,
+                    'submenu' => $pengumuman->PengumumanDinamis->pd_nama_submenu,
+                    'thumbnail' => $thumbnail,
+                    'tipe' => $uploadPengumuman ? $uploadPengumuman->up_type : null,
+                    'value' => $value,
+                    'konten' => $uploadPengumuman ? $uploadPengumuman->up_konten : null,
+                    'created_at' => $formattedDate
+                ];
+            })
+            ->toArray();
+    
+        return $arr_data;
+    }
     public static function createData($request)
     {
         try {

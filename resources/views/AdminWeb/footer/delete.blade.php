@@ -6,7 +6,7 @@
        <span aria-hidden="true">&times;</span>
      </button>
    </div>
-   <div class="modal-body">    
+   <div class="modal-body">
      <div class="alert alert-danger mt-3">
        <i class="fas fa-exclamation-triangle mr-2"></i> Apakah Anda yakin ingin menghapus footer dengan detail berikut:
      </div>

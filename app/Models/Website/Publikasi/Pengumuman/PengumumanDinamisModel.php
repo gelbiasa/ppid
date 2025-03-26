@@ -24,7 +24,67 @@ class PengumumanDinamisModel extends Model
         parent::__construct($attributes);
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
-
+    public static function getDataPengumumanLandingPage()
+    {
+        $arr_data = DB::table('t_pengumuman', 'tp')
+            ->join('m_pengumuman_dinamis as mpd', 'tp.fk_m_pengumuman_dinamis', '=', 'mpd.pengumuman_dinamis_id')
+            ->leftJoin('t_upload_pengumuman as tup', 'tp.pengumuman_id', '=', 'tup.fk_t_pengumuman')
+            ->select([
+                'tp.pengumuman_id',
+                'tp.peg_judul',
+                'tp.peg_slug',
+                'tp.status_pengumuman',
+                'mpd.pd_nama_submenu',
+                'tup.up_thumbnail',
+                'tup.up_type',
+                'tup.up_value',
+                'tup.up_konten',
+                'tp.created_at'
+            ])
+            ->where('tp.isDeleted', 0)
+            ->where('tp.status_pengumuman', 'aktif')
+            ->where('mpd.isDeleted', 0)
+            ->where('mpd.pd_nama_submenu', 'Pengumuman')
+            ->whereIn('tup.up_type', ['file', 'konten']) // Menambahkan filter untuk tipe file dan konten saja
+            ->orderBy('tp.created_at', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function ($pengumuman) {
+                 $deskripsi = strip_tags($pengumuman->up_konten);
+                $paragraf = preg_split('/\n\s*\n/', $deskripsi)[0] ?? '';
+                // Proses thumbnail
+                $thumbnail = null;
+                if ($pengumuman->up_thumbnail) {
+                    $thumbnail = asset('storage/' . $pengumuman->up_thumbnail);
+                }
+                // Proses value 
+                $value = $pengumuman->up_value;
+                if ($pengumuman->up_type === 'file') {
+                    $value = asset('storage/' . $pengumuman->up_value);
+                }
+                
+                // Format tanggal 
+                $formattedDate = \Carbon\Carbon::parse($pengumuman->created_at)->format('d F Y');
+    
+                return [
+                    'kategoriSubmenu' => $pengumuman->pd_nama_submenu,
+                    'id' => $pengumuman->pengumuman_id,
+                    'judul' => $pengumuman->peg_judul,
+                    'slug' => $pengumuman->peg_slug,
+                    'kategoriSubmenu' => $pengumuman->pd_nama_submenu,
+                    'thumbnail' => $thumbnail,
+                    'tipe' => $pengumuman->up_type,
+                    'value' => $value,
+                    'deskripsi' => strlen($paragraf) > 200 
+                    ? substr($paragraf, 0, 200) . '...' 
+                    : $paragraf,
+                    'url_selengkapnya' => url('#'),
+                    'created_at' => $formattedDate
+                ];
+            })
+            ->toArray();
+        return $arr_data;
+    }
     public static function selectData()
     {
         return self::where('isDeleted', 0)->get();

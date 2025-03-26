@@ -1,0 +1,158 @@
+
+    /* Modal Styling */
+    .modal-dialog {
+        max-width: 800px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        margin: 1.75rem auto;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .modal-header {
+        border-radius: 8px 8px 0 0;
+        border-bottom: 0;
+    }
+    
+    .modal-title {
+        letter-spacing: 0.5px;
+    }
+
+    .modal-body {
+        overflow-y: auto;
+        max-height: calc(90vh - 150px);
+        padding: 1.5rem;
+        scrollbar-width: thin;
+    }
+    
+    .modal-footer {
+        border-radius: 0 0 8px 8px;
+        border-top: 0;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    /* Form Controls */
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+    }
+    
+    .form-control-lg {
+        font-size: 1rem;
+    }
+    
+    label {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    .custom-file-label {
+        border-radius: 6px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    .custom-file-label::after {
+        border-radius: 0 6px 6px 0;
+        background-color: #f8f9fa;
+    }
+    
+    /* Buttons */
+    .btn {
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.2s;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    }
+    
+    .btn-success {
+        background-color: #28a745;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+    }
+    
+    /* Summernote Editor */
+    .note-editor.note-frame {
+        border-color: #ced4da;
+        border-radius: 6px;
+        box-shadow: none;
+    }
+    
+    .note-editor.note-frame .note-toolbar {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ced4da;
+        border-radius: 6px 6px 0 0;
+    }
+    
+    .note-editor.note-frame .note-statusbar {
+        border-top: 1px solid #ced4da;
+        border-radius: 0 0 6px 6px;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .modal-dialog {
+            margin: 1rem 0.5rem;
+            max-height: 95vh;
+        }
+        
+        .modal-body {
+            padding: 1rem;
+            max-height: calc(95vh - 130px);
+        }
+        
+        .preview-container {
+            margin-top: 1rem;
+        }
+    }
+    
+    /* Scrollbar Styling */
+    .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 6px;
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }

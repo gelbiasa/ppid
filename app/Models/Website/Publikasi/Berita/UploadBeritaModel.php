@@ -15,12 +15,14 @@ class UploadBeritaModel extends Model
 
     protected $table = 't_upload_berita';
     protected $primaryKey = 'upload_berita_id';
+    
     protected $fillable = [
         'fk_t_berita',
         'ub_type',
         'ub_value'
     ];
 
+    // Relationship with Berita
     public function berita()
     {
         return $this->belongsTo(BeritaModel::class, 'fk_t_berita', 'berita_id');
@@ -32,31 +34,39 @@ class UploadBeritaModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function selectData($perPage = 10, $search = '')
+    // Method to select uploaded files/images
+    public static function selectData($beritaId = null, $perPage = 10)
     {
         $query = self::query()
-            ->where('isDeleted', 0)
-            ->with('berita');
+            ->where('isDeleted', 0);
 
-        // Add search functionality
-        if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('ub_type', 'like', "%{$search}%")
-                  ->orWhere('ub_value', 'like', "%{$search}%");
-            });
+        if ($beritaId) {
+            $query->where('fk_t_berita', $beritaId);
         }
 
         return $query->paginate($perPage);
     }
 
+    // Method to create upload record
     public static function createData($request)
     {
         try {
             DB::beginTransaction();
 
-            $data = $request->t_upload_berita;
+            // Validate input
+            self::validasiData($request);
+
+            // Prepare data
+            $data = [
+                'fk_t_berita' => $request->berita_id,
+                'ub_type' => $request->type,
+                'ub_value' => $request->value
+            ];
+
+            // Create upload record
             $uploadBerita = self::create($data);
 
+            // Log transaction
             TransactionModel::createData(
                 'CREATED',
                 $uploadBerita->upload_berita_id,
@@ -64,90 +74,38 @@ class UploadBeritaModel extends Model
             );
 
             DB::commit();
-
-            return self::responFormatSukses($uploadBerita, 'Upload Berita berhasil dibuat');
+            return $uploadBerita;
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal membuat Upload Berita');
+            throw $e;
         }
     }
 
-    public static function updateData($request, $id)
-    {
-        try {
-            DB::beginTransaction();
-
-            $uploadBerita = self::findOrFail($id);
-            
-            $data = $request->t_upload_berita;
-            $uploadBerita->update($data);
-
-            TransactionModel::createData(
-                'UPDATED',
-                $uploadBerita->upload_berita_id,
-                $uploadBerita->ub_type . ' - ' . $uploadBerita->ub_value
-            );
-
-            DB::commit();
-
-            return self::responFormatSukses($uploadBerita, 'Upload Berita berhasil diperbarui');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return self::responFormatError($e, 'Gagal memperbarui Upload Berita');
-        }
-    }
-
-    public static function deleteData($id)
-    {
-        try {
-            DB::beginTransaction();
-            
-            $uploadBerita = self::findOrFail($id);
-            
-            $uploadBerita->isDeleted = 1;
-            $uploadBerita->deleted_at = now();
-            $uploadBerita->save();
-
-            $uploadBerita->delete();
-
-            TransactionModel::createData(
-                'DELETED',
-                $uploadBerita->upload_berita_id,
-                $uploadBerita->ub_type . ' - ' . $uploadBerita->ub_value
-            );
-                
-            DB::commit();
-
-            return self::responFormatSukses($uploadBerita, 'Upload Berita berhasil dihapus');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return self::responFormatError($e, 'Gagal menghapus Upload Berita');
-        }
-    }
-
+    // Validation method
     public static function validasiData($request, $id = null)
     {
         $rules = [
-            't_upload_berita.fk_t_berita' => 'required|exists:t_berita,berita_id',
-            't_upload_berita.ub_type' => 'required|in:file,link',
-            't_upload_berita.ub_value' => [
-                'required', 
+            'berita_id' => 'required|exists:t_berita,berita_id',
+            'type' => 'required|in:file,link',
+            'value' => [
+                'required',
                 function($attribute, $value, $fail) use ($request) {
-                    $type = $request->input('t_upload_berita.ub_type');
+                    $type = $request->type;
                     
                     if ($type === 'link' && !filter_var($value, FILTER_VALIDATE_URL)) {
                         $fail('Format link tidak valid');
                     }
                     
                     if ($type === 'file') {
+                        // Validasi ukuran file (maks 2.5 MB)
                         $maxSize = 2.5 * 1024; // 2.5 MB
-                        $fileValidator = Validator::make(
-                            ['file' => $value], 
-                            ['file' => 'file|max:' . $maxSize]
-                        );
                         
-                        if ($fileValidator->fails()) {
-                            $fail('File tidak valid atau terlalu besar');
+                        if (is_file($value)) {
+                            $fileSize = $value->getSize() / 1024; // Convert to KB
+                            
+                            if ($fileSize > $maxSize) {
+                                $fail('Ukuran file tidak boleh lebih dari 2.5 MB');
+                            }
                         }
                     }
                 }
@@ -155,11 +113,11 @@ class UploadBeritaModel extends Model
         ];
 
         $messages = [
-            't_upload_berita.fk_t_berita.required' => 'Berita wajib dipilih',
-            't_upload_berita.fk_t_berita.exists' => 'Berita tidak valid',
-            't_upload_berita.ub_type.required' => 'Tipe upload wajib dipilih',
-            't_upload_berita.ub_type.in' => 'Tipe upload hanya boleh file atau link',
-            't_upload_berita.ub_value.required' => 'Nilai upload wajib diisi'
+            'berita_id.required' => 'Berita wajib dipilih',
+            'berita_id.exists' => 'Berita tidak valid',
+            'type.required' => 'Tipe upload wajib dipilih',
+            'type.in' => 'Tipe upload hanya boleh file atau link',
+            'value.required' => 'Nilai upload wajib diisi'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -169,5 +127,36 @@ class UploadBeritaModel extends Model
         }
 
         return true;
+    }
+
+    // Method untuk menghapus upload
+    public static function deleteData($id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $uploadBerita = self::findOrFail($id);
+            
+            // Soft delete
+            $uploadBerita->isDeleted = 1;
+            $uploadBerita->deleted_at = now();
+            $uploadBerita->save();
+
+            $uploadBerita->delete();
+
+            // Log transaksi
+            TransactionModel::createData(
+                'DELETED',
+                $uploadBerita->upload_berita_id,
+                $uploadBerita->ub_type . ' - ' . $uploadBerita->ub_value
+            );
+                
+            DB::commit();
+
+            return $uploadBerita;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

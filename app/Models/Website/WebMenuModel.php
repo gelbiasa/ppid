@@ -61,29 +61,30 @@ class WebMenuModel extends Model
         ];
     }
 
-    public static function selectData()
+    public static function getDataMenu()
     {
-        $arr_data =  self::query()
+        $arr_data = self::query()
             ->select([
                 'web_menu_id',
                 'wm_parent_id',
-                'wm_jenis_menu',  // Menambahkan jenis menu ke data yang diambil
-                'wm_menu_url',
+                'wm_urutan_menu',
                 'wm_menu_nama',
-                'wm_urutan_menu'
+                'wm_menu_url',
+                'wm_jenis_menu'
             ])
             ->where('wm_status_menu', 'aktif')
             ->where('isDeleted', 0)
+            ->where('wm_jenis_menu', 'RPN') // Filter untuk hanya mengambil data dengan jenis menu RPN
             ->orderBy('wm_urutan_menu')
             ->get()
             ->map(function ($menu) {
                 return [
                     'id' => $menu->web_menu_id,
                     'wm_parent_id' => $menu->wm_parent_id,
-                    'wm_jenis_menu' => $menu->wm_jenis_menu,  // Menambahkan jenis menu ke data yang di-map
-                    'wm_menu_url' => $menu->wm_menu_url,
+                    'wm_urutan_menu' => $menu->wm_urutan_menu,
                     'wm_menu_nama' => $menu->wm_menu_nama,
-                    'wm_urutan_menu' => $menu->wm_urutan_menu
+                    'wm_menu_url' => $menu->wm_menu_url,
+                    'wm_jenis_menu' => $menu->wm_jenis_menu
                 ];
             })->toArray();
         return $arr_data;

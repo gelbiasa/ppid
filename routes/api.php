@@ -3,11 +3,14 @@
 use Spatie\FlareClient\Api;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ApiAuthController;
-use App\Http\Controllers\Api\Auth\AuthMenuController;
 use App\Http\Controllers\Api\Auth\ApiFooterController;
-use App\Http\Controllers\Api\Public\PublicMenuController;
+use App\Http\Controllers\Api\public\ApiMenuController;
+use App\Http\Controllers\Api\Public\ApiBeritaController;
 use App\Http\Controllers\Api\Public\ApiAksesCepatController;
 use App\Http\Controllers\Api\Auth\BeritaPengumumanController;
+use App\Http\Controllers\Api\Public\ApiMediaDinamisController;
+use App\Http\Controllers\Api\Public\ApiBeritaLandingPageController;
+use App\Http\Controllers\Api\Public\ApiPengumumanLandigPageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +32,6 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::post('logout', [ApiAuthController::class, 'logout']);
         Route::get('user', [ApiAuthController::class, 'getData']);
-        Route::get('menus', [AuthMenuController::class, 'getAuthMenus']);
         Route::get('berita-pengumuman', [BeritaPengumumanController::class, 'getBeritaPengumuman']);
         Route::get('footerData', [ApiFooterController::class, 'getDataFooter']);
         
@@ -38,6 +40,12 @@ Route::prefix('auth')->group(function () {
 
 // route publik
 Route::group(['prefix' => 'public'], function () {
-    Route::get('menus', [PublicMenuController::class, 'getPublicMenus']);
+    Route::get('getDataMenu', [ApiMenuController::class, 'getDataMenu']);
     Route::get('getDataAksesCepat',[ApiAksesCepatController::class,'getDataAksesCepat']);
+    Route::get('getDataPengumumanLandingPage',[ApiPengumumanLandigPageController::class,'getDataPengumumanLandingPage']);
+    Route::get('getDataBeritaLandingPage',[ApiBeritaLandingPageController::class,'getDataBeritaLandingPage']);
+    Route::get('getDataBerita',[ApiBeritaController::class,'getDataBerita']);
+    Route::get('getDataHeroSection',[ApiMediaDinamisController::class,'getDataHeroSection']);
+    Route::get('getDataDokumentasi',[ApiMediaDinamisController::class,'getDataDokumentasi']);
+    Route::get('getDataMediaInformasiPublik',[ApiMediaDinamisController::class,'getDataMediaInformasiPublik']);
 });
