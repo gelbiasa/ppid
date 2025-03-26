@@ -18,9 +18,11 @@ use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\AksesCepatController;
 use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
+use App\Http\Controllers\AdminWeb\MediaDinamis\MediaDinamisController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\KategoriAksesController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanDinamisController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
+use App\Http\Controllers\AdminWeb\MediaDinamis\DetailMediaDinamisController;
 use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
@@ -134,19 +136,41 @@ Route::middleware('auth')->group(function () {
         Route::get('/deleteData/{id}', [BeritaDinamisController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [BeritaDinamisController::class, 'deleteData']);
     });
-    // Route::group(['prefix' => 'adminweb/upload-berita', 'middleware' => ['authorize:ADM']], function () {
-    //     Route::get('/', [BeritaController::class, 'index']);
-    //     Route::get('/getData', [BeritaController::class, 'getData']);
-    //     Route::get('/addData', [BeritaController::class, 'addData']);
-    //     Route::post('/createData', [BeritaController::class, 'createData']);
-    //     Route::get('/editData/{id}', [BeritaController::class, 'editData']);
-    //     Route::post('/updateData/{id}', [BeritaController::class, 'updateData']);
-    //     Route::get('/detailData/{id}', [BeritaController::class, 'detailData']);
-    //     Route::get('/deleteData/{id}', [BeritaController::class, 'deleteData']);
-    //     Route::delete('/deleteData/{id}', [BeritaController::class, 'deleteData']);
-    //     Route::post('/uploadImage', [BeritaController::class, 'uploadImage']);
-    //     Route::post('/removeImage', [BeritaController::class, 'removeImage']);
-    // });
+  Route::group(['prefix' => 'adminweb/berita', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [BeritaController::class, 'index']);
+        Route::get('/getData', [BeritaController::class, 'getData']);
+        Route::get('/addData', [BeritaController::class, 'addData']);
+        Route::post('/createData', [BeritaController::class, 'createData']);
+        Route::get('/editData/{id}', [BeritaController::class, 'editData']);
+        Route::post('/updateData/{id}', [BeritaController::class, 'updateData']);
+        Route::get('/detailData/{id}', [BeritaController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [BeritaController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [BeritaController::class, 'deleteData']);
+        Route::post('/uploadImage', [BeritaController::class, 'uploadImage']);
+        Route::post('/removeImage', [BeritaController::class, 'removeImage']);
+    });
+    Route::group(['prefix' => 'adminweb/media-dinamis', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [MediaDinamisController::class, 'index']);
+        Route::get('/getData', [MediaDinamisController::class, 'getData']);
+        Route::get('/addData', [MediaDinamisController::class, 'addData']);
+        Route::post('/createData', [MediaDinamisController::class, 'createData']);
+        Route::get('/editData/{id}', [MediaDinamisController::class, 'editData']);
+        Route::post('/updateData/{id}', [MediaDinamisController::class, 'updateData']);
+        Route::get('/detailData/{id}', [MediaDinamisController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [MediaDinamisController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [MediaDinamisController::class, 'deleteData']);
+    });
+       Route::group(['prefix' => 'adminweb/media-detail', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [DetailMediaDinamisController::class, 'index']);
+        Route::get('/getData', [DetailMediaDinamisController::class, 'getData']);
+        Route::get('/addData', [DetailMediaDinamisController::class, 'addData']);
+        Route::post('/createData', [DetailMediaDinamisController::class, 'createData']);
+        Route::get('/editData/{id}', [DetailMediaDinamisController::class, 'editData']);
+        Route::post('/updateData/{id}', [DetailMediaDinamisController::class, 'updateData']);
+        Route::get('/detailData/{id}', [DetailMediaDinamisController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [DetailMediaDinamisController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [DetailMediaDinamisController::class, 'deleteData']);
+    });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
         Route::get('/', [PermohonanInformasiController::class, 'index']);

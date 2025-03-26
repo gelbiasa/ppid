@@ -148,14 +148,14 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <a href="{{ url('/adminweb/berita-dinamis') }}"
-                                        class="nav-link {{ $activeMenu == 'kategori-akses' ? 'active' : '' }}">
+                                        class="nav-link {{ $activeMenu == 'berita-dinamis' ? 'active' : '' }}">
                                         <i class="fas fa-tasks nav-icon"></i>
                                         <p>Kategori-Berita</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ url('/adminweb/upload-berita') }}"
-                                        class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
+                                    <a href="{{ url('/adminweb/berita') }}"
+                                        class="nav-link {{ $activeMenu == 'berita' ? 'active' : '' }}">
                                         <i class="fas fa-tasks nav-icon"></i>
                                         <p>Berita</p>
                                     </a>
@@ -186,6 +186,31 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                 </li>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p> Media Dinamis
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/media-dinamis') }}"
+                                        class="nav-link {{ $activeMenu == 'berita-dinamis' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Kategori-Media</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/media-detail') }}"
+                                        class="nav-link {{ $activeMenu == 'berita' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Data Media Dinamis</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                     </li>
                 @endif
 
