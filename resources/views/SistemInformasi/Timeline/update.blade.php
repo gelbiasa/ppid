@@ -252,7 +252,7 @@
                     success: function (response) {
                         if (response.success) {
                             $('#myModal').modal('hide');
-                            $('#table_timeline').DataTable().ajax.reload();
+                            reloadTable();
 
                             Swal.fire({
                                 icon: 'success',

@@ -25,9 +25,17 @@ class KategoriFormModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function selectData()
+    public static function selectData($perPage = null, $search = '')
     {
-        return self::where('isDeleted', 0)->get();
+        $query = self::query()
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where('kf_nama', 'like', "%{$search}%");
+        }
+
+        return self::paginateResults($query, $perPage);
     }
 
     public static function createData($request)
@@ -59,14 +67,14 @@ class KategoriFormModel extends Model
             DB::beginTransaction();
 
             $kategoriForm = self::findOrFail($id);
-            
+
             $data = $request->m_kategori_form;
             $kategoriForm->update($data);
 
             TransactionModel::createData(
                 'UPDATED',
-                $kategoriForm->kategori_form_id, 
-                $kategoriForm->kf_nama 
+                $kategoriForm->kategori_form_id,
+                $kategoriForm->kf_nama
             );
 
             DB::commit();
@@ -82,9 +90,9 @@ class KategoriFormModel extends Model
     {
         try {
             DB::beginTransaction();
-            
+
             $kategoriForm = self::findOrFail($id);
-            
+
             $kategoriForm->delete();
 
             TransactionModel::createData(
@@ -92,7 +100,7 @@ class KategoriFormModel extends Model
                 $kategoriForm->kategori_form_id,
                 $kategoriForm->kf_nama
             );
-                
+
             DB::commit();
 
             return self::responFormatSukses($kategoriForm, 'Kategori form berhasil dihapus');
@@ -102,7 +110,8 @@ class KategoriFormModel extends Model
         }
     }
 
-    public static function detailData($id) {
+    public static function detailData($id)
+    {
         return self::findOrFail($id);
     }
 

@@ -18,8 +18,10 @@ class PengumumanController extends Controller
     public $breadcrumb = 'Pengaturan Pengumuman';
     public $pagename = 'AdminWeb/Pengumuman';
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search', '');
+
         $breadcrumb = (object) [
             'title' => 'Pengaturan Pengumuman',
             'list' => ['Home', 'Website', 'Pengumuman']
@@ -31,35 +33,29 @@ class PengumumanController extends Controller
 
         $activeMenu = 'Pengumuman';
 
+        // Gunakan pagination dan pencarian
+        $pengumuman = PengumumanModel::selectData(10, $search);
+
         return view("AdminWeb/Pengumuman.index", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
+            'pengumuman' => $pengumuman,
+            'search' => $search
         ]);
     }
 
-    public function getData()
+    // Update getData untuk mendukung pagination dan pencarian
+    public function getData(Request $request)
     {
-        $result = PengumumanModel::selectData();
-        $data = [];
+        $search = $request->query('search', '');
+        $pengumuman = PengumumanModel::selectData(10, $search);
         
-        foreach ($result as $key => $pengumuman) {
-            $row = [];
-            $row[] = $key + 1;
-            $row[] = $pengumuman->PengumumanDinamis->pd_nama_submenu ?? '-';
-            $row[] = $pengumuman->peg_judul ?? '-';
-            $row[] = $pengumuman->UploadPengumuman->up_type ?? '-';
-            $row[] = $pengumuman->status_pengumuman;
-            
-            $row[] = $this->generateActionButtons(
-                'AdminWeb/Pengumuman', 
-                $pengumuman->pengumuman_id
-            );
-            
-            $data[] = $row;
+        if ($request->ajax()) {
+            return view('AdminWeb/Pengumuman.data', compact('pengumuman', 'search'))->render();
         }
         
-        return response()->json(['data' => $data]);
+        return redirect()->route('pengumuman.index');
     }
 
     public function addData()

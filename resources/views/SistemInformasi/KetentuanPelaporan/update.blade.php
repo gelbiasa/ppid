@@ -48,82 +48,15 @@
     </button>
 </div>
 
-<!-- Include Summernote CSS/JS -->
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-
 <script>
     $(document).ready(function () {
-        // Initialize Summernote
-        setTimeout(function () {
-            $('#kp_konten').summernote({
-                placeholder: 'Tuliskan konten ketentuan pelaporan di sini...',
-                tabsize: 2,
-                height: 300,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ],
-                callbacks: {
-                    onImageUpload: function (files) {
-                        for (let i = 0; i < files.length; i++) {
-                            uploadImage(files[i]);
-                        }
-                    }
-                }
-            });
-        }, 100);  // 100ms delay
-
-        function uploadImage(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
-
-            $.ajax({
-                url: '{{ url("SistemInformasi/KetentuanPelaporan/uploadImage") }}',
-                method: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    if (response.success) {
-                        $('#kp_konten').summernote('insertImage', response.url);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: response.message || 'Gagal mengunggah gambar'
-                        });
-                    }
-                },
-                error: function (xhr) {
-                    console.error(xhr);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Terjadi kesalahan saat mengunggah gambar. Silakan coba lagi.'
-                    });
-                }
-            });
-        }
-
-        // Hapus error ketika input berubah
-        $(document).on('input change', 'input, select, textarea', function () {
-            $(this).removeClass('is-invalid');
-            const errorId = `#${$(this).attr('id')}_error`;
-            $(errorId).html('');
-        });
-
         // Handle submit form
-        $('#btnSubmitForm').on('click', function () {
+        $(document).on('click', '#btnSubmitForm', function () {
+            console.log('Tombol submit diklik');
             // Reset semua error
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').html('');
+            $('.note-editor').removeClass('border border-danger');
 
             const form = $('#formUpdateKetentuanPelaporan');
             const formData = new FormData(form[0]);
@@ -140,8 +73,13 @@
                 contentType: false,
                 success: function (response) {
                     if (response.success) {
-                        $('#myModal').modal('hide');
-                        $('#table_ketentuan_pelaporan').DataTable().ajax.reload();
+                        $('.modal').modal('hide');
+
+                        if (typeof reloadTable === 'function') {
+                            reloadTable();
+                        } else {
+                            console.warn('Fungsi reloadTable tidak ditemukan, halaman mungkin perlu di-refresh manual');
+                        }
 
                         Swal.fire({
                             icon: 'success',
@@ -199,31 +137,5 @@
                 }
             });
         });
-
-        // Function untuk upload gambar (jika dibutuhkan)
-        function uploadImage(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
-
-            $.ajax({
-                url: '{{ url("SistemInformasi/KetentuanPelaporan/uploadImage") }}',
-                method: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (data) {
-                    $('#kp_konten').summernote('insertImage', data.url);
-                },
-                error: function (xhr) {
-                    console.error(xhr);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Terjadi kesalahan saat mengunggah gambar. Silakan coba lagi.'
-                    });
-                }
-            });
-        }
     });
 </script>

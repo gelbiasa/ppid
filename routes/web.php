@@ -265,16 +265,16 @@ Route::middleware('auth')->group(function () {
         Route::delete('/deleteData/{id}', [KategoriFormController::class, 'deleteData']);
     });
 
-    Route::group(['prefix' => 'adminweb/PengumumanDinamis', 'middleware' => ['authorize:ADM']], function () {
-        Route::get('/', [PengumumanDinamisController::class, 'index']);
-        Route::get('/getData', [PengumumanDinamisController::class, 'getData']);
-        Route::get('/addData', [PengumumanDinamisController::class, 'addData']);
-        Route::post('/createData', [PengumumanDinamisController::class, 'createData']);
-        Route::get('/editData/{id}', [PengumumanDinamisController::class, 'editData']);
-        Route::post('/updateData/{id}', [PengumumanDinamisController::class, 'updateData']);
-        Route::get('/detailData/{id}', [PengumumanDinamisController::class, 'detailData']);
-        Route::get('/deleteData/{id}', [PengumumanDinamisController::class, 'deleteData']);
-        Route::delete('/deleteData/{id}', [PengumumanDinamisController::class, 'deleteData']);
+    Route::group(['prefix' => 'AdminWeb/PengumumanDinamis', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PengumumanDinamisController::class, 'index'])->name('pengumuman-dinamis.index');
+        Route::get('/getData', [PengumumanDinamisController::class, 'getData'])->name('pengumuman-dinamis.getData');
+        Route::get('/addData', [PengumumanDinamisController::class, 'addData'])->name('pengumuman-dinamis.addData');
+        Route::post('/createData', [PengumumanDinamisController::class, 'createData'])->name('pengumuman-dinamis.createData');
+        Route::get('/editData/{id}', [PengumumanDinamisController::class, 'editData'])->name('pengumuman-dinamis.editData');
+        Route::post('/updateData/{id}', [PengumumanDinamisController::class, 'updateData'])->name('pengumuman-dinamis.updateData');
+        Route::get('/detailData/{id}', [PengumumanDinamisController::class, 'detailData'])->name('pengumuman-dinamis.detailData');
+        Route::get('/deleteData/{id}', [PengumumanDinamisController::class, 'deleteData'])->name('pengumuman-dinamis.deleteConfirm');
+        Route::delete('/deleteData/{id}', [PengumumanDinamisController::class, 'deleteData'])->name('pengumuman-dinamis.deleteData');
     });
 
     Route::group(['prefix' => 'AdminWeb/Pengumuman', 'middleware' => ['authorize:ADM']], function () {

@@ -32,9 +32,25 @@ class KetentuanPelaporanModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function selectData()
+    // Fungsi untuk mengambil semua data dengan pagination
+    public static function selectData($perPage = null, $search = '')
     {
-        return self::with('PelaporanKategoriForm')->where('isDeleted', 0)->get();
+        $query = self::query()
+            ->with('PelaporanKategoriForm')
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('kp_judul', 'like', "%{$search}%")
+                    ->orWhereHas('PelaporanKategoriForm', function ($subq) use ($search) {
+                        $subq->where('kf_nama', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Gunakan paginateResults dari trait BaseModelFunction
+        return self::paginateResults($query, $perPage);
     }
 
     public static function createData($request)
@@ -114,41 +130,5 @@ class KetentuanPelaporanModel extends Model
         }
 
         return true;
-    }
-
-    // Method untuk upload gambar menggunakan method dari BaseModelFunction
-    public static function uploadImage($file)
-    {
-        if (!$file) {
-            return null;
-        }
-        
-        $fileName = self::uploadFile($file, 'ketentuan_pelaporan');
-        
-        if ($fileName) {
-            return asset('storage/' . $fileName);
-        }
-        
-        return null;
-    }
-
-    // Method untuk menghapus gambar menggunakan method dari BaseModelFunction
-    public static function removeImage($fileName)
-    {
-        if (!$fileName) {
-            return false;
-        }
-        
-        // Extract filename dari full URL
-        $pathInfo = parse_url($fileName);
-        $path = $pathInfo['path'] ?? '';
-        $storagePath = str_replace('/storage/', '', $path);
-        
-        if (!empty($storagePath)) {
-            self::removeFile($storagePath);
-            return true;
-        }
-        
-        return false;
     }
 }

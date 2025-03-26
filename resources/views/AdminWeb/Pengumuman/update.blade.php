@@ -111,130 +111,22 @@
     </button>
 </div>
 
-<!-- Include Summernote CSS/JS -->
-<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
-
 <script>
     $(document).ready(function () {
-        // Initialize custom file input
-        bsCustomFileInput.init();
-        
-        // Initialize Summernote (with delay to ensure modal is fully loaded)
-        setTimeout(function () {
-            $('#konten').summernote({
-                placeholder: 'Tuliskan konten pengumuman di sini...',
-                tabsize: 2,
-                height: 300,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ],
-                callbacks: {
-                    onImageUpload: function (files) {
-                        for (let i = 0; i < files.length; i++) {
-                            uploadImage(files[i]);
-                        }
-                    }
-                }
-            });
-        }, 100);
-
-        // Handle tipe pengumuman change
-        $('#tipe_pengumuman').on('change', function () {
-            const type = $(this).val();
-            
-            // Reset form fields
-            $('#judul_container, #thumbnail_container, #url_container, #file_container, #konten_container').hide();
-            
-            // Show relevant fields based on selected type
-            switch (type) {
-                case 'link':
-                    $('#url_container').show();
-                    break;
-                case 'file':
-                    $('#judul_container, #thumbnail_container, #file_container').show();
-                    break;
-                case 'konten':
-                    $('#judul_container, #thumbnail_container, #konten_container').show();
-                    break;
-            }
-        });
-        
-        // Handle thumbnail preview
-        $('#thumbnail').on('change', function (e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    $('#thumbnail_image').attr('src', e.target.result);
-                    $('#thumbnail_preview').show();
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Function to upload image for Summernote
-        function uploadImage(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
-
-            $.ajax({
-                url: '{{ url("AdminWeb/Pengumuman/uploadImage") }}',
-                method: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    if (response.success) {
-                        $('#konten').summernote('insertImage', response.url);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: response.message || 'Gagal mengunggah gambar'
-                        });
-                    }
-                },
-                error: function (xhr) {
-                    console.error(xhr);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Terjadi kesalahan saat mengunggah gambar. Silakan coba lagi.'
-                    });
-                }
-            });
-        }
-
-        // Hapus error ketika input berubah
-        $(document).on('input change', 'input, select, textarea', function () {
-            $(this).removeClass('is-invalid');
-            const errorId = `#${$(this).attr('id')}_error`;
-            $(errorId).html('');
-        });
-
-        // Handle submit form
-        $('#btnSubmitForm').on('click', function () {
+        $(document).on('click', '#btnSubmitForm', function () {
+            console.log('Tombol submit diklik');
             // Reset semua error
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').html('');
             $('.note-editor').removeClass('border border-danger');
-            
+
             const form = $('#formUpdatePengumuman');
             const formData = new FormData(form[0]);
             const button = $(this);
-            
+
             // Tampilkan loading state pada tombol submit
             button.html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').attr('disabled', true);
-            
+
             $.ajax({
                 url: form.attr('action'),
                 type: 'POST',
@@ -243,9 +135,14 @@
                 contentType: false,
                 success: function (response) {
                     if (response.success) {
-                        $('#myModal').modal('hide');
-                        $('#table_pengumuman').DataTable().ajax.reload();
-                        
+                        $('.modal').modal('hide');
+
+                        if (typeof reloadTable === 'function') {
+                            reloadTable();
+                        } else {
+                            console.warn('Fungsi reloadTable tidak ditemukan, halaman mungkin perlu di-refresh manual');
+                        }
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
@@ -290,7 +187,7 @@
                                     $(`#${key}_error`).html(value[0]);
                                 }
                             });
-                            
+
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Validasi Gagal',

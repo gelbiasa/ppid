@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Models\SistemInformasi\KategoriForm\KategoriFormModel;
 use App\Models\SistemInformasi\Timeline\TimelineModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 trait BaseModelFunction
 {
+    protected static $defaultPerPage = 1;
+
     protected $commonFields = [
         'isDeleted',
         'created_at',
@@ -80,6 +83,22 @@ trait BaseModelFunction
         $this->fireModelEvent('deleted');
 
         return true;
+    }
+
+    /**
+     * Method paginate untuk digunakan di berbagai model
+     * 
+     * @param Builder $query Query builder
+     * @param int|null $perPage Jumlah item per halaman, null akan menggunakan default
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    protected static function paginateResults(Builder $query, $perPage = null)
+    {
+        if ($perPage === null) {
+            $perPage = static::$defaultPerPage;
+        }
+        
+        return $query->paginate($perPage);
     }
 
     public function getCommonFields()

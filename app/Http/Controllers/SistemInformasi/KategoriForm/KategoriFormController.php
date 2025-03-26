@@ -15,8 +15,10 @@ class KategoriFormController extends Controller
     public $breadcrumb = 'Pengaturan Kategori Form';
     public $pagename = 'SistemInformasi/KategoriForm';
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search', '');
+
         $breadcrumb = (object) [
             'title' => 'Pengaturan Kategori Form',
             'list' => ['Home', 'Pengaturan Kategori Form']
@@ -27,33 +29,30 @@ class KategoriFormController extends Controller
         ];
 
         $activeMenu = 'KategoriForm';
+        
+        // Gunakan pagination dan pencarian
+        $kategoriForm = KategoriFormModel::selectData(10, $search);
 
         return view("SistemInformasi/KategoriForm.index", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
+            'kategoriForm' => $kategoriForm,
+            'search' => $search
         ]);
     }
 
-    public function getData()
+    // Update getData untuk mendukung pagination dan pencarian
+    public function getData(Request $request)
     {
-        $result = KategoriFormModel::selectData();
-        $data = [];
+        $search = $request->query('search', '');
+        $kategoriForm = KategoriFormModel::selectData(10, $search);
         
-        foreach ($result as $key => $kategoriForm) {
-            $row = [];
-            $row[] = $key + 1;
-            $row[] = $kategoriForm->kf_nama;
-            
-            $row[] = $this->generateActionButtons(
-                'SistemInformasi/KategoriForm', 
-                $kategoriForm->kategori_form_id
-            );
-            
-            $data[] = $row;
+        if ($request->ajax()) {
+            return view('SistemInformasi/KategoriForm.data', compact('kategoriForm', 'search'))->render();
         }
         
-        return response()->json(['data' => $data]);
+        return redirect()->route('kategori-form.index');
     }
 
     public function addData()

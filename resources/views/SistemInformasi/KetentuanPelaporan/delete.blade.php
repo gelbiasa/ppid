@@ -97,7 +97,7 @@
           $('#myModal').modal('hide');
           
           if (response.success) {
-            $('#table_ketentuan_pelaporan').DataTable().ajax.reload();
+            reloadTable();
             
             Swal.fire({
               icon: 'success',
