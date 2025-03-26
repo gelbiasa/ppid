@@ -171,7 +171,7 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ url('/adminweb/PengumumanDinamis') }}"
+                                    <a href="{{ url('/AdminWeb/PengumumanDinamis') }}"
                                         class="nav-link {{ $activeMenu == 'PengumumanDinamis' ? 'active' : '' }}">
                                         <i class="fas fa-tasks nav-icon"></i>
                                         <p>Kategori Pengumuman</p>
@@ -228,7 +228,7 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                         </li>
                         <li class="nav-item">
                             <a href="{{ url('SistemInformasi/EForm/ADM/PermohonanPerawatan') }}"
-                                class="nav-link {{ $activeMenu == 'WBS' ? 'active' : '' }}">
+                                class="nav-link {{ $activeMenu == 'PermohonanPerawatan' ? 'active' : '' }}">
                                 <i class="fas fa-file-alt nav-icon"></i>
                                 <p>Permohonan Perawatan SarPras</p>
                             </a>
@@ -410,7 +410,7 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                         </li>
                         <li class="nav-item">
                             <a href="{{ url('SistemInformasi/EForm/RPN/PermohonanPerawatan') }}"
-                                class="nav-link {{ $activeMenu == 'WBS' ? 'active' : '' }}">
+                                class="nav-link {{ $activeMenu == 'PermohonanPerawatan' ? 'active' : '' }}">
                                 <i class="fas fa-file-alt nav-icon"></i>
                                 <p>Permohonan Perawatan SarPras</p>
                             </a>

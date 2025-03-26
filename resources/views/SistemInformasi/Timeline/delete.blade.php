@@ -90,7 +90,7 @@
         $('#myModal').modal('hide');
         
         if (response.success) {
-          $('#table_timeline').DataTable().ajax.reload();
+          reloadTable();
           
           Swal.fire({
             icon: 'success',

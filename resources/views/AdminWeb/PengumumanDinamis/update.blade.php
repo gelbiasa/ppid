@@ -6,7 +6,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdatePengumumanDinamis" action="{{ url('adminweb/PengumumanDinamis/updateData/' . $pengumumanDinamis->pengumuman_dinamis_id) }}" method="POST">
+    <form id="formUpdatePengumumanDinamis" action="{{ url('AdminWeb/PengumumanDinamis/updateData/' . $pengumumanDinamis->pengumuman_dinamis_id) }}" method="POST">
         @csrf
 
         <div class="form-group">
@@ -53,10 +53,15 @@
                 data: formData,
                 processData: false,
                 contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 success: function(response) {
                     if (response.success) {
                         $('#myModal').modal('hide');
-                        $('#table_pengumuman_dinamis').DataTable().ajax.reload();
+                        
+                        // Perbaikan: Gunakan fungsi reloadTable() untuk memuat ulang data
+                        reloadTable();
                         
                         Swal.fire({
                             icon: 'success',
@@ -94,6 +99,7 @@
                     }
                 },
                 error: function(xhr) {
+                    console.error('Error:', xhr);
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',

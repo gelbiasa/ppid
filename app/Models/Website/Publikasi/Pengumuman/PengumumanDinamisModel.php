@@ -25,9 +25,21 @@ class PengumumanDinamisModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function selectData()
+    public static function selectData($perPage = null, $search = '')
     {
-        return self::where('isDeleted', 0)->get();
+        $query = self::query()
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where('pd_nama_submenu', 'like', "%{$search}%");
+        }
+
+        // Tambahkan pengurutan
+        $query->orderBy('pd_nama_submenu', 'asc');
+        
+        // Gunakan paginateResults dari trait BaseModelFunction
+        return self::paginateResults($query, $perPage);
     }
 
     public static function createData($request)

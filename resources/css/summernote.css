@@ -1,0 +1,32 @@
+/* Summernote styles */
+.modal-content {
+    overflow: hidden;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.enable-scroll {
+    overflow: auto !important;
+}
+
+.note-editor.note-frame {
+    max-width: 100%;
+}
+
+.note-editor.note-frame .note-editing-area .note-editable {
+    max-width: 100%;
+}
+
+.note-editor.note-frame .note-editing-area .note-editable img {
+    max-width: 100%;
+    height: auto !important;
+}
+
+/* Pastikan modal tidak terpengaruh oleh Summernote */
+.modal-dialog.modal-dialog-scrollable .modal-body {
+    overflow-y: auto !important;
+}

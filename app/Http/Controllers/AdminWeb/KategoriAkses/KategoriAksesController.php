@@ -32,7 +32,7 @@ class KategoriAksesController extends Controller
 
         return view('AdminWeb.KategoriAkses.index', [
             'breadcrumb' => $breadcrumb,
-            'page' => $page,
+            'page' => $page, 
             'activeMenu' => $activeMenu,
             'kategoriAkses' => $kategoriAkses,
             'search' => $search

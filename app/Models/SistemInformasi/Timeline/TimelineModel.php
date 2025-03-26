@@ -29,7 +29,7 @@ class TimelineModel extends Model
     public function langkahTimeline()
     {
         return $this->hasMany(LangkahTimelineModel::class, 'fk_t_timeline', 'timeline_id')
-                    ->where('isDeleted', 0);
+            ->where('isDeleted', 0);
     }
 
     public function __construct(array $attributes = [])
@@ -38,9 +38,23 @@ class TimelineModel extends Model
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
-    public static function selectData()
+    public static function selectData($perPage = null, $search = '')
     {
-        return self::with('TimelineKategoriForm')->where('isDeleted', 0)->get();
+        $query = self::query()
+            ->with('TimelineKategoriForm')
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul_timeline', 'like', "%{$search}%")
+                    ->orWhereHas('TimelineKategoriForm', function ($subq) use ($search) {
+                        $subq->where('kf_nama', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        return self::paginateResults($query, $perPage);
     }
 
     public static function createData($request)
@@ -75,7 +89,7 @@ class TimelineModel extends Model
             DB::beginTransaction();
 
             $timeline = self::findOrFail($id);
-            
+
             $data = $request->t_timeline;
             $timeline->update($data);
 
@@ -84,8 +98,8 @@ class TimelineModel extends Model
 
             TransactionModel::createData(
                 'UPDATED',
-                $timeline->timeline_id, 
-                $timeline->judul_timeline 
+                $timeline->timeline_id,
+                $timeline->judul_timeline
             );
 
             DB::commit();
@@ -101,11 +115,11 @@ class TimelineModel extends Model
     {
         try {
             DB::beginTransaction();
-            
+
             $timeline = self::findOrFail($id);
-            
+
             $timeline->delete();
-            
+
             LangkahTimelineModel::deleteData($id);
 
             TransactionModel::createData(
@@ -113,7 +127,7 @@ class TimelineModel extends Model
                 $timeline->timeline_id, // ID aktivitas adalah ID timeline yang baru dibuat
                 $timeline->judul_timeline // Detail aktivitas adalah judul timeline
             );
-                
+
             DB::commit();
 
             return self::responFormatSukses($timeline, 'Timeline berhasil dihapus');
@@ -123,7 +137,8 @@ class TimelineModel extends Model
         }
     }
 
-    public static function detailData($id) {
+    public static function detailData($id)
+    {
         return self::with(['langkahTimeline', 'TimelineKategoriForm'])->findOrFail($id);
     }
 

@@ -88,7 +88,7 @@
                 $('#myModal').modal('hide');
                 
                 if (response.success) {
-                    $('#table_pengumuman').DataTable().ajax.reload();
+                    reloadTable();
                     
                     Swal.fire({
                         icon: 'success',

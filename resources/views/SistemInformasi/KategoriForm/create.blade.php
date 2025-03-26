@@ -55,7 +55,7 @@
           success: function(response) {
             if (response.success) {
               $('#myModal').modal('hide');
-              $('#table_kategori_form').DataTable().ajax.reload();
+              reloadTable();
               
               Swal.fire({
                 icon: 'success',

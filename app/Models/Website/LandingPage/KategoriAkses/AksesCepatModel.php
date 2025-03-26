@@ -25,7 +25,7 @@ class AksesCepatModel extends Model
     protected $fillable = [
         'fk_m_kategori_akses',
         'ac_judul',
-        'ac_static_icon', 
+        'ac_static_icon',
         'ac_animation_icon',
         'ac_url'
     ];
@@ -41,23 +41,23 @@ class AksesCepatModel extends Model
         parent::__construct($attributes);
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
-    
+
     /**
      * Metode untuk mengambil data dengan optional filtering
      */
-    public static function selectData($perPage = 10, $search = '')
+    public static function selectData($perPage = null, $search = '')
     {
         $query = self::with('kategoriAkses')
             ->where('isDeleted', 0);
-    
+
         // Add search functionality
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('ac_judul', 'like', "%{$search}%");
             });
         }
-    
-        return $query->paginate($perPage);
+
+        return self::paginateResults($query, $perPage);
     }
 
     /**
@@ -241,7 +241,7 @@ class AksesCepatModel extends Model
             'ac_judul' => 'required|max:100',
             'ac_url' => 'required|url|max:100',
         ];
-    
+
         // Jika create baru atau update dengan file baru
         if ($id === null) {
             // Untuk create baru
@@ -252,12 +252,12 @@ class AksesCepatModel extends Model
             if ($request->hasFile('ac_static_icon')) {
                 $rules['ac_static_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2500';
             }
-            
+
             if ($request->hasFile('ac_animation_icon')) {
                 $rules['ac_animation_icon'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2500';
             }
         }
-    
+
         $messages = [
             'fk_m_kategori_akses.required' => 'Kategori akses wajib dipilih',
             'fk_m_kategori_akses.exists' => 'Kategori akses tidak valid',
@@ -274,13 +274,13 @@ class AksesCepatModel extends Model
             'ac_animation_icon.mimes' => 'Ikon animasi hanya boleh berupa file: jpeg, png, jpg, gif, atau svg',
             'ac_animation_icon.max' => 'Ukuran ikon animasi maksimal 2.5MB',
         ];
-    
+
         $validator = Validator::make($request->all(), $rules, $messages);
-    
+
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
-    
+
         return true;
     }
 

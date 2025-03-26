@@ -36,7 +36,7 @@ class KategoriAksesModel extends Model
     }
 
     // Fungsi untuk mengambil semua data dengan pagination
-    public static function selectData($perPage = 10, $search = '')
+    public static function selectData($perPage = null, $search = '')
     {
         $query = self::query()
             ->where('isDeleted', 0);
@@ -46,7 +46,7 @@ class KategoriAksesModel extends Model
             $query->where('mka_judul_kategori', 'like', "%{$search}%");
         }
 
-        return $query->paginate($perPage);
+        return self::paginateResults($query, $perPage);
     }
 
     // Fungsi untuk membuat data baru
