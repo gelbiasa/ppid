@@ -56,7 +56,7 @@ class DetailMediaDinamisModel extends Model
             });
         }
 
-        return $query->paginate($perPage);
+        return self::paginateResults($query, $perPage);
     }
 
 
@@ -139,7 +139,8 @@ class DetailMediaDinamisModel extends Model
         return self::with('mediaDinamis')->findOrFail($id);
     }
 
-    public static function validasiData($request)
+
+    public static function validasiData($request, $id = null)
     {
         $rules = [
             't_detail_media_dinamis.fk_m_media_dinamis' => 'required|exists:m_media_dinamis,media_dinamis_id',
@@ -153,7 +154,11 @@ class DetailMediaDinamisModel extends Model
             if ($request->t_detail_media_dinamis['dm_type_media'] == 'link') {
                 $rules['t_detail_media_dinamis.dm_media_upload'] = 'required|max:200';
             } else if ($request->t_detail_media_dinamis['dm_type_media'] == 'file') {
-                if ($request->isMethod('post') && !isset($request->t_detail_media_dinamis['dm_media_upload'])) {
+                // Jika sedang update, file upload tidak wajib
+                if ($id) {
+                    $rules['media_file'] = 'nullable|file|max:2560|mimes:jpg,jpeg,png,gif,svg,webp,pdf';
+                } else {
+                    // Saat create, file wajib
                     $rules['media_file'] = 'required|file|max:2560|mimes:jpg,jpeg,png,gif,svg,webp,pdf';
                 }
             }
@@ -171,7 +176,7 @@ class DetailMediaDinamisModel extends Model
             'media_file.required' => 'File media wajib diupload',
             'media_file.file' => 'Upload harus berupa file',
             'media_file.max' => 'Ukuran file maksimal 2.5MB',
-            'media_file.mimes' => 'Format file harus jpg, jpeg, png, gif, atau pdf',
+            'media_file.mimes' => 'Format file harus jpg, jpeg, png, gif, svg, webp, atau pdf',
             't_detail_media_dinamis.dm_judul_media.required' => 'Judul media wajib diisi',
             't_detail_media_dinamis.dm_judul_media.max' => 'Judul media maksimal 100 karakter',
         ];

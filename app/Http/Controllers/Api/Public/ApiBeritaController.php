@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api\Public;
 
-use App\Http\Controllers\Api\BaseApiController;
+use Illuminate\Http\Request;
 
+use App\Http\Controllers\Api\BaseApiController;
 use App\Models\Website\Publikasi\Berita\BeritaDinamisModel;
 
 
@@ -18,7 +19,7 @@ class ApiBeritaController extends BaseApiController
                 $berita = BeritaDinamisModel::getDataBerita();
                 return $berita;
             },
-            'Berita LandingPage'
+            'Menu Berita'
         );
     }
 }

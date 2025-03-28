@@ -45,6 +45,8 @@ Route::group(['prefix' => 'public'], function () {
     Route::get('getDataPengumumanLandingPage',[ApiPengumumanLandigPageController::class,'getDataPengumumanLandingPage']);
     Route::get('getDataBeritaLandingPage',[ApiBeritaLandingPageController::class,'getDataBeritaLandingPage']);
     Route::get('getDataBerita',[ApiBeritaController::class,'getDataBerita']);
+    Route::get('getDataDetailBerita/{slug}', [ApiBeritaController::class, 'getDataDetailBerita']);
+    
     Route::get('getDataHeroSection',[ApiMediaDinamisController::class,'getDataHeroSection']);
     Route::get('getDataDokumentasi',[ApiMediaDinamisController::class,'getDataDokumentasi']);
     Route::get('getDataMediaInformasiPublik',[ApiMediaDinamisController::class,'getDataMediaInformasiPublik']);

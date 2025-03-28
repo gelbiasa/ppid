@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AdminWeb\MediaDinamis;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\TraitsController;
 use Illuminate\Validation\ValidationException;
@@ -103,9 +104,29 @@ class DetailMediaDinamisController extends Controller
     public function updateData(Request $request, $id)
     {
         try {
-            $this->processFileUpload($request, $id);
-    
-            DetailMediaDinamisModel::validasiData($request);
+            // Ambil data detail media dinamis yang akan diupdate
+            $detailMediaDinamis = DetailMediaDinamisModel::findOrFail($id);
+
+            // Cek apakah ada file upload
+            $hasNewFile = $request->hasFile('media_file');
+            
+            // Proses validasi dengan mengirim ID
+            DetailMediaDinamisModel::validasiData($request, $id);
+
+            // Jika ada file upload baru, proses file
+            if ($hasNewFile) {
+                $this->processFileUpload($request, $id);
+            } else {
+                // Jika tidak ada file baru, gunakan media_upload yang sudah ada
+                $request->merge([
+                    't_detail_media_dinamis' => array_merge(
+                        $request->t_detail_media_dinamis,
+                        ['dm_media_upload' => $detailMediaDinamis->dm_media_upload]
+                    )
+                ]);
+            }
+
+            // Proses update data
             $result = DetailMediaDinamisModel::updateData($request, $id);
             
             return response()->json($result);
@@ -116,18 +137,17 @@ class DetailMediaDinamisController extends Controller
         }
     }
 
+
     public function detailData($id)
     {
-        try {
-            $detailMediaDinamis = DetailMediaDinamisModel::with('mediaDinamis')->findOrFail($id);
+            // Change this to match your model's method name for relationships
+            $detailMedia = DetailMediaDinamisModel::with('mediaDinamis')
+                ->findOrFail($id);
             
             return view('AdminWeb.DetailMediaDinamis.detail', [
-                'detailMediaDinamis' => $detailMediaDinamis,
+                'detailMedia' => $detailMedia,
                 'title' => 'Detail Media Dinamis'
             ]);
-        } catch (\Exception $e) {
-            return response()->json(DetailMediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil detail'));
-        }
     }
 
    public function deleteData(Request $request, $id)
@@ -159,6 +179,7 @@ class DetailMediaDinamisController extends Controller
             return response()->json(DetailMediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat menghapus detail media dinamis'));
         }
     }
+
     private function processFileUpload(Request $request, $id = null)
     {
         if (!$this->isFileUploadRequest($request)) {
