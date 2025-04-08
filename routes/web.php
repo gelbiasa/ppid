@@ -15,6 +15,8 @@ use App\Http\Controllers\AdminWeb\Footer\FooterController;
 use App\Http\Controllers\SistemInformasi\EForm\WBSController;
 use App\Http\Controllers\AdminWeb\Berita\BeritaDinamisController;
 use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
+use App\Http\Controllers\AdminWeb\InformasiPublik\LHKPN\DetailLhkpnController;
+use App\Http\Controllers\AdminWeb\InformasiPublik\LHKPN\LhkpnController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\AksesCepatController;
 use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
