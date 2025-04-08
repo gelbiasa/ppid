@@ -86,27 +86,7 @@ class DetailMediaDinamisModel extends Model
 
     public static function updateData($request, $id)
     {
-        try {
-            DB::beginTransaction();
-
-            $detailMediaDinamis = self::findOrFail($id);
-            $data = $request->t_detail_media_dinamis;
-            $detailMediaDinamis->update($data);
-
-            // Catat log transaksi
-            TransactionModel::createData(
-                'UPDATED',
-                $detailMediaDinamis->detail_media_dinamis_id,
-                $detailMediaDinamis->dm_media_upload
-            );
-
-            DB::commit();
-
-            return self::responFormatSukses($detailMediaDinamis, 'Detail media dinamis berhasil diperbarui');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return self::responFormatError($e, 'Gagal memperbarui detail media dinamis');
-        }
+     
     }
 
     public static function deleteData($id)

@@ -22,7 +22,7 @@ class DetailMediaDinamisController extends Controller
         $kategori = $request->query('kategori', '');
 
         $breadcrumb = (object) [
-            'title' => 'Manajemen Detail Media Dinamis',
+            'title' => 'Pengaturan Detail Media Dinamis',
             'list' => ['Home', 'Media Dinamis', 'Detail Media']
         ];
 
