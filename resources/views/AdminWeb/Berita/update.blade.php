@@ -78,7 +78,7 @@
 
                 <div class="form-group">
                     <label for="berita_deskripsi">Konten Berita <span class="text-danger">*</span></label>
-                    <textarea id="berita_deskripsi" name="t_berita[berita_deskripsi]" class="form-control summernote">{!! $berita->berita_deskripsi !!}</textarea>
+                    <textarea id="berita_deskripsi" name="t_berita[berita_deskripsi]" class="form-control">{!! $berita->berita_deskripsi !!}</textarea>
                     <div class="invalid-feedback" id="berita_deskripsi_error"></div>
                 </div>
             </div>
@@ -109,64 +109,6 @@ $(document).ready(function() {
         }
     });
 
-    // Initialize Summernote
-    $('#berita_deskripsi').summernote({
-        placeholder: 'Tuliskan konten berita di sini...',
-        tabsize: 2,
-        height: 300,
-        toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'underline', 'italic', 'clear', 'fontsize', 'fontname']], 
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph', 'height', 'align']], 
-            ['table', ['table']],
-            ['insert', ['link', 'picture', 'video']],
-            ['view', ['fullscreen', 'codeview', 'help']]
-        ],
-        callbacks: {
-            onImageUpload: function(files) {
-                for (let i = 0; i < files.length; i++) {
-                    uploadImage(files[i]);
-                }
-            }
-        }
-    });
-
-    // Image upload function
-    function uploadImage(file) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        $.ajax({
-            url: '{{ url("adminweb/berita/uploadImage") }}',
-            method: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#berita_deskripsi').summernote('insertImage', response.url);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: response.message || 'Gagal mengunggah gambar'
-                    });
-                }
-            },
-            error: function(xhr) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Terjadi kesalahan saat mengunggah gambar'
-                });
-            }
-        });
-    }
-    
     // Form validation
     function validateForm() {
         let isValid = true;
@@ -229,7 +171,7 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                if (response.status) {
+                if (response.success) {
                     $('#myModal').modal('hide');
                     loadBeritaData(1, '');
                     

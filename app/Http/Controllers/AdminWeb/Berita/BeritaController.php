@@ -8,6 +8,7 @@ use App\Http\Controllers\TraitsController;
 use Illuminate\Validation\ValidationException;
 use App\Models\Website\Publikasi\Berita\BeritaModel;
 use App\Models\Website\Publikasi\Berita\BeritaDinamisModel;
+use Illuminate\Support\Str;
 
 class BeritaController extends Controller
 {
@@ -63,129 +64,155 @@ class BeritaController extends Controller
         try {
             $result = BeritaModel::createData($request);
             
-            return response()->json([
-                'status' => true,
-                'message' => 'Berita berhasil dibuat',
-                'data' => $result
-            ]);
+            return $this->jsonSuccess(
+                $result,
+                'Berita berhasil dibuat'
+            );
         } catch (ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
-            ], 422);
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Gagal membuat berita: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-    public function detailData($id)
-{
-    try {
-        $berita = BeritaModel::with('BeritaDinamis')->findOrFail($id);
-        $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
-        
-        return view('AdminWeb.Berita.detail', [
-            'berita' => $berita,
-            'beritaDinamis' => $beritaDinamis
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Gagal mengambil detail berita: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-public function editData($id)
-{
-    try {
-        $berita = BeritaModel::findOrFail($id);
-        $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
-        
-        return view('AdminWeb.Berita.update', [
-            'berita' => $berita,
-            'beritaDinamis' => $beritaDinamis
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Gagal mengambil data berita: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-public function updateData(Request $request, $id)
-{
-    try {
-        $result = BeritaModel::updateData($request, $id);
-        
-        return response()->json([
-            'status' => true,
-            'message' => 'Berita berhasil diperbarui',
-            'data' => $result
-        ]);
-    } catch (ValidationException $e) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Validasi gagal',
-            'errors' => $e->errors()
-        ], 422);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Gagal memperbarui berita: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-public function deleteData(Request $request, $id)
-{
-    if ($request->isMethod('get')) {
-        try {
-            $berita = BeritaModel::with('BeritaDinamis')->findOrFail($id);
-            
-            return view('AdminWeb.Berita.delete', [
-                'berita' => $berita
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(BeritaModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
+            return $this->jsonError($e, 'Gagal membuat berita');
         }
     }
     
-    try {
-        $result = BeritaModel::deleteData($id);
-        return response()->json($result);
-    } catch (\Exception $e) {
-        return response()->json(BeritaModel::responFormatError($e, 'Terjadi kesalahan saat menghapus berita'));
+    public function detailData($id)
+    {
+        try {
+            $berita = BeritaModel::with('BeritaDinamis')->findOrFail($id);
+            $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
+            
+            return view('AdminWeb.Berita.detail', [
+                'berita' => $berita,
+                'beritaDinamis' => $beritaDinamis
+            ]);
+        } catch (\Exception $e) {
+            return $this->jsonError($e, 'Gagal mengambil detail berita');
+        }
     }
-}
+
+    public function editData($id)
+    {
+        try {
+            $berita = BeritaModel::findOrFail($id);
+            $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
+            
+            return view('AdminWeb.Berita.update', [
+                'berita' => $berita,
+                'beritaDinamis' => $beritaDinamis
+            ]);
+        } catch (\Exception $e) {
+            return $this->jsonError($e, 'Gagal mengambil data berita');
+        }
+    }
+
+    public function updateData(Request $request, $id)
+    {
+        try {
+            $result = BeritaModel::updateData($request, $id);
+            
+            return $this->jsonSuccess(
+                $result,
+                'Berita berhasil diperbarui'
+            );
+        } catch (ValidationException $e) {
+            return $this->jsonValidationError($e);
+        } catch (\Exception $e) {
+            return $this->jsonError($e, 'Gagal memperbarui berita');
+        }
+    }
+
+    public function deleteData(Request $request, $id)
+    {
+        if ($request->isMethod('get')) {
+            try {
+                $berita = BeritaModel::with('BeritaDinamis')->findOrFail($id);
+                
+                return view('AdminWeb.Berita.delete', [
+                    'berita' => $berita
+                ]);
+            } catch (\Exception $e) {
+                return $this->jsonError($e, 'Terjadi kesalahan saat mengambil data');
+            }
+        }
+        
+        try {
+            $result = BeritaModel::deleteData($id);
+            return $this->jsonSuccess(
+                $result['data'] ?? null,
+                $result['message'] ?? 'Berita berhasil dihapus'
+            );
+        } catch (\Exception $e) {
+            return $this->jsonError($e, 'Terjadi kesalahan saat menghapus berita');
+        }
+    }
 
     public function uploadImage(Request $request)
     {
         try {
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $fileName = 'berita/' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('public', $fileName);
-                
-                return response()->json([
-                    'success' => true,
-                    'url' => asset('storage/' . $fileName)
-                ]);
-            }
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+            ]);
+
+            $file = $request->file('image');
             
-            return response()->json([
-                'success' => false,
-                'message' => 'Tidak ada file yang diupload'
-            ], 400);
+            if (!$file) {
+                return $this->jsonError(
+                    new \Exception('Tidak ada file yang diunggah'), 
+                    '', 
+                    400
+                );
+            }
+
+            $fileName = 'berita/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public', $fileName);
+            
+            return $this->jsonSuccess(
+                ['url' => asset('storage/' . $fileName)], 
+                'Gambar berhasil diunggah'
+            );
+        } catch (ValidationException $e) {
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengunggah gambar: ' . $e->getMessage()
-            ], 500);
+            return $this->jsonError($e);
+        }
+    }
+
+    public function removeImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'url' => 'required|string'
+            ]);
+            
+            $imageUrl = $request->input('url');
+            
+            // Extract filename dari full URL
+            $pathInfo = parse_url($imageUrl);
+            $path = $pathInfo['path'] ?? '';
+            $storagePath = str_replace('/storage/', '', $path);
+            
+            if (!empty($storagePath)) {
+                // Logika untuk menghapus file
+                $filePath = storage_path('app/public/' . $storagePath);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+                
+                return $this->jsonSuccess(
+                    null, 
+                    'Gambar berhasil dihapus'
+                );
+            } else {
+                return $this->jsonError(
+                    new \Exception('Path gambar tidak valid'), 
+                    '', 
+                    400
+                );
+            }
+        } catch (ValidationException $e) {
+            return $this->jsonValidationError($e);
+        } catch (\Exception $e) {
+            return $this->jsonError($e);
         }
     }
 }

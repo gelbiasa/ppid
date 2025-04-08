@@ -57,24 +57,4 @@ class UploadPengumumanModel extends Model
         
         return false;
     }
-    
-    // Method untuk mendapatkan URL thumbnail
-    public function getThumbnailUrlAttribute()
-    {
-        if ($this->up_thumbnail) {
-            return asset('storage/' . $this->up_thumbnail);
-        }
-        
-        return null;
-    }
-    
-    // Method untuk mendapatkan URL file
-    public function getFileUrlAttribute()
-    {
-        if ($this->up_value && $this->up_type == 'file') {
-            return asset('storage/' . $this->up_value);
-        }
-        
-        return null;
-    }
 }

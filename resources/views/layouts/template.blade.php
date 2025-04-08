@@ -28,7 +28,8 @@
 
   <!-- Summernote CSS -->
   <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
-  @vite('resources/css/summernote.css')
+  <!-- Custom Summernote CSS (dari Controller) -->
+  <link href="{{ url('/css/summernote.css') }}" rel="stylesheet">
   @stack('css') <!-- Digunakan untuk memanggil custom css dari perintah push('css') pada masing-masing view -->
 </head>
 
@@ -114,10 +115,11 @@
     }
   </script>
 
-<!-- Summernote JS -->
-<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
-@vite('resources/js/summernote.js')
+  <!-- Summernote JS -->
+  <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
+  <!-- Custom Summernote JS (dari Controller) -->
+  <script src="{{ url('/js/summernote.js') }}"></script>
   @stack('js')
 </body>
 

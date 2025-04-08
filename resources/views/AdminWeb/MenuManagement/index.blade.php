@@ -1,4 +1,7 @@
 {{-- resources/views/adminweb/MenuManagement/index.blade.php --}}
+@php
+use App\Models\HakAkses\HakAksesModel;
+@endphp
 @extends('layouts.template')
 
 @section('content')
@@ -8,7 +11,7 @@
             <div class="card-tools">
                 @if(
                     Auth::user()->level->level_kode === 'SAR' ||
-                    App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'create')
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'create')
                 )
                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addMenuModal">
                     <i class="fas fa-plus"></i> Tambah Menu
@@ -137,7 +140,7 @@
     <!-- Add Menu Modal -->
     @if(
         Auth::user()->level->level_kode === 'SAR' ||
-        App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'create')
+        HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'create')
     )
         <div class="modal fade" id="addMenuModal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
@@ -574,7 +577,7 @@
             // Edit Menu
             @if(
                 Auth::user()->level->level_kode === 'SAR' ||
-                App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'update')
+                HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'update')
             )
                 $(document).on('click', '.edit-menu', function () {
                     let menuId = $(this).data('id');
@@ -631,7 +634,7 @@
             // Hapus Menu
             @if(
                 Auth::user()->level->level_kode === 'SAR' ||
-                App\Models\HakAkses\HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'delete')
+                HakAksesModel::cekHakAkses(Auth::user()->user_id, 'adminweb/menu-management', 'delete')
             )
                 $(document).on('click', '.delete-menu', function () {
                     let menuId = $(this).data('id');

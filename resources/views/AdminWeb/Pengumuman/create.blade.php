@@ -1,3 +1,4 @@
+
 <div class="modal-header">
     <h5 class="modal-title">Tambah Pengumuman Baru</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -100,8 +101,8 @@
 
 <script>
     $(document).ready(function () {
-        // Handle submit form
-        $(document).on('click', '#btnSubmitForm', function () {
+        // Inisialisasi kembali event handler untuk tombol submit
+        $('#btnSubmitForm').off('click').on('click', function () {
             console.log('Tombol submit diklik');
             // Reset semua error
             $('.is-invalid').removeClass('is-invalid');
@@ -194,6 +195,7 @@
                     }
                 },
                 error: function (xhr) {
+                    console.error('AJAX Error:', xhr);
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
@@ -206,5 +208,8 @@
                 }
             });
         });
-    });`
+
+        // Tambahkan pengaturan tampilan field berdasarkan tipe yang sudah dipilih
+        $('#tipe_pengumuman').trigger('change');
+    });
 </script>

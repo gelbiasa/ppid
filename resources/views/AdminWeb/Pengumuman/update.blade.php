@@ -113,16 +113,20 @@
 
 <script>
     $(document).ready(function () {
-        $(document).on('click', '#btnSubmitForm', function () {
+        // Inisialisasi kembali event handler untuk tombol submit
+        $('#btnSubmitForm').off('click').on('click', function () {
             console.log('Tombol submit diklik');
             // Reset semua error
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').html('');
             $('.note-editor').removeClass('border border-danger');
 
-            const form = $('#formUpdatePengumuman');
+            const form = $('#formCreatePengumuman');
             const formData = new FormData(form[0]);
             const button = $(this);
+
+            // Tambah pengumuman_id null untuk validasi
+            formData.append('pengumuman_id', null);
 
             // Tampilkan loading state pada tombol submit
             button.html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').attr('disabled', true);
@@ -203,6 +207,7 @@
                     }
                 },
                 error: function (xhr) {
+                    console.error('AJAX Error:', xhr);
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
@@ -211,9 +216,12 @@
                 },
                 complete: function () {
                     // Kembalikan tombol submit ke keadaan semula
-                    button.html('<i class="fas fa-save mr-1"></i> Simpan Perubahan').attr('disabled', false);
+                    button.html('<i class="fas fa-save mr-1"></i> Simpan').attr('disabled', false);
                 }
             });
         });
+
+        // Tambahkan pengaturan tampilan field berdasarkan tipe yang sudah dipilih
+        $('#tipe_pengumuman').trigger('change');
     });
 </script>

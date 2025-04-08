@@ -29,6 +29,7 @@ use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
 use App\Http\Controllers\SistemInformasi\EForm\PernyataanKeberatanController;
 use App\Http\Controllers\SistemInformasi\KategoriForm\KategoriFormController;
 use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
+use App\Http\Controllers\SummernoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/updateData', [HakAksesController::class, 'update'])->middleware('authorize:SAR');
 
     Route::get('/session', [AuthController::class, 'getData']);
+    Route::get('/js/summernote.js', [SummernoteController::class, 'getSummernoteJS']);
+    Route::get('/css/summernote.css', [SummernoteController::class, 'getSummernoteCSS']);
 
     Route::group(['prefix' => 'profile'], function () {
         Route::get('/', [ProfileController::class, 'index']);
@@ -136,7 +139,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/deleteData/{id}', [BeritaDinamisController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [BeritaDinamisController::class, 'deleteData']);
     });
-  Route::group(['prefix' => 'adminweb/berita', 'middleware' => ['authorize:ADM']], function () {
+    Route::group(['prefix' => 'adminweb/berita', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [BeritaController::class, 'index']);
         Route::get('/getData', [BeritaController::class, 'getData']);
         Route::get('/addData', [BeritaController::class, 'addData']);
@@ -160,7 +163,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/deleteData/{id}', [MediaDinamisController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [MediaDinamisController::class, 'deleteData']);
     });
-       Route::group(['prefix' => 'adminweb/media-detail', 'middleware' => ['authorize:ADM']], function () {
+    Route::group(['prefix' => 'adminweb/media-detail', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [DetailMediaDinamisController::class, 'index']);
         Route::get('/getData', [DetailMediaDinamisController::class, 'getData']);
         Route::get('/addData', [DetailMediaDinamisController::class, 'addData']);
@@ -170,6 +173,29 @@ Route::middleware('auth')->group(function () {
         Route::get('/detailData/{id}', [DetailMediaDinamisController::class, 'detailData']);
         Route::get('/deleteData/{id}', [DetailMediaDinamisController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [DetailMediaDinamisController::class, 'deleteData']);
+    });
+
+    Route::group(['prefix' => 'adminweb/informasipublik/lhkpn-tahun', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [LhkpnController::class, 'index']);
+        Route::get('/getData', [LhkpnController::class, 'getData']);
+        Route::get('/addData', [LhkpnController::class, 'addData']);
+        Route::post('/createData', [LhkpnController::class, 'createData']);
+        Route::get('/editData/{id}', [LhkpnController::class, 'editData']);
+        Route::post('/updateData/{id}', [LhkpnController::class, 'updateData']);
+        Route::get('/detailData/{id}', [LhkpnController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [LhkpnController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [LhkpnController::class, 'deleteData']);
+    });
+    Route::group(['prefix' => 'adminweb/informasipublik/detail-lhkpn', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [DetailLhkpnController::class, 'index']);
+        Route::get('/getData', [DetailLhkpnController::class, 'getData']);
+        Route::get('/addData', [DetailLhkpnController::class, 'addData']);
+        Route::post('/createData', [DetailLhkpnController::class, 'createData']);
+        Route::get('/editData/{id}', [DetailLhkpnController::class, 'editData']);
+        Route::post('/updateData/{id}', [DetailLhkpnController::class, 'updateData']);
+        Route::get('/detailData/{id}', [DetailLhkpnController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [DetailLhkpnController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [DetailLhkpnController::class, 'deleteData']);
     });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
@@ -206,7 +232,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/addData', [PengaduanMasyarakatController::class, 'addData']);
         Route::post('/createData', [PengaduanMasyarakatController::class, 'createData']);
     });
-    
+
     Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PengaduanMasyarakat', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [PengaduanMasyarakatController::class, 'index']);
         Route::get('/getData', [PengaduanMasyarakatController::class, 'getData']);
@@ -220,7 +246,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/addData', [WBSController::class, 'addData']);
         Route::post('/createData', [WBSController::class, 'createData']);
     });
-    
+
     Route::group(['prefix' => 'SistemInformasi/EForm/ADM/WBS', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [WBSController::class, 'index']);
         Route::get('/getData', [WBSController::class, 'getData']);
@@ -234,7 +260,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/addData', [PermohonanPerawatanController::class, 'addData']);
         Route::post('/createData', [PermohonanPerawatanController::class, 'createData']);
     });
-    
+
     Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PermohonanPerawatan', 'middleware' => ['authorize:ADM']], function () {
         Route::get('/', [PermohonanPerawatanController::class, 'index']);
         Route::get('/getData', [PermohonanPerawatanController::class, 'getData']);

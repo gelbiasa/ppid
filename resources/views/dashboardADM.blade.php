@@ -21,6 +21,13 @@
                 <p>Alias: {{ session('alias') }}</p>
             </div>
 
+            <!-- TAMBAHAN: Debug session untuk memverifikasi data -->
+            @if(app()->environment('local'))
+            <hr>
+            <h4>Debug Session Data:</h4>
+            <pre>{{ print_r(session()->all(), true) }}</pre>
+            @endif
+
         </div>
     </div>
 

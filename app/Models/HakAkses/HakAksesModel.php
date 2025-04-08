@@ -19,6 +19,7 @@ class HakAksesModel extends Model
     protected $fillable = [
         'fk_web_menu',
         'ha_pengakses',
+        'ha_menu',
         'ha_view',
         'ha_create',
         'ha_update',
@@ -93,6 +94,7 @@ class HakAksesModel extends Model
 
                         if ($hakAkses) {
                             $oldHakAksesStatus[$menu_id] = [
+                                'ha_menu' => $hakAkses->ha_menu,
                                 'ha_view' => $hakAkses->ha_view,
                                 'ha_create' => $hakAkses->ha_create,
                                 'ha_update' => $hakAkses->ha_update,
@@ -100,6 +102,7 @@ class HakAksesModel extends Model
                             ];
                         } else {
                             $oldHakAksesStatus[$menu_id] = [
+                                'ha_menu' => 0,
                                 'ha_view' => 0,
                                 'ha_create' => 0,
                                 'ha_update' => 0,
@@ -117,6 +120,7 @@ class HakAksesModel extends Model
                             'fk_web_menu' => $menu_id
                         ]);
 
+                        $hakAkses->ha_menu = isset($akses['menu']) ? 1 : 0;
                         $hakAkses->ha_view = isset($akses['view']) ? 1 : 0;
                         $hakAkses->ha_create = isset($akses['create']) ? 1 : 0;
                         $hakAkses->ha_update = isset($akses['update']) ? 1 : 0;
@@ -129,6 +133,7 @@ class HakAksesModel extends Model
                 foreach ($menuAkses as $menu_id => $akses) {
                     // Periksa apakah hak akses berubah dibandingkan status sebelumnya
                     $oldStatus = $oldHakAksesStatus[$menu_id] ?? [
+                        'ha_menu' => 0,
                         'ha_view' => 0,
                         'ha_create' => 0,
                         'ha_update' => 0,
@@ -136,6 +141,7 @@ class HakAksesModel extends Model
                     ];
 
                     $newStatus = [
+                        'ha_menu' => isset($akses['menu']) ? 1 : 0,
                         'ha_view' => isset($akses['view']) ? 1 : 0,
                         'ha_create' => isset($akses['create']) ? 1 : 0,
                         'ha_update' => isset($akses['update']) ? 1 : 0,
@@ -144,7 +150,7 @@ class HakAksesModel extends Model
 
                     // Cek apakah ada perubahan status hak akses
                     $isChanged = false;
-                    foreach (['ha_view', 'ha_create', 'ha_update', 'ha_delete'] as $hakType) {
+                    foreach (['ha_menu', 'ha_view', 'ha_create', 'ha_update', 'ha_delete'] as $hakType) {
                         if ($oldStatus[$hakType] != $newStatus[$hakType]) {
                             $isChanged = true;
                             break;
@@ -206,12 +212,14 @@ class HakAksesModel extends Model
                                 if (!isset($statusChanges[$pengakses_id][$menu_id])) {
                                     $statusChanges[$pengakses_id][$menu_id] = [
                                         'old' => [
+                                            'menu' => $currentHakAkses ? $currentHakAkses->ha_menu : 0,
                                             'view' => $currentHakAkses ? $currentHakAkses->ha_view : 0,
                                             'create' => $currentHakAkses ? $currentHakAkses->ha_create : 0,
                                             'update' => $currentHakAkses ? $currentHakAkses->ha_update : 0,
                                             'delete' => $currentHakAkses ? $currentHakAkses->ha_delete : 0
                                         ],
                                         'new' => [
+                                            'menu' => 0,
                                             'view' => 0,
                                             'create' => 0,
                                             'update' => 0,
@@ -226,6 +234,7 @@ class HakAksesModel extends Model
                                 $hakAksesData["$pengakses_id-$menu_id"] = [
                                     'pengakses_id' => $pengakses_id,
                                     'menu_id' => $menu_id,
+                                    'menu' => 0,
                                     'view' => 0,
                                     'create' => 0,
                                     'update' => 0,
@@ -247,6 +256,7 @@ class HakAksesModel extends Model
                     ]);
 
                     // Pastikan semua hak akses diperbarui meskipun bernilai 0
+                    $hakAkses->ha_menu = $item['menu'] ?? 0;
                     $hakAkses->ha_view = $item['view'] ?? 0;
                     $hakAkses->ha_create = $item['create'] ?? 0;
                     $hakAkses->ha_update = $item['update'] ?? 0;
@@ -259,7 +269,7 @@ class HakAksesModel extends Model
                 foreach ($statusChanges as $pengakses_id => $menuStatus) {
                     foreach ($menuStatus as $menu_id => $status) {
                         $isChanged = false;
-                        foreach (['view', 'create', 'update', 'delete'] as $hak) {
+                        foreach (['menu', 'view', 'create', 'update', 'delete'] as $hak) {
                             if ($status['old'][$hak] != $status['new'][$hak]) {
                                 $isChanged = true;
                                 break;
@@ -335,7 +345,7 @@ class HakAksesModel extends Model
 
                 // Ambil hak akses yang sudah tersimpan berdasarkan level
                 $hakAkses = self::whereIn('fk_web_menu', $ambilSemuaMenuId)
-                    ->select('fk_web_menu', 'ha_view', 'ha_create', 'ha_update', 'ha_delete')
+                    ->select('fk_web_menu', 'ha_menu', 'ha_view', 'ha_create', 'ha_update', 'ha_delete')
                     ->get()
                     ->keyBy('fk_web_menu');
 
@@ -346,6 +356,7 @@ class HakAksesModel extends Model
                         $menuData[$menu_id] = [
                             'menu_utama' => $menu_utama,
                             'sub_menu' => $sub_menu === $menu_utama ? null : $sub_menu, // Jika sub_menu sama dengan menu utama, set null
+                            'ha_menu' => $hakAkses[$menu_id]->ha_menu ?? 0,
                             'ha_view' => $hakAkses[$menu_id]->ha_view ?? 0,
                             'ha_create' => $hakAkses[$menu_id]->ha_create ?? 0,
                             'ha_update' => $hakAkses[$menu_id]->ha_update ?? 0,
@@ -425,7 +436,6 @@ class HakAksesModel extends Model
         return $formattedMenuStructure;
     }
 
-    // Method untuk mengecek apakah user memiliki hak akses tertentu
     public static function cekHakAkses($user_id, $menu_url, $hak)
     {
         // Cek user level
@@ -459,5 +469,38 @@ class HakAksesModel extends Model
         }
 
         return $hakAkses->$hakField == 1;
+    }
+
+    // Method untuk mengecek apakah user memiliki hak akses tertentu
+    public static function cekHakAksesMenu($user_id, $menu_url)
+    {
+        // Cek user level
+        $user = UserModel::find($user_id);
+
+        // Jika user adalah super admin, berikan akses penuh
+        if ($user && $user->level->level_kode === 'SAR') {
+            return true;
+        }
+
+        // Temukan menu berdasarkan URL
+        $menu = WebMenuModel::where('wm_menu_url', $menu_url)
+            ->where('wm_status_menu', 'aktif')
+            ->where('isDeleted', 0)
+            ->first();
+
+        if (!$menu) {
+            return false;
+        }
+
+        // Cek hak akses menu
+        $hakAkses = self::where('ha_pengakses', $user_id)
+            ->where('fk_web_menu', $menu->web_menu_id)
+            ->first();
+
+        if (!$hakAkses) {
+            return false;
+        }
+
+        return $hakAkses->ha_menu == 1;
     }
 }

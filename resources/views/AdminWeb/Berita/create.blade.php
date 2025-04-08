@@ -124,7 +124,7 @@
                         Konten Berita <span class="text-danger">*</span>
                     </label>
                     <textarea id="berita_deskripsi" name="t_berita[berita_deskripsi]" 
-                              class="form-control summernote"></textarea>
+                              class="form-control"></textarea>
                     <div class="invalid-feedback" id="berita_deskripsi_error"></div>
                 </div>
             </div>
@@ -179,64 +179,6 @@ $(document).ready(function() {
         }
     });
 
-    // Initialize Summernote dengan opsi yang lebih lengkap
-    $('#berita_deskripsi').summernote({
-        placeholder: 'Tuliskan konten berita di sini...',
-        tabsize: 2,
-        height: 300,
-        toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'underline', 'italic', 'clear', 'fontsize', 'fontname']], 
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph', 'height', 'align']], 
-            ['table', ['table']],
-            ['insert', ['link', 'picture', 'video']],
-            ['view', ['fullscreen', 'codeview', 'help']]
-        ],
-        fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '36', '48', '72'],
-        lineHeights: ['0.8', '1.0', '1.2', '1.4', '1.5', '1.6', '1.8', '2.0', '3.0'],
-        callbacks: {
-            onImageUpload: function(files) {
-                for (let i = 0; i < files.length; i++) {
-                    uploadImage(files[i]);
-                }
-            }
-        }
-    });
-
-    // Image upload function
-    function uploadImage(file) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        $.ajax({
-            url: '{{ url("adminweb/berita/uploadImage") }}',
-            method: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                if (response.success) {
-                    $('#berita_deskripsi').summernote('insertImage', response.url);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: response.message || 'Gagal mengunggah gambar'
-                    });
-                }
-            },
-            error: function(xhr) {
-                console.error(xhr);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Terjadi kesalahan saat mengunggah gambar'
-                });
-            }
-        });
-    }
-    
     // Validasi semua field sebelum submit
     function validateForm() {
         let isValid = true;
@@ -336,14 +278,13 @@ $(document).ready(function() {
         button.html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').attr('disabled', true);
 
         $.ajax({
-            url: '{{ url("adminweb/berita/createData") }}',
+            url: '{{ url("adminweb/berita/createData") }}', // Perbaikan kapitalisasi URL
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
-                
-                if (response.status) {
+                if (response.success) {
                     // Close modal and reload table
                     $('#myModal').modal('hide');
                     loadBeritaData(1, '');

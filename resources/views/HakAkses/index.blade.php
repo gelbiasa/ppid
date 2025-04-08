@@ -35,16 +35,15 @@
                     <div class="row">
                         @foreach($levelUsers as $levelKode => $levelData)
                             <div class="col-md-4 mb-2">
-                                <button class="btn btn-warning btn-block text-center set-hak-level" 
-                                        data-level="{{ $levelKode }}"
-                                        data-name="{{ $levelData['nama'] }}">
+                                <button class="btn btn-warning btn-block text-center set-hak-level"
+                                    data-level="{{ $levelKode }}" data-name="{{ $levelData['nama'] }}">
                                     <strong>{{ $levelData['nama'] }}</strong>
                                 </button>
                             </div>
                         @endforeach
                     </div>
                 </div>
-          
+
 
                 <!-- Modal untuk Pengaturan Hak Akses Per Level -->
                 <div class="modal fade" id="modalHakAksesLevel" tabindex="-1" aria-labelledby="modalTitle"
@@ -68,6 +67,7 @@
                                             <tr>
                                                 <th>Menu Utama</th>
                                                 <th>Sub Menu</th>
+                                                <th class="text-center">Tampil Menu</th>
                                                 <th class="text-center">Lihat</th>
                                                 <th class="text-center">Tambah</th>
                                                 <th class="text-center">Ubah</th>
@@ -127,11 +127,12 @@
                                                             <thead>
                                                                 <tr>
                                                                     <th style="width: 5%">No</th>
-                                                                    <th style="width: 35%">Nama Pengguna</th>
-                                                                    <th style="width: 15%">Lihat</th>
-                                                                    <th style="width: 15%">Tambah</th>
-                                                                    <th style="width: 15%">Ubah</th>
-                                                                    <th style="width: 15%">Hapus</th>
+                                                                    <th style="width: 30%">Nama Pengguna</th>
+                                                                    <th style="width: 13%">Tampil Menu</th>
+                                                                    <th style="width: 13%">Lihat</th>
+                                                                    <th style="width: 13%">Tambah</th>
+                                                                    <th style="width: 13%">Ubah</th>
+                                                                    <th style="width: 13%">Hapus</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -139,6 +140,21 @@
                                                                     <tr>
                                                                         <td>{{ $index + 1 }}</td>
                                                                         <td>{{ $user->nama_pengguna }}</td>
+                                                                        <td class="text-center">
+                                                                            <input type="hidden"
+                                                                                name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_menu"
+                                                                                value="0">
+                                                                            <div class="custom-control custom-checkbox">
+                                                                                <input type="checkbox"
+                                                                                    class="custom-control-input hak-akses-checkbox"
+                                                                                    id="menu_{{ $user->user_id }}_{{ $submenuId }}"
+                                                                                    name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_menu"
+                                                                                    value="1" data-user="{{ $user->user_id }}"
+                                                                                    data-menu="{{ $submenuId }}" data-hak="menu">
+                                                                                <label class="custom-control-label"
+                                                                                    for="menu_{{ $user->user_id }}_{{ $submenuId }}"></label>
+                                                                            </div>
+                                                                        </td>
                                                                         <td class="text-center">
                                                                             <input type="hidden"
                                                                                 name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_view"
@@ -236,16 +252,18 @@
                         Object.keys(data).forEach(menu_id => {
                             let akses = data[menu_id];
 
-                            html += `
+                        // Tambahkan baris untuk ha_menu di modal hak akses level
+                        html += `
                         <tr>
                             <td>${akses.menu_utama}</td>
                             <td>${akses.sub_menu ?? 'Null'}</td>
+                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][menu]" ${akses.ha_menu ? 'checked' : ''}></td>
                             <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][view]" ${akses.ha_view ? 'checked' : ''}></td>
                             <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][create]" ${akses.ha_create ? 'checked' : ''}></td>
                             <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][update]" ${akses.ha_update ? 'checked' : ''}></td>
                             <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][delete]" ${akses.ha_delete ? 'checked' : ''}></td>
                         </tr>
-                    `;
+                        `;
                         });
 
                         $('#menuList').html(html);
@@ -255,64 +273,64 @@
                         alert("Terjadi kesalahan, silakan coba lagi.");
                     }
                 });
-          
 
-        });
 
-        $('#btnSimpanHakAksesLevel').click(function () {
-            $.ajax({
-                url: `{{ url('/updateData') }}`,
-                type: 'POST',
-                data: $('#formHakAksesLevel').serialize(),
-                success: function (response) {
-                    alert(response.message);
-                    if (response.success) location.reload();
-                },
-                error: function () {
-                    alert("Terjadi kesalahan, silakan coba lagi.");
-                }
             });
 
-        });
-        // Muat hak akses saat halaman dimuat
-        loadAllHakAkses();
-
-        // Simpan semua perubahan
-        $('#btn-save-all').click(function () {
-            $('#form-hak-akses').submit();
-        });
-
-        // Fungsi untuk memuat hak akses
-        function loadAllHakAkses() {
-            $('.hak-akses-checkbox').each(function () {
-                const userId = $(this).data('user');
-                const menuId = $(this).data('menu');
-                const hak = $(this).data('hak');
-                const checkbox = $(this);
-
-                // Gunakan AJAX untuk mendapatkan data hak akses
+            $('#btnSimpanHakAksesLevel').click(function () {
                 $.ajax({
-                    url: `{{ url('/getHakAksesData') }}/${userId}/${menuId}`,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-                        // Periksa apakah data ditemukan dan nilai hak akses adalah 1
-                        if (data && data['ha_' + hak] === 1) {
-                            checkbox.prop('checked', true);
-                        } else {
-                            checkbox.prop('checked', false);
-                        }
+                    url: `{{ url('/updateData') }}`,
+                    type: 'POST',
+                    data: $('#formHakAksesLevel').serialize(),
+                    success: function (response) {
+                        alert(response.message);
+                        if (response.success) location.reload();
                     },
-                    error: function (error) {
-                        console.error('Error loading hak akses:', error);
-                        checkbox.prop('checked', false); // Default tidak dicentang jika error
+                    error: function () {
+                        alert("Terjadi kesalahan, silakan coba lagi.");
                     }
                 });
-            });
-        }
 
-        // Toggle collapse untuk semua menu saat pertama kali
-        $('.collapse').first().addClass('show');
             });
+            // Muat hak akses saat halaman dimuat
+            loadAllHakAkses();
+
+            // Simpan semua perubahan
+            $('#btn-save-all').click(function () {
+                $('#form-hak-akses').submit();
+            });
+
+            // Fungsi untuk memuat hak akses
+            function loadAllHakAkses() {
+                $('.hak-akses-checkbox').each(function () {
+                    const userId = $(this).data('user');
+                    const menuId = $(this).data('menu');
+                    const hak = $(this).data('hak');
+                    const checkbox = $(this);
+
+                    // Gunakan AJAX untuk mendapatkan data hak akses
+                    $.ajax({
+                        url: `{{ url('/getHakAksesData') }}/${userId}/${menuId}`,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            // Periksa apakah data ditemukan dan nilai hak akses adalah 1
+                            if (data && data['ha_' + hak] === 1) {
+                                checkbox.prop('checked', true);
+                            } else {
+                                checkbox.prop('checked', false);
+                            }
+                        },
+                        error: function (error) {
+                            console.error('Error loading hak akses:', error);
+                            checkbox.prop('checked', false); // Default tidak dicentang jika error
+                        }
+                    });
+                });
+            }
+
+            // Toggle collapse untuk semua menu saat pertama kali
+            $('.collapse').first().addClass('show');
+        });
     </script>
 @endpush

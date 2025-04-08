@@ -46,8 +46,8 @@
 
 <script>
     $(document).ready(function() {
-        // Tangani pengiriman form
-        $(document).on('click', '#btnSubmitForm', function() {
+        // Inisialisasi kembali event handler untuk tombol submit
+        $('#btnSubmitForm').off('click').on('click', function() {
             console.log('Tombol submit diklik');
             // Reset semua error
             $('.is-invalid').removeClass('is-invalid');
@@ -121,6 +121,7 @@
                     }
                 },
                 error: function(xhr) {
+                    console.error('AJAX Error:', xhr);
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',

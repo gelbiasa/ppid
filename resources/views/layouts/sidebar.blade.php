@@ -72,16 +72,8 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                 </li>
                 <li class="nav-header">Website / Portal</li>
                 <!-- Menu Utama -->
-                @if(MenuHelper::shouldShowInSidebar('adminweb/menu-management'))
-                    <li class="nav-item {{ request()->is('adminweb/menu-utama*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->is('adminweb/menu-utama*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-cog"></i>
-                            <p>
-                                Manajemen Menu
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        @if(MenuHelper::shouldShowInSidebar('adminweb/menu-management'))
                             <li class="nav-item">
                                 <a href="{{ url('/adminweb/menu-management') }}"
                                     class="nav-link {{ $activeMenu == 'menumanagement' ? 'active' : '' }}">
@@ -89,7 +81,7 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                     <p>Menu Management</p>
                                 </a>
                             </li>
-                        </ul>
+                        @endif
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-cog"></i>
@@ -131,7 +123,7 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ url('/adminweb/akses-cepat') }}"
-                                        class="nav-link {{ $activeMenu == 'footer' ? 'active' : '' }}">
+                                        class="nav-link {{ $activeMenu == 'akses-cepat' ? 'active' : '' }}">
                                         <i class="fas fa-tasks nav-icon"></i>
                                         <p>Akses Cepat</p>
                                     </a>
@@ -196,24 +188,45 @@ $totalNotifikasiVFR = NotifVerifikatorModel::where('sudah_dibaca_notif_verif', n
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <a href="{{ url('/adminweb/media-dinamis') }}"
-                                        class="nav-link {{ $activeMenu == 'berita-dinamis' ? 'active' : '' }}">
+                                        class="nav-link {{ $activeMenu == 'media-dinamis' ? 'active' : '' }}">
                                         <i class="fas fa-tasks nav-icon"></i>
                                         <p>Kategori-Media</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ url('/adminweb/media-detail') }}"
-                                        class="nav-link {{ $activeMenu == 'berita' ? 'active' : '' }}">
+                                        class="nav-link {{ $activeMenu == 'media-detail' ? 'active' : '' }}">
                                         <i class="fas fa-tasks nav-icon"></i>
                                         <p>Data Media Dinamis</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
-
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p> Data LHKPN
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/informasipublik/lhkpn-tahun') }}"
+                                        class="nav-link {{ $activeMenu == 'Lhkpn Tahun' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Tahun Lhkpn</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ url('/adminweb/informasipublik/detail-lhkpn') }}"
+                                        class="nav-link {{ $activeMenu == 'detail-lhkpn' ? 'active' : '' }}">
+                                        <i class="fas fa-tasks nav-icon"></i>
+                                        <p>Detail Lhkpn</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     </li>
-                @endif
-
                 <li class="nav-header">Sistem Informasi</li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
