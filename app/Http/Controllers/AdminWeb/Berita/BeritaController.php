@@ -13,6 +13,9 @@ use Illuminate\Support\Str;
 class BeritaController extends Controller
 {
     use TraitsController;
+    public $breadcrumb = 'Pengaturan Berita';
+    public $pagename = 'AdminWeb/Berita';
+    
     public function index(Request $request)
     {
         $search = $request->query('search', '');
@@ -31,7 +34,7 @@ class BeritaController extends Controller
         $berita = BeritaModel::selectData(10, $search);
         $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
 
-        return view('AdminWeb.Berita.index', [
+        return view('AdminWeb/Berita.index', [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
@@ -47,7 +50,7 @@ class BeritaController extends Controller
         $berita = BeritaModel::selectData(10, $search);
         
         if ($request->ajax()) {
-            return view('AdminWeb.Berita.data', compact('berita', 'search'))->render();
+            return view('AdminWeb/Berita.data', compact('berita', 'search'))->render();
         }
         
         return redirect()->route('berita.index');
@@ -56,7 +59,7 @@ class BeritaController extends Controller
     public function addData()
     {
         $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
-        return view('AdminWeb.Berita.create', compact('beritaDinamis'));
+        return view('AdminWeb/Berita.create', compact('beritaDinamis'));
     }
 
     public function createData(Request $request)
@@ -96,7 +99,7 @@ class BeritaController extends Controller
             $berita = BeritaModel::findOrFail($id);
             $beritaDinamis = BeritaDinamisModel::where('isDeleted', 0)->get();
             
-            return view('AdminWeb.Berita.update', [
+            return view('AdminWeb/Berita.update', [
                 'berita' => $berita,
                 'beritaDinamis' => $beritaDinamis
             ]);
@@ -127,7 +130,7 @@ class BeritaController extends Controller
             try {
                 $berita = BeritaModel::with('BeritaDinamis')->findOrFail($id);
                 
-                return view('AdminWeb.Berita.delete', [
+                return view('AdminWeb/Berita.delete', [
                     'berita' => $berita
                 ]);
             } catch (\Exception $e) {

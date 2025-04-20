@@ -6,12 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Http\Controllers\TraitsController;
 use App\Models\Website\LandingPage\MediaDinamis\MediaDinamisModel;
-
 use Illuminate\Validation\ValidationException;
 
 class MediaDinamisController extends Controller
 {
     use TraitsController;
+    
+    public $breadcrumb = 'Pengaturan Media Dinamis';
+    public $pagename = 'AdminWeb/MediaDinamis';
+
  
     public function index(Request $request)
     {
@@ -19,8 +22,8 @@ class MediaDinamisController extends Controller
         
 
         $breadcrumb = (object) [
-            'title' => 'Manajemen Media Dinamis',
-            'list' => ['Home', 'Media Dinamis', 'Daftar']
+            'title' => 'Pengaturan Media Dinamis',
+            'list' => ['Home', 'Pengaturan Media Dinamis']
         ];
 
         $page = (object) [
@@ -29,10 +32,9 @@ class MediaDinamisController extends Controller
         
         $activeMenu = 'media-dinamis';
         
-        // Modify the query to include search functionality
         $mediaDinamis = MediaDinamisModel::selectData(10, $search);
 
-        return view('AdminWeb.MediaDinamis.index', [
+        return view("AdminWeb/MediaDinamis.index", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
@@ -47,7 +49,7 @@ class MediaDinamisController extends Controller
         $mediaDinamis = MediaDinamisModel::selectData(10, $search);
         
         if ($request->ajax()) {
-            return view('AdminWeb.MediaDinamis.data', compact('mediaDinamis', 'search'))->render();
+            return view('AdminWeb/MediaDinamis.data', compact('mediaDinamis', 'search'))->render();
         }
         
         return redirect()->route('media-dinamis.index');
@@ -55,7 +57,7 @@ class MediaDinamisController extends Controller
   
     public function addData()
     {
-        return view('AdminWeb.MediaDinamis.create');
+        return view("AdminWeb/MediaDinamis.create");
     }
 
     public function createData(Request $request)
@@ -63,25 +65,24 @@ class MediaDinamisController extends Controller
         try {
             MediaDinamisModel::validasiData($request);
             $result = MediaDinamisModel::createData($request);
-            return response()->json($result);
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Media Dinamis berhasil dibuat'
+            );
         } catch (ValidationException $e) {
-            return response()->json(MediaDinamisModel::responValidatorError($e));
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(MediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat membuat media dinamis'));
+            return $this->jsonError($e, 'Terjadi kesalahan saat membuat Media Dinamis');
         }
     }
 
     public function editData($id)
     {
-        try {
-            $mediaDinamis = MediaDinamisModel::findOrFail($id);
+            $mediaDinamis = MediaDinamisModel::detailData($id);
             
-            return view('AdminWeb.MediaDinamis.update', [
+            return view("AdminWeb/MediaDinamis.update", [
                 'mediaDinamis' => $mediaDinamis
             ]);
-        } catch (\Exception $e) {
-            return response()->json(MediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
-        }
     }
 
     public function updateData(Request $request, $id)
@@ -89,47 +90,51 @@ class MediaDinamisController extends Controller
         try {
             MediaDinamisModel::validasiData($request);
             $result = MediaDinamisModel::updateData($request, $id);
-            return response()->json($result);
-        } catch (ValidationException $e) {
-            return response()->json(MediaDinamisModel::responValidatorError($e));
-        } catch (\Exception $e) {
-            return response()->json(MediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat memperbarui media dinamis'));
-        }
+        return $this->jsonSuccess(
+            $result['data'] ?? null, 
+            $result['message'] ?? 'Media Dinamis berhasil diperbarui'
+        );
+    } catch (ValidationException $e) {
+        return $this->jsonValidationError($e);
+    } catch (\Exception $e) {
+        return $this->jsonError($e, 'Terjadi kesalahan saat memperbarui Media Dinamis');
+    }
     }
 
     public function detailData($id)
     {
-        try {
-            $mediaDinamis = MediaDinamisModel::findOrFail($id);
+            $mediaDinamis = MediaDinamisModel::detailData($id);
             
-            return view('AdminWeb.MediaDinamis.detail', [
+            return view("AdminWeb/MediaDinamis.detail", [
                 'mediaDinamis' => $mediaDinamis,
                 'title' => 'Detail Media Dinamis'
             ]);
-        } catch (\Exception $e) {
-            return response()->json(MediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil detail'));
-        }
     }
 
     public function deleteData(Request $request, $id)
     {
         if ($request->isMethod('get')) {
-            try {
-                $mediaDinamis = MediaDinamisModel::findOrFail($id);
+                $mediaDinamis = MediaDinamisModel::detailData($id);
                 
-                return view('AdminWeb.MediaDinamis.delete', [
+                return view("AdminWeb/MediaDinamis.delete", [
                     'mediaDinamis' => $mediaDinamis
                 ]);
-            } catch (\Exception $e) {
-                return response()->json(MediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
-            }
+        
+        }
+        try {
+            $result =MediaDinamisModel::deleteData($id);
+          // Periksa apakah operasi berhasil
+          if ($result['success'] === false) {
+            return $this->jsonError(new \Exception($result['message']), $result['message']);
         }
         
-        try {
-            $result = MediaDinamisModel::deleteData($id);
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(MediaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat menghapus media dinamis'));
-        }
+        return $this->jsonSuccess(
+            $result['data'] ?? null, 
+            $result['message'] ?? 'Media Dinamis berhasil dihapus'
+        );
+    } catch (\Exception $e) {
+        return $this->jsonError($e, 'Terjadi kesalahan saat menghapus Media Dinamis');
     }
+}
+    
 }

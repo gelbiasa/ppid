@@ -48,13 +48,14 @@ class BeritaModel extends Model
 
         // Search functionality
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('berita_judul', 'like', "%{$search}%")
-                  ->orWhere('berita_deskripsi', 'like', "%{$search}%");
+                    ->orWhere('berita_deskripsi', 'like', "%{$search}%");
             });
         }
 
-        return $query->paginate($perPage);
+        // Gunakan paginateResults dari trait BaseModelFunction
+        return self::paginateResults($query, $perPage);
     }
     // Modify createData method to handle image cleanup
     public static function createData($request)
@@ -67,7 +68,7 @@ class BeritaModel extends Model
 
             // Prepare data
             $data = $request->t_berita;
-            
+
             // Generate unique slug - limit to 100 chars per database constraint
             $data['berita_slug'] = self::generateUniqueSlug($data['berita_judul']);
 
@@ -96,14 +97,14 @@ class BeritaModel extends Model
             return $berita;
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Cleanup uploaded images if transaction fails
             if (isset($uploadedImages)) {
                 foreach ($uploadedImages as $image) {
                     Storage::delete('public/' . $image);
                 }
             }
-            
+
             throw $e;
         }
     }
@@ -122,7 +123,7 @@ class BeritaModel extends Model
 
             // Prepare data
             $data = $request->t_berita;
-            
+
             // Store old thumbnail and uploaded images for potential cleanup
             $oldThumbnail = $berita->berita_thumbnail;
             $oldUploadedImages = self::getExistingUploadedImages($berita);
@@ -200,8 +201,8 @@ class BeritaModel extends Model
             foreach ($uploadedImagesToDelete as $image) {
                 Storage::delete('public/' . $image);
             }
-             // Soft delete dengan menggunakan fitur SoftDeletes dari Trait
-             $berita->delete();
+            // Soft delete dengan menggunakan fitur SoftDeletes dari Trait
+            $berita->delete();
             // Log transaction
             TransactionModel::createData(
                 'DELETED',
@@ -301,22 +302,22 @@ class BeritaModel extends Model
 
         foreach ($images as $img) {
             $src = $img->getAttribute('src');
-            
+
             // Check if image is base64
             if (strpos($src, 'data:image') === 0) {
                 // Decode and save base64 image
                 list($type, $data) = explode(';', $src);
                 list(, $data) = explode(',', $data);
-                
+
                 $imageData = base64_decode($data);
                 $fileName = 'berita/' . uniqid() . '.png';
-                
+
                 // Save file
                 Storage::put('public/' . $fileName, $imageData);
-                
+
                 // Update src in content
                 $img->setAttribute('src', asset('storage/' . $fileName));
-                
+
                 // Save to upload berita
                 UploadBeritaModel::create([
                     'fk_t_berita' => $berita->berita_id,
@@ -344,10 +345,10 @@ class BeritaModel extends Model
     private static function cleanupUnusedImages($oldImages, $newImages)
     {
         $imagesToDelete = array_diff($oldImages, $newImages);
-        
+
         foreach ($imagesToDelete as $image) {
             Storage::delete('public/' . $image);
-            
+
             // Remove from UploadBeritaModel
             UploadBeritaModel::where('ub_value', $image)->delete();
         }

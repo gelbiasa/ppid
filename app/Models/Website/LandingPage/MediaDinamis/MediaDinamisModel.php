@@ -149,7 +149,7 @@ class MediaDinamisModel extends Model
     }
     
     
-    public static function selectData($perPage = 10, $search = '')
+    public static function selectData($perPage = null, $search = '')
     {
         $query = self::query()
             ->where('isDeleted', 0);
@@ -159,7 +159,7 @@ class MediaDinamisModel extends Model
             $query->where('md_kategori_media', 'like', "%{$search}%");
         }
 
-        return $query->paginate($perPage);
+        return self::paginateResults($query, $perPage);
     }
 
 
@@ -215,26 +215,36 @@ class MediaDinamisModel extends Model
     {
         try {
             DB::beginTransaction();
-
+    
             $mediaDinamis = self::findOrFail($id);
-
+    
+            $mediaTerkait = DetailMediaDinamisModel::where('fk_m_media_dinamis', $id)
+                ->where('isDeleted', 0)
+                ->count();
+    
+            if ($mediaTerkait > 0) {
+                throw new \Exception('Masih terdapat footer aktif yang terkait');
+            }
+    
             $mediaDinamis->delete();
-
+    
             TransactionModel::createData(
                 'DELETED',
                 $mediaDinamis->media_dinamis_id,
                 $mediaDinamis->md_kategori_media
             );
-
+    
             DB::commit();
-
+    
             return self::responFormatSukses($mediaDinamis, 'Media dinamis berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal menghapus media dinamis');
+            return self::responFormatError($e, $e->getMessage());
         }
     }
+    
 
+    
     public static function detailData($id)
     {
         return self::findOrFail($id);

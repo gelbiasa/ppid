@@ -1,18 +1,34 @@
-<!-- views/AdminWeb/KategoriFooter/index.blade.php -->
-
 @extends('layouts.template')
 
 @section('content')
   <div class="card card-outline card-primary">
       <div class="card-header">
-        <h3 class="card-title">{{ $page->title }}</h3>
-        <div class="card-tools">
-          <button onclick="modalAction('{{ url('adminweb/kategori-footer/addData') }}')" class="btn btn-sm btn-success mt-1">
-            <i class="fas fa-plus"></i> Tambah
-          </button>   
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h3 class="card-title">{{ $page->title }}</h3>
+          </div>
+          <div class="col-md-6 text-right">
+            <button onclick="modalAction('{{ url('adminweb/kategori-footer/addData') }}')" 
+                    class="btn btn-sm btn-success">
+              <i class="fas fa-plus"></i> Tambah
+            </button>   
+          </div>
         </div>
       </div>
       <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <form id="searchForm" class="d-flex">
+              <input type="text" name="search" class="form-control" 
+                     placeholder="Cari kode atau nama kategori" 
+                     value="{{ $search ?? '' }}">
+              <button type="submit" class="btn btn-primary ml-2">
+                <i class="fas fa-search"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -21,20 +37,8 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped table-hover table-sm" id="table_kategori_footer">
-              <thead>
-                  <tr>
-                      <th width="5%">Nomor</th>
-                      <th width="25%">Kode Footer</th>
-                      <th width="40%">Nama Footer</th>
-                      <th width="30%">Aksi</th>
-                  </tr>
-              </thead>
-              <tbody>
-                <!-- Data will be loaded by DataTables -->
-              </tbody>
-          </table>
+        <div class="table-responsive" id="table-container">
+          @include('AdminWeb.KategoriFooter.data')
         </div>
       </div>
   </div>
@@ -50,32 +54,47 @@
 @endsection
 
 @push('css')
+<style>
+  .pagination {
+    justify-content: flex-start;
+  }
+</style>
 @endpush
 
 @push('js')
   <script>
     $(document).ready(function() {
-      // Initialize DataTable
-      $('#table_kategori_footer').DataTable({
-        processing: true,
-        serverSide: false,
-        ajax: {
-          url: '{{ url("adminweb/kategori-footer/getData") }}',
-          type: 'GET',
-        },
-        columns: [
-          { data: 0 }, // Nomor
-          { data: 1 }, // Kode Footer
-          { data: 2 }, // Nama Footer
-          { data: 3, orderable: false }, // Aksi
-        ],
-        language: {
-          url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json'
-        }
+      $('#searchForm').on('submit', function(e) {
+        e.preventDefault();
+        var search = $(this).find('input[name="search"]').val();
+        loadKategoriFooterData(1, search);
+      });
+
+      $(document).on('click', '.pagination a', function(e) {
+        e.preventDefault();
+        var page = $(this).attr('href').split('page=')[1];
+        var search = $('#searchForm input[name="search"]').val();
+        loadKategoriFooterData(page, search);
       });
     });
     
-    // Function to load modal content
+    function loadKategoriFooterData(page, search) {
+      $.ajax({
+        url: '{{ url("adminweb/kategori-footer/getData") }}',
+        type: 'GET',
+        data: {
+          page: page,
+          search: search
+        },
+        success: function(response) {
+          $('#table-container').html(response);
+        },
+        error: function(xhr) {
+          alert('Terjadi kesalahan saat memuat data');
+        }
+      });
+    }
+    
     function modalAction(url) {
       $('#myModal .modal-content').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading...</p></div>');
       $('#myModal').modal('show');
@@ -92,14 +111,11 @@
       });
     }
     
-    // Function to handle detail kategori footer
-    function showDetailKategoriFooter(id) {
-      modalAction('{{ url("adminweb/kategori-footer/detailData") }}/' + id);
-    }
-    
-    // Function to handle delete kategori footer
-    function deleteKategoriFooter(id) {
-      modalAction('{{ url("adminweb/kategori-footer/deleteData") }}/' + id);
+    function reloadTable() {
+      var currentPage = $('.pagination .active .page-link').text();
+      currentPage = currentPage || 1;
+      var search = $('#searchForm input[name="search"]').val();
+      loadKategoriFooterData(currentPage, search);
     }
   </script>
 @endpush

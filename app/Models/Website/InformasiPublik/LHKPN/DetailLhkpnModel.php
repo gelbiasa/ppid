@@ -52,6 +52,10 @@ class DetailLhkpnModel extends Model
 
     public static function createData($request)
     {
+        $iconFile = self::uploadFile(
+            $request->file('f_icon_footer'),
+            'footer_icons'
+        );
         try {
             DB::beginTransaction();
 

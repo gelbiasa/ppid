@@ -11,7 +11,6 @@
             <th width="15%">Kategori</th>
             <th width="20%">Judul Media</th>
             <th width="15%">Tipe Media</th>
-            <th width="25%">Media</th>
             <th width="20%">Aksi</th>
         </tr>
     </thead>
@@ -22,13 +21,6 @@
             <td>{{ $item->mediaDinamis->md_kategori_media ?? '-' }}</td>
             <td>{{ $item->dm_judul_media }}</td>
             <td>{{ ucfirst($item->dm_type_media) }}</td>
-            <td>
-                @if($item->dm_type_media == 'file')
-                    {{ basename($item->dm_media_upload) }}
-                @else
-                    {{ $item->dm_media_upload }}
-                @endif
-            </td>
             <td>
                 <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/media-detail/editData/{$item->detail_media_dinamis_id}") }}')">
                     <i class="fas fa-edit"></i> Edit

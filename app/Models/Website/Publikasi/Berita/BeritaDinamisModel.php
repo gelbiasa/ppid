@@ -198,7 +198,8 @@ class BeritaDinamisModel extends Model
             $query->where('bd_nama_submenu', 'like', "%{$search}%");
         }
 
-        return $query->paginate($perPage);
+          // Gunakan paginateResults dari trait BaseModelFunction
+          return self::paginateResults($query, $perPage);
     }
 
     // Fungsi untuk membuat data baru

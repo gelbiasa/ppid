@@ -1,92 +1,109 @@
 <div class="modal-header">
-     <h5 class="modal-title">Edit Kategori Akses</h5>
-     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-         <span aria-hidden="true">&times;</span>
-     </button>
- </div>
- 
- <form id="form-update-kategori-akses">
-     <div class="modal-body">
-         <div class="form-group">
-             <label for="mka_judul_kategori">Judul Kategori <span class="text-danger">*</span></label>
-             <input type="text" class="form-control" id="mka_judul_kategori" name="mka_judul_kategori" 
-                    required maxlength="100" value="{{ $kategoriAkses->mka_judul_kategori }}">
-                    <div class="invalid-feedback" id="error-mka_judul_kategori"></div>
+    <h5 class="modal-title">Ubah Kategori Akses</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <form id="formUpdateKategoriAkses" action="{{ url('adminweb/kategori-akses/updateData/' . $kategoriAkses->kategori_akses_id) }}"
+        method="POST">
+        @csrf
+
+        <div class="form-group">
+            <label for="mka_judul_kategori">Judul Kategori <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="mka_judul_kategori" name="m_kategori_akses[mka_judul_kategori]" maxlength="100"
+                value="{{ $kategoriAkses->mka_judul_kategori }}">
+            <div class="invalid-feedback" id="mka_judul_kategori_error"></div>
         </div>
-    </div>
-    
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary" id="btn-update">Perbarui</button>
-    </div>
-</form>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+    <button type="button" class="btn btn-primary" id="btnSubmitForm">
+        <i class="fas fa-save mr-1"></i> Simpan Perubahan
+    </button>
+</div>
 
 <script>
-    $(document).ready(function() {
-        // Form submission
-        $('#form-update-kategori-akses').on('submit', function(e) {
-            e.preventDefault();
-            
-            // Reset error messages
+    $(document).ready(function () {
+        // Hapus error ketika input berubah
+        $(document).on('input change', 'input, select, textarea', function() {
+            $(this).removeClass('is-invalid');
+            const errorId = `#${$(this).attr('id')}_error`;
+            $(errorId).html('');
+        });
+
+        // Handle submit form
+        $('#btnSubmitForm').on('click', function() {
+            // Reset semua error
             $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').html('');
             
-            // Disable button to prevent multiple submissions
-            $('#btn-update').attr('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memperbarui...');
+            const form = $('#formUpdateKategoriAkses');
+            const formData = new FormData(form[0]);
+            const button = $(this);
             
-            // Submit form data via AJAX
+            // Tampilkan loading state pada tombol submit
+            button.html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').attr('disabled', true);
+            
             $.ajax({
-                url: '{{ url("adminweb/kategori-akses/updateData/{$kategoriAkses->kategori_akses_id}") }}',
+                url: form.attr('action'),
                 type: 'POST',
-                data: $(this).serialize(),
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        // Show success message
+                        $('#myModal').modal('hide');
+                        reloadTable();
+                        
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: response.message,
                             icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            // Close modal and refresh data table
-                            $('#myModal').modal('hide');
-                            reloadTable();
+                            title: 'Berhasil',
+                            text: response.message
                         });
                     } else {
-                        // Show error message
-                        Swal.fire({
-                            title: 'Gagal!',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                        
-                        // Enable button
-                        $('#btn-update').attr('disabled', false).html('Perbarui');
+                        if (response.errors) {
+                            // Tampilkan pesan error pada masing-masing field
+                            $.each(response.errors, function(key, value) {
+                                // Untuk m_kategori_akses fields
+                                if (key.startsWith('m_kategori_akses.')) {
+                                    const fieldName = key.replace('m_kategori_akses.', '');
+                                    $(`#${fieldName}`).addClass('is-invalid');
+                                    $(`#${fieldName}_error`).html(value[0]);
+                                } else {
+                                    // Untuk field biasa
+                                    $(`#${key}`).addClass('is-invalid');
+                                    $(`#${key}_error`).html(value[0]);
+                                }
+                            });
+                            
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Validasi Gagal',
+                                text: 'Mohon periksa kembali input Anda'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: response.message || 'Terjadi kesalahan saat menyimpan data'
+                            });
+                        }
                     }
                 },
                 error: function(xhr) {
-                    // Enable button
-                    $('#btn-update').attr('disabled', false).html('Perbarui');
-                    
-                    // Handle validation errors
-                    if (xhr.status === 422) {
-                        var errors = xhr.responseJSON.errors;
-                        $.each(errors, function(key, value) {
-                            $('#' + key).addClass('is-invalid');
-                            $('#error-' + key).text(value[0]);
-                        });
-                    } else {
-                        // Show general error message
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Terjadi kesalahan saat memperbarui data.',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'
+                    });
+                },
+                complete: function() {
+                    // Kembalikan tombol submit ke keadaan semula
+                    button.html('<i class="fas fa-save mr-1"></i> Simpan Perubahan').attr('disabled', false);
                 }
             });
         });

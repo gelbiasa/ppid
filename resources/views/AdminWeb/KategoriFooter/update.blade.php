@@ -1,99 +1,101 @@
-<!-- views/AdminWeb/KategoriFooter/update.blade.php -->
-
 <div class="modal-header">
-    <h5 class="modal-title">Edit Kategori Footer</h5>
+    <h5 class="modal-title">Ubah Kategori Footer</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
 
-<form id="form-update-kategori-footer">
-    <div class="modal-body">
-        <div class="form-group">
-            <label for="kt_footer_kode">Kode Footer <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="kt_footer_kode" name="kt_footer_kode" required maxlength="20" value="{{ $kategoriFooter->kt_footer_kode }}">
-            <div class="invalid-feedback" id="error-kt_footer_kode"></div>
-        </div>
-        
-        <div class="form-group">
-            <label for="kt_footer_nama">Nama Footer <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="kt_footer_nama" name="kt_footer_nama" required maxlength="100" value="{{ $kategoriFooter->kt_footer_nama }}">
-            <div class="invalid-feedback" id="error-kt_footer_nama"></div>
-        </div>
-    </div>
+<div class="modal-body">
+    <form id="formUpdateKategoriFooter" action="{{ url('adminweb/kategori-footer/updateData/' . $kategoriFooter->kategori_footer_id) }}"
+        method="POST">
+        @csrf
     
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary" id="btn-update">Perbarui</button>
-    </div>
-</form>
+        <div class="form-group">
+            <label for="kt_footer_kode">Kode Kategori Footer <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="kt_footer_kode" name="m_kategori_footer[kt_footer_kode]" maxlength="20"
+                value="{{ $kategoriFooter->kt_footer_kode }}">
+            <div class="invalid-feedback" id="kt_footer_kode_error"></div>
+        </div>
+    
+        <div class="form-group">
+            <label for="kt_footer_nama">Nama Kategori Footer <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="kt_footer_nama" name="m_kategori_footer[kt_footer_nama]" maxlength="100"
+                value="{{ $kategoriFooter->kt_footer_nama }}">
+            <div class="invalid-feedback" id="kt_footer_nama_error"></div>
+        </div>
+    </form>
+</div>
 
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+    <button type="button" class="btn btn-primary" id="btnSubmitForm">
+        <i class="fas fa-save mr-1"></i> Simpan Perubahan
+    </button>
+</div>
 <script>
-    $(document).ready(function() {
-        // Form submission
-        $('#form-update-kategori-footer').on('submit', function(e) {
-            e.preventDefault();
-            
-            // Reset error messages
+    $(document).ready(function () {
+        $(document).on('input change', 'input, select, textarea', function() {
+            $(this).removeClass('is-invalid');
+            const errorId = `#${$(this).attr('id')}_error`;
+            $(errorId).html('');
+        });
+
+        $('#btnSubmitForm').on('click', function() {
             $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').html('');
             
-            // Disable button to prevent multiple submissions
-            $('#btn-update').attr('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Memperbarui...');
+            const form = $('#formUpdateKategoriFooter');
+            const formData = new FormData(form[0]);
+            const button = $(this);
             
-            // Submit form data via AJAX
+            button.html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').attr('disabled', true);
+            
             $.ajax({
-                url: '{{ url("adminweb/kategori-footer/updateData/" . $kategoriFooter->kategori_footer_id) }}',
+                url: form.attr('action'),
                 type: 'POST',
-                data: $(this).serialize(),
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        // Show success message
+                        $('#myModal').modal('hide');
+                        reloadTable();
+                        
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: response.message,
                             icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            // Close modal and refresh data table
-                            $('#myModal').modal('hide');
-                            $('#table_kategori_footer').DataTable().ajax.reload();
+                            title: 'Berhasil',
+                            text: response.message
                         });
                     } else {
-                        // Show error message
-                        Swal.fire({
-                            title: 'Gagal!',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                        
-                        // Enable button
-                        $('#btn-update').attr('disabled', false).html('Perbarui');
+                        if (response.errors) {
+                            $.each(response.errors, function(key, value) {
+                                $(`#${key}`).addClass('is-invalid');
+                                $(`#${key}_error`).html(value[0]);
+                            });
+                            
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Validasi Gagal',
+                                text: 'Mohon periksa kembali input Anda'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: response.message || 'Terjadi kesalahan saat menyimpan data'
+                            });
+                        }
                     }
                 },
                 error: function(xhr) {
-                    // Enable button
-                    $('#btn-update').attr('disabled', false).html('Perbarui');
-                    
-                    // Handle validation errors
-                    if (xhr.status === 422) {
-                        var errors = xhr.responseJSON.errors;
-                        $.each(errors, function(key, value) {
-                            $('#' + key).addClass('is-invalid');
-                            $('#error-' + key).text(value[0]);
-                        });
-                    } else {
-                        // Show general error message
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Terjadi kesalahan saat memperbarui data.',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'
+                    });
+                },
+                complete: function() {
+                    button.html('<i class="fas fa-save mr-1"></i> Simpan Perubahan').attr('disabled', false);
                 }
             });
         });

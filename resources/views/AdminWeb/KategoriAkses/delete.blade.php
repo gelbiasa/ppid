@@ -44,6 +44,9 @@
              </table>
          </div>
      </div>
+     <div class="alert alert-warning mt-3">
+        <i class="fas fa-info-circle mr-2"></i> <strong>Perhatian:</strong> Menghapus kategori Akses ini mungkin akan memengaruhi data lain yang terkait dengannya. Pastikan tidak ada data lain yang masih menggunakan kategori akses ini.
+      </div>
  </div>
  <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>

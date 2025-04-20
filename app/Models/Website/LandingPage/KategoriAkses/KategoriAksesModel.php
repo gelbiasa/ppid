@@ -19,7 +19,6 @@ class KategoriAksesModel extends Model
     protected $fillable = [
         'mka_judul_kategori'
     ];
-
     public function aksesCepat()
     {
         return $this->hasMany(AksesCepatModel::class, 'fk_m_kategori_akses', 'kategori_akses_id');
@@ -28,183 +27,14 @@ class KategoriAksesModel extends Model
     {
         return $this->hasMany(PintasanLainnyaModel::class, 'fk_m_kategori_akses', 'kategori_akses_id');
     }
+    
 
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
-
-    // Fungsi untuk mengambil semua data dengan pagination
-    public static function selectData($perPage = null, $search = '')
-    {
-        $query = self::query()
-            ->where('isDeleted', 0);
-
-        // Add search functionality
-        if (!empty($search)) {
-            $query->where('mka_judul_kategori', 'like', "%{$search}%");
-        }
-
-        return self::paginateResults($query, $perPage);
-    }
-
-    // Fungsi untuk membuat data baru
-    public static function createData($request)
-    {
-        try {
-            // Validasi input
-            self::validasiData($request);
-
-            DB::beginTransaction();
-
-            // Persiapan data
-            $data = $request->only([
-                'mka_judul_kategori'
-            ]);
-
-            // Buat record
-            $saveData = self::create($data);
-
-            // Catat log transaksi
-            TransactionModel::createData(
-                'CREATED',
-                $saveData->kategori_akses_id,
-                $saveData->mka_judul_kategori
-            );
-
-            DB::commit();
-
-            return self::responFormatSukses($saveData, 'Kategori Akses berhasil dibuat');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return self::responFormatError($e, 'Gagal membuat Kategori Akses');
-        }
-    }
-
-    // Fungsi untuk mengupdate data
-    public static function updateData($request, $id)
-    {
-        try {
-            // Validasi input
-            self::validasiData($request, $id);
-
-            // Cari record
-            $saveData = self::findOrFail($id);
-
-            DB::beginTransaction();
-
-            // Cek apakah ada data yang sudah dihapus dengan judul yang sama
-            $existingDeleted = self::withTrashed()
-                ->where('isDeleted', 1)
-                ->where('kategori_akses_id', '!=', $id)
-                ->where('mka_judul_kategori', $request->mka_judul_kategori)
-                ->get();
-
-            // Hapus data yang soft deleted dengan judul yang sama secara permanen
-            foreach ($existingDeleted as $item) {
-                $item->forceDelete();
-            }
-
-            // Persiapan data
-            $data = $request->only([
-                'mka_judul_kategori'
-            ]);
-
-            // Update record
-            $saveData->update($data);
-
-
-            // Catat log transaksi
-            TransactionModel::createData(
-                'UPDATED',
-                $saveData->kategori_akses_id,
-                $saveData->mka_judul_kategori
-            );
-
-            DB::commit();
-
-            return self::responFormatSukses($saveData, 'Kategori Akses berhasil diperbarui');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-
-            return self::responFormatError($e, 'Gagal memperbarui Kategori Akses');
-        }
-    }
-
-    // Fungsi untuk menghapus data
-    public static function deleteData($id)
-    {
-        try {
-            // Cari record
-            $saveData = self::findOrFail($id);
-
-            DB::beginTransaction();
-
-            // Set isDeleted = 1 secara manual sebelum memanggil delete()
-            $saveData->isDeleted = 1;
-            $saveData->deleted_at = now();
-            $saveData->save();
-
-            // Soft delete dengan menggunakan fitur SoftDeletes dari Trait
-            $saveData->delete();
-
-            // Catat log transaksi
-            TransactionModel::createData(
-                'DELETED',
-                $saveData->kategori_akses_id,
-                $saveData->mka_judul_kategori
-            );
-
-            DB::commit();
-
-            return self::responFormatSukses($saveData, 'Kategori Akses berhasil dihapus');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return self::responFormatError($e, 'Gagal menghapus Kategori Akses');
-        }
-    }
-
-    // Fungsi untuk mendapatkan detail data
-    public static function detailData($id)
-    {
-        try {
-            $kategoriAkses = self::findOrFail($id);
-            return $kategoriAkses;
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
-    // Fungsi untuk memvalidasi data
-    public static function validasiData($request, $id = null)
-    {
-        $rules = [
-            'mka_judul_kategori' => [
-                'required',
-                'max:100',
-                // Tambahkan unique rule kecuali untuk record saat ini jika sedang update
-                $id ? 'unique:m_kategori_akses,mka_judul_kategori,' . $id . ',kategori_akses_id' : 'unique:m_kategori_akses,mka_judul_kategori'
-            ]
-        ];
-
-        $messages = [
-            'mka_judul_kategori.required' => 'Judul kategori wajib diisi',
-            'mka_judul_kategori.max' => 'Judul kategori maksimal 100 karakter',
-            'mka_judul_kategori.unique' => 'Judul kategori sudah ada'
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-
-        return true;
-    }
-
-
+   
     // Function API get data AksesCepat
     public static function getDataAksesCepat()
     {
@@ -234,8 +64,14 @@ class KategoriAksesModel extends Model
                         return [
                             'id' => $akses->akses_cepat_id,
                             'judul' => $akses->ac_judul,
-                            'static_icon' => $akses->ac_static_icon ? asset('storage/' . AksesCepatModel::STATIC_ICON_PATH . '/' . $akses->ac_static_icon) : null,
-                            'animation_icon' => $akses->ac_animation_icon ? asset('storage/' . AksesCepatModel::ANIMATION_ICON_PATH . '/' . $akses->ac_animation_icon) : null,
+                            'static_icon' => $akses->ac_static_icon 
+                            ? asset('storage/' . $akses->ac_static_icon) 
+                            : null,
+                        
+                        'animation_icon' => $akses->ac_animation_icon 
+                            ? asset('storage/' . $akses->ac_animation_icon) 
+                            : null,
+                        
                             'url' => $akses->ac_url
                         ];
                     });
@@ -305,5 +141,128 @@ class KategoriAksesModel extends Model
             ->toArray();
 
         return $arr_data;
+    }
+
+    public static function selectData($perPage = null, $search = '')
+    {
+        $query = self::query()
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where('mka_judul_kategori', 'like', "%{$search}%");
+        }
+
+        return self::paginateResults($query, $perPage);
+    }
+    
+
+    public static function createData($request)
+    {
+        try {
+
+            DB::beginTransaction();
+            $data = $request->m_kategori_akses;
+            $saveData = self::create($data);
+
+            TransactionModel::createData(
+                'CREATED',
+                $saveData->kategori_akses_id,
+                $saveData->mka_judul_kategori
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($saveData, 'Kategori Akses berhasil dibuat');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Create Data Model Error: ' . $e->getMessage());
+            return self::responFormatError($e, 'Gagal membuat Kategori Akses');
+        }
+    }
+
+    public static function updateData($request, $id)
+    {
+        try {
+            DB::beginTransaction();
+            $saveData = self::findOrFail($id);
+            
+            $data = $request->m_kategori_akses;
+            $saveData->update($data);
+
+            // Catat log transaksi
+            TransactionModel::createData(
+                'UPDATED',
+                $saveData->kategori_akses_id,
+                $saveData->mka_judul_kategori
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($saveData, 'Kategori Akses berhasil diperbarui');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return self::responFormatError($e, 'Gagal memperbarui Kategori Akses');
+        }
+    }
+
+    public static function deleteData($id)
+    {
+        try {
+            // Cari record
+            $saveData = self::findOrFail($id);
+
+            DB::beginTransaction();
+
+            // Soft delete
+            $saveData->isDeleted = 1;
+            $saveData->deleted_at = now();
+            $saveData->save();
+            $saveData->delete();
+
+            // Catat log transaksi
+            TransactionModel::createData(
+                'DELETED',
+                $saveData->kategori_akses_id,
+                $saveData->mka_judul_kategori
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($saveData, 'Kategori Akses berhasil dihapus');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return self::responFormatError($e, 'Gagal menghapus Kategori Akses');
+        }
+    }
+
+    public static function detailData($id)
+    {
+        return self::findOrFail($id);
+    }
+
+    public static function validasiData($request, $id = null)
+    {
+        $rules = [
+            'm_kategori_akses.mka_judul_kategori' => [
+                'required',
+                'max:100',
+                $id ? 'unique:m_kategori_akses,mka_judul_kategori,' . $id . ',kategori_akses_id' : 'unique:m_kategori_akses,mka_judul_kategori'
+            ]
+        ];
+
+        $messages = [
+            'mka_judul_kategori.required' => 'Judul kategori wajib diisi',
+            'mka_judul_kategori.max' => 'Judul kategori maksimal 100 karakter',
+            'mka_judul_kategori.unique' => 'Judul kategori sudah ada'
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        return true;
     }
 }
