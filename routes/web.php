@@ -34,6 +34,10 @@ use App\Http\Controllers\SistemInformasi\KategoriForm\KategoriFormController;
 use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
 use App\Http\Controllers\SummernoteController;
 use App\Models\Website\WebMenuModel;
+use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\RegulasiController;
+use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\RegulasiDinamisController;
+use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\KategoriRegulasiController;
+use App\Http\Controllers\AdminWeb\KategoriAkses\PintasanLainnyaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -205,6 +209,54 @@ Route::middleware('auth')->group(function () {
         Route::get('/detailData/{id}', [DetailLhkpnController::class, 'detailData']);
         Route::get('/deleteData/{id}', [DetailLhkpnController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [DetailLhkpnController::class, 'deleteData']);
+    });
+    
+
+   Route::group(['prefix' => 'adminweb/pintasan-lainnya', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [PintasanLainnyaController::class, 'index']);
+        Route::get('/getData', [PintasanLainnyaController::class, 'getData']);
+        Route::get('/addData', [PintasanLainnyaController::class, 'addData']);
+        Route::post('/createData', [PintasanLainnyaController::class, 'createData']);
+        Route::get('/editData/{id}', [PintasanLainnyaController::class, 'editData']);
+        Route::post('/updateData/{id}', [PintasanLainnyaController::class, 'updateData']);
+        Route::get('/detailData/{id}', [PintasanLainnyaController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [PintasanLainnyaController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [PintasanLainnyaController::class, 'deleteData']);
+    });
+
+
+Route::group(['prefix' => 'adminweb/informasipublik/regulasi-dinamis', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [RegulasiDinamisController::class, 'index']);
+        Route::get('/getData', [RegulasiDinamisController::class, 'getData']);
+        Route::get('/addData', [RegulasiDinamisController::class, 'addData']);
+        Route::post('/createData', [RegulasiDinamisController::class, 'createData']);
+        Route::get('/editData/{id}', [RegulasiDinamisController::class, 'editData']);
+        Route::post('/updateData/{id}', [RegulasiDinamisController::class, 'updateData']);
+        Route::get('/detailData/{id}', [RegulasiDinamisController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [RegulasiDinamisController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [RegulasiDinamisController::class, 'deleteData']);
+    });
+    Route::group(['prefix' => 'adminweb/informasipublik/regulasi', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [RegulasiController::class, 'index']);
+        Route::get('/getData', [RegulasiController::class, 'getData']);
+        Route::get('/addData', [RegulasiController::class, 'addData']);
+        Route::post('/createData', [RegulasiController::class, 'createData']);
+        Route::get('/editData/{id}', [RegulasiController::class, 'editData']);
+        Route::post('/updateData/{id}', [RegulasiController::class, 'updateData']);
+        Route::get('/detailData/{id}', [RegulasiController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [RegulasiController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [RegulasiController::class, 'deleteData']);
+    });
+    Route::group(['prefix' => 'adminweb/informasipublik/kategori-regulasi', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [KategoriRegulasiController::class, 'index']);
+        Route::get('/getData', [KategoriRegulasiController::class, 'getData']);
+        Route::get('/addData', [KategoriRegulasiController::class, 'addData']);
+        Route::post('/createData', [KategoriRegulasiController::class, 'createData']);
+        Route::get('/editData/{id}', [KategoriRegulasiController::class, 'editData']);
+        Route::post('/updateData/{id}', [KategoriRegulasiController::class, 'updateData']);
+        Route::get('/detailData/{id}', [KategoriRegulasiController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [KategoriRegulasiController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KategoriRegulasiController::class, 'deleteData']);
     });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PermohonanInformasi', 'middleware' => ['authorize:RPN']], function () {
