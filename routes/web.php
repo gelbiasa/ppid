@@ -25,6 +25,7 @@ use App\Http\Controllers\AdminWeb\KategoriAkses\KategoriAksesController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanDinamisController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\AdminWeb\MediaDinamis\DetailMediaDinamisController;
+use App\Http\Controllers\ManagePengguna\LevelController;
 use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\SistemInformasi\EForm\PernyataanKeberatanController;
 use App\Http\Controllers\SistemInformasi\KategoriForm\KategoriFormController;
 use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
 use App\Http\Controllers\SummernoteController;
+use App\Models\Website\WebMenuModel;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,9 +63,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboardMPU', [DashboardMPUController::class, 'index'])->middleware('authorize:MPU');
     Route::get('/dashboardVFR', [DashboardVerifikatorController::class, 'index'])->middleware('authorize:VFR');
 
-    Route::get('/getHakAksesData/{param1}/{param2?}', [HakAksesController::class, 'edit'])->middleware('authorize:SAR');
-    Route::get('/HakAkses', [HakAksesController::class, 'index'])->middleware('authorize:SAR');
-    Route::post('/updateData', [HakAksesController::class, 'update'])->middleware('authorize:SAR');
+    Route::group(['prefix' => 'HakAkses', 'middleware' => 'authorize:SAR'], function () {
+        Route::get('/', [HakAksesController::class, 'index']);
+        Route::get('/addData', [HakAksesController::class, 'addData']);
+        Route::post('/createData', [HakAksesController::class, 'createData']);
+        Route::get('/getHakAksesData/{param1}/{param2?}', [HakAksesController::class, 'editData']);
+        Route::post('/updateData', [HakAksesController::class, 'updateData']);
+    });    
 
     Route::get('/session', [AuthController::class, 'getData']);
     Route::get('/js/summernote.js', [SummernoteController::class, 'getSummernoteJS']);
@@ -75,27 +81,28 @@ Route::middleware('auth')->group(function () {
         Route::put('/update_password/{id}', [ProfileController::class, 'update_password']);
     });
 
-    Route::group(['prefix' => 'adminweb/menu-management', 'middleware' => 'authorize:ADM'], function () {
-        Route::get('/', [MenuManagementController::class, 'index'])->middleware('permission:view');;
+    Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('menu-management'), 'middleware' => 'authorize:ADM,SAR'], function () {
+        Route::get('/', [MenuManagementController::class, 'index'])->middleware('permission:view');
         Route::get('/menu-item', [MenuManagementController::class, 'menu-item']);
         Route::post('/list', [MenuManagementController::class, 'list']);
-        Route::post('/store', [MenuManagementController::class, 'store'])->middleware('permission:create');;
+        Route::post('/store', [MenuManagementController::class, 'store'])->middleware('permission:create');
         Route::get('/{id}/edit', [MenuManagementController::class, 'edit']);
-        Route::put('/{id}/update', [MenuManagementController::class, 'update'])->middleware('permission:update');;
-        Route::delete('/{id}/delete', [MenuManagementController::class, 'delete'])->middleware('permission:delete');;
+        Route::put('/{id}/update', [MenuManagementController::class, 'update'])->middleware('permission:update');
+        Route::delete('/{id}/delete', [MenuManagementController::class, 'delete'])->middleware('permission:delete');
         Route::get('/{id}/detail_menu', [MenuManagementController::class, 'detail_menu']);
         Route::post('/reorder', [MenuManagementController::class, 'reorder']); // New route for drag-drop reordering
+        Route::get('/get-parent-menus/{levelId}', [MenuManagementController::class, 'getParentMenus']);
     });
     Route::group(['prefix' => 'adminweb/kategori-footer', 'middleware' => ['authorize:ADM']], function () {
-        Route::get('/', [KategoriFooterController::class, 'index']);
+        Route::get('/', [KategoriFooterController::class, 'index'])->middleware('permission:view');
         Route::get('/getData', [KategoriFooterController::class, 'getData']);
         Route::get('/addData', [KategoriFooterController::class, 'addData']);
-        Route::post('/createData', [KategoriFooterController::class, 'createData']);
+        Route::post('/createData', [KategoriFooterController::class, 'createData'])->middleware('permission:create');
         Route::get('/editData/{id}', [KategoriFooterController::class, 'editData']);
-        Route::post('/updateData/{id}', [KategoriFooterController::class, 'updateData']);
+        Route::post('/updateData/{id}', [KategoriFooterController::class, 'updateData'])->middleware('permission:update');
         Route::get('/detailData/{id}', [KategoriFooterController::class, 'detailData']);
         Route::get('/deleteData/{id}', [KategoriFooterController::class, 'deleteData']);
-        Route::delete('/deleteData/{id}', [KategoriFooterController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KategoriFooterController::class, 'deleteData'])->middleware('permission:delete');
     });
     Route::group(['prefix' => 'adminweb/footer', 'middleware' => 'authorize:ADM'], function () {
         Route::get('/', [FooterController::class, 'index']);
@@ -207,11 +214,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/createData', [PermohonanInformasiController::class, 'createData']);
     });
 
-    Route::group(['prefix' => 'SistemInformasi/EForm/ADM/PermohonanInformasi', 'middleware' => ['authorize:ADM']], function () {
-        Route::get('/', [PermohonanInformasiController::class, 'index']);
+    Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('permohonan-informasi-admin')], function () {
+        Route::get('/', [PermohonanInformasiController::class, 'index'])->middleware('permission:view');
         Route::get('/getData', [PermohonanInformasiController::class, 'getData']);
         Route::get('/addData', [PermohonanInformasiController::class, 'addData']);
-        Route::post('/createData', [PermohonanInformasiController::class, 'createData']);
+        Route::post('/createData', [PermohonanInformasiController::class, 'createData'])->middleware('permission:create');
     });
 
     Route::group(['prefix' => 'SistemInformasi/EForm/RPN/PernyataanKeberatan', 'middleware' => ['authorize:RPN']], function () {
@@ -291,7 +298,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/deleteData/{id}', [TimelineController::class, 'deleteData']);
     });
 
-    Route::group(['prefix' => 'SistemInformasi/KetentuanPelaporan', 'middleware' => ['authorize:ADM']], function () {
+    Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('ketentuan-pelaporan')], function () {
         Route::get('/', [KetentuanPelaporanController::class, 'index']);
         Route::get('/getData', [KetentuanPelaporanController::class, 'getData']);
         Route::get('/addData', [KetentuanPelaporanController::class, 'addData']);
@@ -305,16 +312,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/removeImage', [KetentuanPelaporanController::class, 'removeImage']);
     });
 
-    Route::group(['prefix' => 'SistemInformasi/KategoriForm', 'middleware' => ['authorize:ADM']], function () {
-        Route::get('/', [KategoriFormController::class, 'index']);
+    Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('kategori-form')], function () {
+        Route::get('/', [KategoriFormController::class, 'index'])->middleware('permission:view');
         Route::get('/getData', [KategoriFormController::class, 'getData']);
         Route::get('/addData', [KategoriFormController::class, 'addData']);
-        Route::post('/createData', [KategoriFormController::class, 'createData']);
+        Route::post('/createData', [KategoriFormController::class, 'createData'])->middleware('permission:create');
         Route::get('/editData/{id}', [KategoriFormController::class, 'editData']);
-        Route::post('/updateData/{id}', [KategoriFormController::class, 'updateData']);
+        Route::post('/updateData/{id}', [KategoriFormController::class, 'updateData'])->middleware('permission:update');
         Route::get('/detailData/{id}', [KategoriFormController::class, 'detailData']);
         Route::get('/deleteData/{id}', [KategoriFormController::class, 'deleteData']);
-        Route::delete('/deleteData/{id}', [KategoriFormController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [KategoriFormController::class, 'deleteData'])->middleware('permission:delete');
     });
 
     Route::group(['prefix' => 'AdminWeb/PengumumanDinamis', 'middleware' => ['authorize:ADM']], function () {
@@ -341,5 +348,17 @@ Route::middleware('auth')->group(function () {
         Route::delete('/deleteData/{id}', [PengumumanController::class, 'deleteData']);
         Route::post('/uploadImage', [PengumumanController::class, 'uploadImage']);
         Route::post('/removeImage', [PengumumanController::class, 'removeImage']);
+    });
+
+    Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('management-level')], function () {
+        Route::get('/', [LevelController::class, 'index'])->middleware('permission:view');
+        Route::get('/getData', [LevelController::class, 'getData']);
+        Route::get('/addData', [LevelController::class, 'addData']);
+        Route::post('/createData', [LevelController::class, 'createData'])->middleware('permission:create');
+        Route::get('/editData/{id}', [LevelController::class, 'editData']);
+        Route::post('/updateData/{id}', [LevelController::class, 'updateData'])->middleware('permission:update');
+        Route::get('/detailData/{id}', [LevelController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [LevelController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [LevelController::class, 'deleteData'])->middleware('permission:delete');
     });
 });

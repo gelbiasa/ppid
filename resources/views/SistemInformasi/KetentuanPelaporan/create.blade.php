@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('management-level');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Tambah Ketentuan Pelaporan Baru</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formCreateKetentuanPelaporan" action="{{ url('SistemInformasi/KetentuanPelaporan/createData') }}"
+    <form id="formCreateKetentuanPelaporan" action="{{ url($ketentuanPelaporanUrl . '/createData') }}"
         method="POST">
         @csrf
 

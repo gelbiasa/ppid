@@ -25,7 +25,7 @@ class HakAksesController extends Controller
             'title' => 'Pengaturan Hak Akses'
         ];
 
-        $activeMenu = 'HakAkses';
+        $activeMenu = 'pengaturanhakakses';
 
         // Mengambil data dari model
         $result = HakAksesModel::selectData();
@@ -39,7 +39,19 @@ class HakAksesController extends Controller
         ]);
     }
 
-    public function edit($param1, $param2 = null)
+    public function getData() {
+        //
+    }
+
+    public function addData() {
+        //
+    }
+
+    public function createData() {
+        //
+    }
+
+    public function editData($param1, $param2 = null)
     {
         // Jika param2 tidak ada, maka ini adalah permintaan hak akses berdasarkan level
         if ($param2 === null) {
@@ -56,7 +68,7 @@ class HakAksesController extends Controller
         }
     }
 
-    public function update(Request $request, $isLevel = false)
+    public function updateData(Request $request, $isLevel = false)
     {
         try {
             // Menentukan apakah permintaan berasal dari form level atau individual

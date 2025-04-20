@@ -1,24 +1,31 @@
 @php
   use App\Models\Website\WebMenuModel;
-  $kategoriFormUrl = WebMenuModel::getDynamicMenuUrl('kategori-form');
+  $managementLevelUrl = WebMenuModel::getDynamicMenuUrl('management-level');
 @endphp
 <div class="modal-header">
-    <h5 class="modal-title">Ubah Kategori Form</h5>
+    <h5 class="modal-title">Ubah Level</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
 
 <div class="modal-body">
-    <form id="formUpdateKategoriForm" action="{{ url($kategoriFormUrl . '/updateData/' . $kategoriForm->kategori_form_id) }}"
+    <form id="formUpdateLevel" action="{{ url($managementLevelUrl . '/updateData/' . $level->level_id) }}"
         method="POST">
         @csrf
 
         <div class="form-group">
-            <label for="kf_nama">Nama Kategori Form <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="kf_nama" name="m_kategori_form[kf_nama]" maxlength="255"
-                value="{{ $kategoriForm->kf_nama }}">
-            <div class="invalid-feedback" id="kf_nama_error"></div>
+            <label for="level_kode">Kode Level <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="level_kode" name="m_level[level_kode]" maxlength="50"
+                value="{{ $level->level_kode }}">
+            <div class="invalid-feedback" id="level_kode_error"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="level_nama">Nama Level <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="level_nama" name="m_level[level_nama]" maxlength="255"
+                value="{{ $level->level_nama }}">
+            <div class="invalid-feedback" id="level_nama_error"></div>
         </div>
     </form>
 </div>
@@ -45,7 +52,7 @@
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').html('');
             
-            const form = $('#formUpdateKategoriForm');
+            const form = $('#formUpdateLevel');
             const formData = new FormData(form[0]);
             const button = $(this);
             
@@ -72,9 +79,9 @@
                         if (response.errors) {
                             // Tampilkan pesan error pada masing-masing field
                             $.each(response.errors, function(key, value) {
-                                // Untuk m_kategori_form fields
-                                if (key.startsWith('m_kategori_form.')) {
-                                    const fieldName = key.replace('m_kategori_form.', '');
+                                // Untuk m_level fields
+                                if (key.startsWith('m_level.')) {
+                                    const fieldName = key.replace('m_level.', '');
                                     $(`#${fieldName}`).addClass('is-invalid');
                                     $(`#${fieldName}_error`).html(value[0]);
                                 } else {

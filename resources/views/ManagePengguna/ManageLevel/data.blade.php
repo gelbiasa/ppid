@@ -1,12 +1,11 @@
 @php
     use App\Models\Website\WebMenuModel;
     use App\Models\HakAkses\HakAksesModel;
-    $kategoriFormUrl = WebMenuModel::getDynamicMenuUrl('kategori-form');
+    $managementLevelUrl = WebMenuModel::getDynamicMenuUrl('management-level');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">
-        Showing {{ $kategoriForm->firstItem() }} to {{ $kategoriForm->lastItem() }} of {{ $kategoriForm->total() }}
-        results
+        Showing {{ $level->firstItem() }} to {{ $level->lastItem() }} of {{ $level->total() }} results
     </div>
 </div>
 
@@ -14,35 +13,37 @@
     <thead>
         <tr>
             <th width="5%">Nomor</th>
-            <th width="65%">Nama Kategori Form</th>
+            <th width="20%">Kode Level</th>
+            <th width="45%">Nama Level</th>
             <th width="30%">Aksi</th>
         </tr>
     </thead>
     <tbody>
-        @forelse($kategoriForm as $key => $item)
+        @forelse($level as $key => $item)
                 <tr>
-                    <td>{{ ($kategoriForm->currentPage() - 1) * $kategoriForm->perPage() + $key + 1 }}</td>
-                    <td>{{ $item->kf_nama }}</td>
+                    <td>{{ ($level->currentPage() - 1) * $level->perPage() + $key + 1 }}</td>
+                    <td>{{ $item->level_kode }}</td>
+                    <td>{{ $item->level_nama }}</td>
                     <td>
                         @if(
                             Auth::user()->level->level_kode === 'SAR' ||
-                            HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'update')
+                            HakAksesModel::cekHakAkses(Auth::user()->user_id, $managementLevelUrl, 'update')
                         )
                             <button class="btn btn-sm btn-warning"
-                                onclick="modalAction('{{ url($kategoriFormUrl . '/editData/' . $item->kategori_form_id) }}')">
+                                onclick="modalAction('{{ url($managementLevelUrl . '/editData/' . $item->level_id) }}')">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                         @endif
-                        <button class="btn btn-sm btn-info"
-                            onclick="modalAction('{{ url($kategoriFormUrl . '/detailData/' . $item->kategori_form_id) }}')">
-                            <i class="fas fa-eye"></i> Detail
-                        </button>
+                            <button class="btn btn-sm btn-info"
+                                onclick="modalAction('{{ url($managementLevelUrl . '/detailData/' . $item->level_id) }}')">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
                         @if(
                             Auth::user()->level->level_kode === 'SAR' ||
-                            HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'delete')
+                            HakAksesModel::cekHakAkses(Auth::user()->user_id, $managementLevelUrl, 'delete')
                         )
                             <button class="btn btn-sm btn-danger"
-                                onclick="modalAction('{{ url($kategoriFormUrl . '/deleteData/' . $item->kategori_form_id) }}')">
+                                onclick="modalAction('{{ url($managementLevelUrl . '/deleteData/' . $item->level_id) }}')">
                                 <i class="fas fa-trash"></i> Hapus
                             </button>
                         @endif
@@ -50,7 +51,7 @@
                 </tr>
         @empty
             <tr>
-                <td colspan="3" class="text-center">
+                <td colspan="4" class="text-center">
                     @if(!empty($search))
                         Tidak ada data yang cocok dengan pencarian "{{ $search }}"
                     @else
@@ -63,5 +64,5 @@
 </table>
 
 <div class="mt-3">
-    {{ $kategoriForm->appends(['search' => $search])->links() }}
+    {{ $level->appends(['search' => $search])->links() }}
 </div>

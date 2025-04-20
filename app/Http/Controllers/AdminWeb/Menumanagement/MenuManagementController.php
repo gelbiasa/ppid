@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\AdminWeb\MenuManagement;
 
 use App\Http\Controllers\TraitsController;
+use App\Models\LevelModel;
 use App\Models\Website\WebMenuModel;
+use App\Models\Website\WebMenuUrlModel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -13,6 +15,7 @@ class MenuManagementController extends Controller
 
     public $breadcrumb = 'Menu Management';
     public $pagename = 'AdminWeb/MenuManagement';
+    
     public function index()
     {
         try {
@@ -26,30 +29,48 @@ class MenuManagementController extends Controller
             ];
 
             $activeMenu = 'menumanagement';
-            
-            // Dapatkan daftar jenis menu
-            $jenisMenuList = WebMenuModel::getJenisMenuList();
-            
-            // Dapatkan menu dikelompokkan berdasarkan jenis menu
+
+            // Dapatkan semua level dari database
+            $levels = LevelModel::where('isDeleted', 0)->get();
+
+            // Gunakan nama level sebagai daftar jenis menu
+            $jenisMenuList = $levels->pluck('level_nama', 'level_kode')->toArray();
+
+            // Dapatkan menu dikelompokkan berdasarkan level
             $menusByJenis = [];
-            foreach ($jenisMenuList as $kode => $nama) {
-                $menusByJenis[$kode] = [
-                    'nama' => $nama,
-                    'menus' => WebMenuModel::where('wm_jenis_menu', $kode)
+            foreach ($levels as $level) {
+                $levelId = $level->level_id;
+                $menusByJenis[$level->level_kode] = [
+                    'nama' => $level->level_nama,
+                    'menus' => WebMenuModel::where('fk_m_level', $levelId)
                         ->whereNull('wm_parent_id')
                         ->where('isDeleted', 0)
                         ->orderBy('wm_urutan_menu')
-                        ->with(['children' => function($query) {
-                            $query->where('isDeleted', 0)->orderBy('wm_urutan_menu');
-                        }])
+                        ->with(['children' => function ($query) use ($levelId) {
+                            $query->where('fk_m_level', $levelId)
+                                ->where('isDeleted', 0)
+                                ->orderBy('wm_urutan_menu');
+                        }, 'WebMenuGlobal', 'Level'])
                         ->get()
                 ];
             }
-            
+
             // Untuk dropdown di form
             $menus = WebMenuModel::getMenusWithChildren();
 
-            return view('adminweb.MenuManagement.index', compact('breadcrumb', 'page', 'menus', 'activeMenu', 'menusByJenis', 'jenisMenuList'));
+            // Dapatkan daftar URL untuk dropdown
+            $menuUrls = WebMenuUrlModel::ppidOnly()->where('isDeleted', 0)->get();
+
+            return view('adminweb.MenuManagement.index', compact(
+                'breadcrumb',
+                'page',
+                'menus',
+                'activeMenu',
+                'menusByJenis',
+                'jenisMenuList',
+                'levels',
+                'menuUrls'
+            ));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error loading menu management page: ' . $e->getMessage());
         }
@@ -108,5 +129,14 @@ class MenuManagementController extends Controller
             return response()->json($result);
         }
         return redirect()->back();
+    }
+
+    public function getParentMenus($levelId)
+    {
+        $parentMenus = WebMenuModel::getParentMenusByLevel($levelId);
+        return response()->json([
+            'success' => true,
+            'parentMenus' => $parentMenus
+        ]);
     }
 }

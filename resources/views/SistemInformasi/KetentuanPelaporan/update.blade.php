@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('management-level');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Edit Ketentuan Pelaporan</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -7,7 +11,7 @@
 
 <div class="modal-body">
     <form id="formUpdateKetentuanPelaporan"
-        action="{{ url('SistemInformasi/KetentuanPelaporan/updateData/' . $ketentuanPelaporan->ketentuan_pelaporan_id) }}"
+        action="{{ url($ketentuanPelaporanUrl . '/updateData/' . $ketentuanPelaporan->ketentuan_pelaporan_id) }}"
         method="POST">
         @csrf
 
