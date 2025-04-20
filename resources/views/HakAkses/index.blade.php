@@ -27,6 +27,14 @@
                 </div>
             @endif
 
+            @if(session('info'))
+                <div class="alert alert-info alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-info-circle"></i> Informasi!</h5>
+                    {{ session('info') }}
+                </div>
+            @endif
+
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title mb-3">Pengaturan Hak Akses Berdasarkan Level</h3>
@@ -95,7 +103,7 @@
                 </h5>
             </div>
 
-            <form action="{{ url('/updateData') }}" method="POST" id="form-hak-akses">
+            <form action="{{ url('/HakAkses/updateData') }}" method="POST" id="form-hak-akses">
                 @csrf
                 <div class="accordion" id="accordionHakAkses">
                     @foreach($levelUsers as $levelKode => $levelData)
@@ -237,13 +245,15 @@
 @push('js')
     <script>
         $(document).ready(function () {
+            // Hilangkan tombol "Tambah Hak Akses" karena fitur ini tidak diperlukan lagi sesuai revisi
+
             $(document).on('click', '.set-hak-level', function () {
                 let levelKode = $(this).data('level');
                 $('#levelKode').val(levelKode);
                 $('#levelTitle').text($(this).data('name'));
 
                 $.ajax({
-                    url: `{{ url('/getHakAksesData') }}/${levelKode}`,
+                    url: `{{ url('/HakAkses/getHakAksesData') }}/${levelKode}`,
                     type: 'GET',
                     dataType: 'json',
                     success: function (data) {
@@ -252,18 +262,18 @@
                         Object.keys(data).forEach(menu_id => {
                             let akses = data[menu_id];
 
-                        // Tambahkan baris untuk ha_menu di modal hak akses level
-                        html += `
-                        <tr>
-                            <td>${akses.menu_utama}</td>
-                            <td>${akses.sub_menu ?? 'Null'}</td>
-                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][menu]" ${akses.ha_menu ? 'checked' : ''}></td>
-                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][view]" ${akses.ha_view ? 'checked' : ''}></td>
-                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][create]" ${akses.ha_create ? 'checked' : ''}></td>
-                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][update]" ${akses.ha_update ? 'checked' : ''}></td>
-                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][delete]" ${akses.ha_delete ? 'checked' : ''}></td>
-                        </tr>
-                        `;
+                            // Tambahkan baris untuk ha_menu di modal hak akses level
+                            html += `
+                            <tr>
+                                <td>${akses.menu_utama}</td>
+                                <td>${akses.sub_menu ?? 'Null'}</td>
+                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][menu]" ${akses.ha_menu ? 'checked' : ''}></td>
+                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][view]" ${akses.ha_view ? 'checked' : ''}></td>
+                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][create]" ${akses.ha_create ? 'checked' : ''}></td>
+                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][update]" ${akses.ha_update ? 'checked' : ''}></td>
+                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][delete]" ${akses.ha_delete ? 'checked' : ''}></td>
+                            </tr>
+                            `;
                         });
 
                         $('#menuList').html(html);
@@ -273,25 +283,29 @@
                         alert("Terjadi kesalahan, silakan coba lagi.");
                     }
                 });
-
-
             });
 
             $('#btnSimpanHakAksesLevel').click(function () {
                 $.ajax({
-                    url: `{{ url('/updateData') }}`,
+                    url: `{{ url('/HakAkses/updateData') }}`,
                     type: 'POST',
                     data: $('#formHakAksesLevel').serialize(),
                     success: function (response) {
-                        alert(response.message);
-                        if (response.success) location.reload();
+                        if (response.success) {
+                            toastr.success(response.message);
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            toastr.error(response.message);
+                        }
                     },
                     error: function () {
-                        alert("Terjadi kesalahan, silakan coba lagi.");
+                        toastr.error("Terjadi kesalahan, silakan coba lagi.");
                     }
                 });
-
             });
+
             // Muat hak akses saat halaman dimuat
             loadAllHakAkses();
 
@@ -310,7 +324,7 @@
 
                     // Gunakan AJAX untuk mendapatkan data hak akses
                     $.ajax({
-                        url: `{{ url('/getHakAksesData') }}/${userId}/${menuId}`,
+                        url: `{{ url('/HakAkses/getHakAksesData') }}/${userId}/${menuId}`,
                         type: 'GET',
                         dataType: 'json',
                         success: function (data) {
@@ -331,6 +345,15 @@
 
             // Toggle collapse untuk semua menu saat pertama kali
             $('.collapse').first().addClass('show');
+
+            // Tambahkan toastr jika belum ada
+            if (typeof toastr === 'undefined') {
+                toastr = {
+                    success: function (message) { alert('Sukses: ' + message); },
+                    error: function (message) { alert('Error: ' + message); },
+                    info: function (message) { alert('Info: ' + message); }
+                };
+            }
         });
     </script>
 @endpush

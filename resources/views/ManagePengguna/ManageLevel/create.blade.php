@@ -1,34 +1,40 @@
 @php
   use App\Models\Website\WebMenuModel;
-  $kategoriFormUrl = WebMenuModel::getDynamicMenuUrl('kategori-form');
+  $managementLevelUrl = WebMenuModel::getDynamicMenuUrl('management-level');
 @endphp
 <div class="modal-header">
-    <h5 class="modal-title">Tambah Kategori Form Baru</h5>
+    <h5 class="modal-title">Tambah Level Baru</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
-  </div>
+</div>
   
-  <div class="modal-body">
-    <form id="formCreateKategoriForm" action="{{ url($kategoriFormUrl . '/createData') }}" method="POST">
+<div class="modal-body">
+    <form id="formCreateLevel" action="{{ url($managementLevelUrl . '/createData') }}" method="POST">
       @csrf
   
       <div class="form-group">
-        <label for="kf_nama">Nama Kategori Form <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="kf_nama" name="m_kategori_form[kf_nama]" maxlength="255">
-        <div class="invalid-feedback" id="kf_nama_error"></div>
+        <label for="level_kode">Kode Level <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="level_kode" name="m_level[level_kode]" maxlength="50">
+        <div class="invalid-feedback" id="level_kode_error"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="level_nama">Nama Level <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="level_nama" name="m_level[level_nama]" maxlength="255">
+        <div class="invalid-feedback" id="level_nama_error"></div>
       </div>
     </form>
-  </div>
+</div>
   
-  <div class="modal-footer">
+<div class="modal-footer">
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
     <button type="button" class="btn btn-success" id="btnSubmitForm">
       <i class="fas fa-save mr-1"></i> Simpan
     </button>
-  </div>
+</div>
   
-  <script>
+<script>
     $(document).ready(function () {
       // Hapus error ketika input berubah
       $(document).on('input change', 'input, select, textarea', function() {
@@ -43,7 +49,7 @@
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').html('');
         
-        const form = $('#formCreateKategoriForm');
+        const form = $('#formCreateLevel');
         const formData = new FormData(form[0]);
         const button = $(this);
         
@@ -70,9 +76,9 @@
               if (response.errors) {
                 // Tampilkan pesan error pada masing-masing field
                 $.each(response.errors, function(key, value) {
-                  // Untuk m_kategori_form fields
-                  if (key.startsWith('m_kategori_form.')) {
-                    const fieldName = key.replace('m_kategori_form.', '');
+                  // Untuk m_level fields
+                  if (key.startsWith('m_level.')) {
+                    const fieldName = key.replace('m_level.', '');
                     $(`#${fieldName}`).addClass('is-invalid');
                     $(`#${fieldName}_error`).html(value[0]);
                   } else {
@@ -110,4 +116,4 @@
         });
       });
     });
-  </script>
+</script>

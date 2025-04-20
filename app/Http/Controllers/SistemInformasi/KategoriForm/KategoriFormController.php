@@ -28,7 +28,7 @@ class KategoriFormController extends Controller
             'title' => 'Daftar Kategori Form'
         ];
 
-        $activeMenu = 'KategoriForm';
+        $activeMenu = 'kategoriform';
         
         // Gunakan pagination dan pencarian
         $kategoriForm = KategoriFormModel::selectData(10, $search);
