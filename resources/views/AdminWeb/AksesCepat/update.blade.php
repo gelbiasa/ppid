@@ -123,10 +123,10 @@
                     file.name + ' (' + fileSizeMB.toFixed(2) + ' MB)'
                 );
                 
-                if (fileSizeMB > 3) {
+                if (fileSizeMB > 2.5) {
                     Swal.fire({
                         title: 'Peringatan!',
-                        text: 'Ukuran file ' + fileSizeMB.toFixed(2) + ' MB melebihi batas 3MB',
+                        text: 'Ukuran file ' + fileSizeMB.toFixed(2) + ' MB melebihi batas 2.5MB',
                         icon: 'warning'
                     });
                     

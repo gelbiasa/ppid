@@ -27,12 +27,12 @@
        </div>
    
        <div class="form-group">
-         <label for="lhkpn_file">File LHKPN (PDF) <span class="text-danger">*</span></label>
+         <label for="dl_file_lhkpn">File LHKPN (PDF) <span class="text-danger">*</span></label>
          <div class="custom-file">
-           <input type="file" class="custom-file-input" id="lhkpn_file" name="lhkpn_file" accept=".pdf">
-           <label class="custom-file-label" for="lhkpn_file">Pilih file</label>
+           <input type="file" class="custom-file-input" id="dl_file_lhkpn" name="dl_file_lhkpn" accept=".pdf">
+           <label class="custom-file-label" for="dl_file_lhkpn">Pilih file</label>
          </div>
-         <div class="invalid-feedback" id="lhkpn_file_error"></div>
+         <div class="invalid-feedback" id="dl_file_lhkpn_error"></div>
          <small class="form-text text-muted">Ukuran maksimal file 2.5MB dengan format PDF.</small>
        </div>
      </form>
@@ -79,9 +79,6 @@
            data: formData,
            processData: false,
            contentType: false,
-           headers: {
-             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-           },
            success: function(response) {
              if (response.success) {
                $('#myModal').modal('hide');

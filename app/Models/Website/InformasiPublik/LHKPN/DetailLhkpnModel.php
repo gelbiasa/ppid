@@ -52,14 +52,18 @@ class DetailLhkpnModel extends Model
 
     public static function createData($request)
     {
-        $iconFile = self::uploadFile(
-            $request->file('f_icon_footer'),
-            'footer_icons'
+        $lhkpnFile = self::uploadFile(
+            $request->file('dl_file_lhkpn'),
+            'lhkpn'
         );
         try {
             DB::beginTransaction();
 
             $data = $request->t_detail_lhkpn;
+              // Jika file diupload
+              if ($lhkpnFile) {
+                $data['dl_file_lhkpn'] = $lhkpnFile;
+            }
             $detailLhkpn = self::create($data);
 
             // Catat log transaksi
@@ -68,24 +72,43 @@ class DetailLhkpnModel extends Model
                 $detailLhkpn->detail_lhkpn_id,
                 $detailLhkpn->dl_nama_karyawan
             );
+            $result = self::responFormatSukses($detailLhkpn, 'Detail LHKPN berhasil dibuat');
 
             DB::commit();
+            return $result;
 
-            return self::responFormatSukses($detailLhkpn, 'Detail LHKPN berhasil dibuat');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            self::removeFile($lhkpnFile);
+            return self::responValidatorError($e);
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal membuat detail LHKPN');
+            self::removeFile($lhkpnFile);
+            return self::responFormatError($e, 'Gagal membuat detail LHKPN ');
         }
     }
 
     public static function updateData($request, $id)
     {
+        $lhkpnFile = self::uploadFile(
+            $request->file('dl_file_lhkpn'),
+            'lhkpn'
+        );
         try {
             DB::beginTransaction();
-
+            
             $detailLhkpn = self::findOrFail($id);
             $data = $request->t_detail_lhkpn;
-            $detailLhkpn->update($data);
+             // Jika file diupload
+             if ($lhkpnFile) {
+                // Hapus file lama jika ada
+                if ($detailLhkpn->dl_file_lhkpn) {
+                    self::removeFile($detailLhkpn->dl_file_lhkpn);
+                }
+    
+                $data['dl_file_lhkpn'] = $lhkpnFile;
+            }
+            $detailLhkpn ->update($data);
 
             // Catat log transaksi
             TransactionModel::createData(
@@ -93,13 +116,19 @@ class DetailLhkpnModel extends Model
                 $detailLhkpn->detail_lhkpn_id,
                 $detailLhkpn->dl_nama_karyawan
             );
+            $result = self::responFormatSukses($detailLhkpn, 'Detail LHKPN berhasil diperbarui');
 
             DB::commit();
+            return $result;
 
-            return self::responFormatSukses($detailLhkpn, 'Detail LHKPN berhasil diperbarui');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            self::removeFile($lhkpnFile);
+            return self::responValidatorError($e);
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal memperbarui detail LHKPN');
+            self::removeFile($lhkpnFile);
+            return self::responFormatError($e, 'Gagal memperbarui detail LHKPN ');
         }
     }
 
@@ -109,6 +138,10 @@ class DetailLhkpnModel extends Model
             DB::beginTransaction();
 
             $detailLhkpn = self::findOrFail($id);
+              // Hapus file  jika ada
+              if ($detailLhkpn->dl_file_lhkpn) {
+                self::removeFile($detailLhkpn->dl_file_lhkpn);
+            }
 
             $detailLhkpn->delete();
 
@@ -142,10 +175,10 @@ class DetailLhkpnModel extends Model
         // Validasi file
         if ($id) {
             // Update - file tidak wajib
-            $rules['lhkpn_file'] = 'nullable|file|max:2560|mimes:pdf';
+            $rules['dl_file_lhkpn'] = 'nullable|file|max:2560|mimes:pdf';
         } else {
             // Create - file wajib
-            $rules['lhkpn_file'] = 'required|file|max:2560|mimes:pdf';
+            $rules['dl_file_lhkpn'] = 'required|file|max:2560|mimes:pdf';
         }
 
         $messages = [
@@ -153,10 +186,10 @@ class DetailLhkpnModel extends Model
             't_detail_lhkpn.fk_m_lhkpn.exists' => 'LHKPN tidak valid',
             't_detail_lhkpn.dl_nama_karyawan.required' => 'Nama karyawan wajib diisi',
             't_detail_lhkpn.dl_nama_karyawan.max' => 'Nama karyawan maksimal 100 karakter',
-            'lhkpn_file.required' => 'File LHKPN wajib diupload',
-            'lhkpn_file.file' => 'Upload harus berupa file',
-            'lhkpn_file.max' => 'Ukuran file maksimal 2.5MB',
-            'lhkpn_file.mimes' => 'Format file harus PDF',
+            'dl_file_lhkpn.required' => 'File LHKPN wajib diupload',
+            'dl_file_lhkpn.file' => 'Upload harus berupa file',
+            'dl_file_lhkpn.max' => 'Ukuran file maksimal 2.5MB',
+            'dl_file_lhkpn.mimes' => 'Format file harus PDF',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
