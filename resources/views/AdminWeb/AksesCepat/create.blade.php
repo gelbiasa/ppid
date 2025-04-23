@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailAksesCepatUrl = WebMenuModel::getDynamicMenuUrl('detail-akses-cepat');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Tambah Akses Cepat</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -5,7 +9,7 @@
     </button>
 </div>
 
-<form id="form-create-akses-cepat" action="{{ url('adminweb/akses-cepat/createData') }}" method="POST" enctype="multipart/form-data">
+<form id="form-create-akses-cepat" action="{{ url($detailAksesCepatUrl . '/createData') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="modal-body">
         <div class="form-group">

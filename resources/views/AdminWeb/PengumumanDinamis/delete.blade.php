@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriPengumumanUrl = WebMenuModel::getDynamicMenuUrl('kategori-pengumuman');
+@endphp
 <div class="modal-header">
   <h5 class="modal-title">Konfirmasi Hapus Pengumuman Dinamis</h5>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -15,24 +19,24 @@
       <table class="table table-borderless">
         <tr>
           <th width="200">Nama Submenu Pengumuman</th>
-          <td>{{ $pengumumanDinamis->pd_nama_submenu }}</td>
+          <td>{{ $kategoriPengumuman->pd_nama_submenu }}</td>
         </tr>
         <tr>
           <th>Tanggal Dibuat</th>
-          <td>{{ date('d-m-Y H:i:s', strtotime($pengumumanDinamis->created_at)) }}</td>
+          <td>{{ date('d-m-Y H:i:s', strtotime($kategoriPengumuman->created_at)) }}</td>
         </tr>
         <tr>
           <th>Dibuat Oleh</th>
-          <td>{{ $pengumumanDinamis->created_by }}</td>
+          <td>{{ $kategoriPengumuman->created_by }}</td>
         </tr>
-        @if($pengumumanDinamis->updated_by)
+        @if($kategoriPengumuman->updated_by)
         <tr>
           <th>Terakhir Diperbarui</th>
-          <td>{{ date('d-m-Y H:i:s', strtotime($pengumumanDinamis->updated_at)) }}</td>
+          <td>{{ date('d-m-Y H:i:s', strtotime($kategoriPengumuman->updated_at)) }}</td>
         </tr>
         <tr>
           <th>Diperbarui Oleh</th>
-          <td>{{ $pengumumanDinamis->updated_by }}</td>
+          <td>{{ $kategoriPengumuman->updated_by }}</td>
         </tr>
         @endif
       </table>
@@ -47,55 +51,52 @@
 
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-  <button type="button" class="btn btn-danger" id="confirmDeleteButton">
+  <button type="button" class="btn btn-danger" id="confirmDeleteButton"
+    onclick="confirmDelete('{{ url( $kategoriPengumumanUrl . '/deleteData/' . $kategoriPengumuman->pengumuman_dinamis_id) }}')">
     <i class="fas fa-trash mr-1"></i> Hapus
   </button>
 </div>
 
 <script>
-  $(document).ready(function() {
-    $('#confirmDeleteButton').on('click', function() {
-      const button = $(this);
-      
-      button.html('<i class="fas fa-spinner fa-spin"></i> Menghapus...').prop('disabled', true);
-      
-      $.ajax({
-        url: '{{ url("AdminWeb/PengumumanDinamis/deleteData/".$pengumumanDinamis->pengumuman_dinamis_id) }}',
-        type: 'DELETE',
-        headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-          $('#myModal').modal('hide');
-          
-          if (response.success) {
-            // Perbaikan: Gunakan fungsi reloadTable() untuk memuat ulang data
-            reloadTable();
-            
-            Swal.fire({
-              icon: 'success',
-              title: 'Berhasil',
-              text: response.message
-            });
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Gagal',
-              text: response.message
-            });
-          }
-        },
-        error: function(xhr) {
-          console.error('Error:', xhr);
+  function confirmDelete(url) {
+    const button = $('#confirmDeleteButton');
+
+    button.html('<i class="fas fa-spinner fa-spin"></i> Menghapus...').prop('disabled', true);
+
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function (response) {
+        $('#myModal').modal('hide');
+
+        if (response.success) {
+          reloadTable();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: response.message
+          });
+        } else {
           Swal.fire({
             icon: 'error',
             title: 'Gagal',
-            text: 'Terjadi kesalahan saat menghapus data. Silakan coba lagi.'
+            text: response.message
           });
-          
-          button.html('<i class="fas fa-trash mr-1"></i> Hapus').prop('disabled', false);
         }
-      });
+      },
+      error: function (xhr) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Terjadi kesalahan saat menghapus data. Silakan coba lagi.'
+        });
+
+        button.html('<i class="fas fa-trash mr-1"></i> Hapus').prop('disabled', false);
+      }
     });
-  });
+  }
 </script>

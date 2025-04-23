@@ -100,41 +100,100 @@ class WebMenuModel extends Model
 
     public static function getDataMenu()
     {
-        // Sesuaikan dengan struktur baru
+        // Ambil data menu berdasarkan level 'RPN'
+        $levelRPN = DB::table('m_level')->where('level_kode', 'RPN')->first();
+        
+        if (!$levelRPN) {
+            return [];
+        }
+        
         $arr_data = self::query()
-            ->select([
-                'web_menu_id',
-                'wm_parent_id',
-                'wm_urutan_menu',
-                'wm_menu_nama',
-                'fk_web_menu_global'
-            ])
-            ->where('fk_m_level', function ($query) {
-                $query->select('level_id')
-                    ->from('m_level')
-                    ->where('level_kode', 'RPN')
-                    ->limit(1);
-            })
+            ->select('web_menu.*')
+            ->where('fk_m_level', $levelRPN->level_id)
             ->where('wm_status_menu', 'aktif')
             ->where('isDeleted', 0)
             ->orderBy('wm_urutan_menu')
             ->get()
             ->map(function ($menu) {
-                // Dapatkan nama menu dari web_menu_global jika wm_menu_nama kosong
-                $menuName = $menu->wm_menu_nama ?: ($menu->WebMenuGlobal ? $menu->WebMenuGlobal->wmg_nama_default : null);
-                // Dapatkan URL dari relasi
-                $menuUrl = $menu->WebMenuUrl ? $menu->WebMenuUrl->wmu_nama : null;
-
+                // Ambil data menu global terkait
+                $menuGlobal = DB::table('web_menu_global')
+                    ->where('web_menu_global_id', $menu->fk_web_menu_global)
+                    ->where('isDeleted', 0)
+                    ->first();
+                
+                // Tentukan nama menu - prioritaskan wm_menu_nama, jika null gunakan nama dari menu global
+                $menuName = $menu->wm_menu_nama;
+                if ($menuName === null && $menuGlobal) {
+                    $menuName = $menuGlobal->wmg_nama_default;
+                }
+                
+                // Ambil data URL dari web_menu_url melalui web_menu_global
+                $menuUrl = null;
+                if ($menuGlobal && $menuGlobal->fk_web_menu_url) {
+                    $menuUrlRecord = DB::table('web_menu_url')
+                        ->where('web_menu_url_id', $menuGlobal->fk_web_menu_url)
+                        ->where('isDeleted', 0)
+                        ->first();
+                    
+                    if ($menuUrlRecord) {
+                        $menuUrl = $menuUrlRecord->wmu_nama;
+                    }
+                }
+                
+                // Ambil submenu (anak menu)
+                $submenuItems = self::query()
+                    ->where('wm_parent_id', $menu->web_menu_id)
+                    ->where('wm_status_menu', 'aktif')
+                    ->where('isDeleted', 0)
+                    ->orderBy('wm_urutan_menu')
+                    ->get();
+                
+                $submenu = [];
+                foreach ($submenuItems as $submenuItem) {
+                    // Ambil data menu global untuk submenu
+                    $submenuGlobal = DB::table('web_menu_global')
+                        ->where('web_menu_global_id', $submenuItem->fk_web_menu_global)
+                        ->where('isDeleted', 0)
+                        ->first();
+                    
+                    // Tentukan nama submenu
+                    $submenuName = $submenuItem->wm_menu_nama;
+                    if ($submenuName === null && $submenuGlobal) {
+                        $submenuName = $submenuGlobal->wmg_nama_default;
+                    }
+                    
+                    // Ambil URL submenu
+                    $submenuUrl = null;
+                    if ($submenuGlobal && $submenuGlobal->fk_web_menu_url) {
+                        $submenuUrlRecord = DB::table('web_menu_url')
+                            ->where('web_menu_url_id', $submenuGlobal->fk_web_menu_url)
+                            ->where('isDeleted', 0)
+                            ->first();
+                        
+                        if ($submenuUrlRecord) {
+                            $submenuUrl = $submenuUrlRecord->wmu_nama;
+                        }
+                    }
+                    
+                    $submenu[] = [
+                        'wm_menu_nama' => $submenuName,
+                        'wm_menu_url' => $submenuUrl
+                    ];
+                }
+                
                 return [
                     'id' => $menu->web_menu_id,
                     'wm_parent_id' => $menu->wm_parent_id,
                     'wm_urutan_menu' => $menu->wm_urutan_menu,
-                    'wm_menu_nama' => $menuName,
-                    'wm_menu_url' => $menuUrl
+                    'wm_menu_nama' => $menuName, // Sekarang diisi dengan nilai yang benar
+                    'wm_menu_url' => $menuUrl,   // Sekarang diisi dengan URL yang benar
+                    'children' => $submenu
                 ];
             })->toArray();
+        
         return $arr_data;
     }
+
 
     public static function selectBeritaPengumuman()
     {

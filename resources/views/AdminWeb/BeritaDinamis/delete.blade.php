@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriBeritaUrl = WebMenuModel::getDynamicMenuUrl('kategori-berita');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Konfirmasi Hapus Berita Dinamis</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -15,28 +19,28 @@
              <table class="table table-borderless">
                  <tr>
                      <th width="200">ID Berita Dinamis</th>
-                     <td>{{ $beritaDinamis->berita_dinamis_id }}</td>
+                     <td>{{ $kategoriBerita->berita_dinamis_id }}</td>
                  </tr>
                  <tr>
                      <th>Nama Submenu</th>
-                     <td>{{ $beritaDinamis->bd_nama_submenu }}</td>
+                     <td>{{ $kategoriBerita->bd_nama_submenu }}</td>
                  </tr>
                  <tr>
                      <th>Tanggal Dibuat</th>
-                     <td>{{ date('d-m-Y H:i:s', strtotime($beritaDinamis->created_at)) }}</td>
+                     <td>{{ date('d-m-Y H:i:s', strtotime($kategoriBerita->created_at)) }}</td>
                  </tr>
                  <tr>
                      <th>Dibuat Oleh</th>
-                     <td>{{ $beritaDinamis->created_by }}</td>
+                     <td>{{ $kategoriBerita->created_by }}</td>
                  </tr>
-                 @if($beritaDinamis->updated_by)
+                 @if($kategoriBerita->updated_by)
                  <tr>
                      <th>Terakhir Diperbarui</th>
-                     <td>{{ date('d-m-Y H:i:s', strtotime($beritaDinamis->updated_at)) }}</td>
+                     <td>{{ date('d-m-Y H:i:s', strtotime($kategoriBerita->updated_at)) }}</td>
                  </tr>
                  <tr>
                      <th>Diperbarui Oleh</th>
-                     <td>{{ $beritaDinamis->updated_by }}</td>
+                     <td>{{ $kategoriBerita->updated_by }}</td>
                  </tr>
                  @endif
              </table>
@@ -46,8 +50,8 @@
  <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
      <button type="button" class="btn btn-danger" id="confirmDeleteButton" 
-         onclick="confirmDelete('{{ url('adminweb/berita-dinamis/deleteData/'.$beritaDinamis->berita_dinamis_id) }}')">
-         <i class="fas fa-trash mr-1"></i> Hapus
+        onclick="confirmDelete('{{ url( $kategoriBeritaUrl . '/deleteData/' . $kategoriBerita->berita_dinamis_id) }}')">
+        <i class="fas fa-trash mr-1"></i> Hapus
      </button>
  </div>
  

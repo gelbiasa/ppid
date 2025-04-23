@@ -38,26 +38,7 @@ class PengumumanModel extends Model
         parent::__construct($attributes);
         $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
-
-    // Fungsi untuk mengambil semua data dengan pagination
-    public static function selectData($perPage = null, $search = '')
-    {
-        $query = self::query()
-            ->with(['PengumumanDinamis', 'UploadPengumuman'])
-            ->where('isDeleted', 0);
-
-        // Tambahkan fungsionalitas pencarian
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('peg_judul', 'like', "%{$search}%")
-                    ->orWhereHas('PengumumanDinamis', function ($subq) use ($search) {
-                        $subq->where('pd_nama_submenu', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        return self::paginateResults($query->orderBy('created_at', 'desc'), $perPage);
-    }
+    
     public static function getDataPengumumanLandingPage()
     {
         $arr_data = self::query()
@@ -78,10 +59,10 @@ class PengumumanModel extends Model
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get()
-            ->map(function ($pengumuman) {
+            ->map(function ($detailPengumuman) {
                 // Proses thumbnail
                 $thumbnail = null;
-                $uploadPengumuman = $pengumuman->UploadPengumuman;
+                $uploadPengumuman = $detailPengumuman->UploadPengumuman;
                 
                 if ($uploadPengumuman && $uploadPengumuman->up_thumbnail) {
                     $thumbnail = asset('storage/' . $uploadPengumuman->up_thumbnail);
@@ -94,13 +75,13 @@ class PengumumanModel extends Model
                 }
                 
                 // Format tanggal sesuai desain
-                $formattedDate = \Carbon\Carbon::parse($pengumuman->created_at)->translatedFormat('d F Y');
+                $formattedDate = \Carbon\Carbon::parse($detailPengumuman->created_at)->translatedFormat('d F Y');
     
                 return [
-                    'id' => $pengumuman->pengumuman_id,
-                    'judul' => $pengumuman->peg_judul,
-                    'slug' => $pengumuman->peg_slug,
-                    'submenu' => $pengumuman->PengumumanDinamis->pd_nama_submenu,
+                    'id' => $detailPengumuman->pengumuman_id,
+                    'judul' => $detailPengumuman->peg_judul,
+                    'slug' => $detailPengumuman->peg_slug,
+                    'submenu' => $detailPengumuman->PengumumanDinamis->pd_nama_submenu,
                     'thumbnail' => $thumbnail,
                     'tipe' => $uploadPengumuman ? $uploadPengumuman->up_type : null,
                     'value' => $value,
@@ -112,6 +93,27 @@ class PengumumanModel extends Model
     
         return $arr_data;
     }
+
+    // Fungsi untuk mengambil semua data dengan pagination
+    public static function selectData($perPage = null, $search = '')
+    {
+        $query = self::query()
+            ->with(['PengumumanDinamis', 'UploadPengumuman'])
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('peg_judul', 'like', "%{$search}%")
+                    ->orWhereHas('PengumumanDinamis', function ($subq) use ($search) {
+                        $subq->where('pd_nama_submenu', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        return self::paginateResults($query->orderBy('created_at', 'desc'), $perPage);
+    }
+    
     public static function createData($request)
     {
         try {
@@ -134,11 +136,11 @@ class PengumumanModel extends Model
             }
 
             // Simpan data pengumuman
-            $pengumuman = self::create($dataPengumuman);
+            $detailPengumuman = self::create($dataPengumuman);
 
             // Proses upload pengumuman
             $dataUpload = [
-                'fk_t_pengumuman' => $pengumuman->pengumuman_id,
+                'fk_t_pengumuman' => $detailPengumuman->pengumuman_id,
                 'up_type' => $request->up_type,
             ];
 
@@ -188,13 +190,13 @@ class PengumumanModel extends Model
             // Catat log transaksi
             TransactionModel::createData(
                 'CREATED',
-                $pengumuman->pengumuman_id,
-                $pengumuman->peg_judul ?? $kategoriPengumuman->pd_nama_submenu
+                $detailPengumuman->pengumuman_id,
+                $detailPengumuman->peg_judul ?? $kategoriPengumuman->pd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($pengumuman, 'Pengumuman berhasil dibuat');
+            return self::responFormatSukses($detailPengumuman, 'Pengumuman berhasil dibuat');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal membuat pengumuman');
@@ -208,7 +210,7 @@ class PengumumanModel extends Model
 
             // Data pengumuman
             $dataPengumuman = $request->t_pengumuman;
-            $pengumuman = self::findOrFail($id);
+            $detailPengumuman = self::findOrFail($id);
 
             // Generate slug
             $kategoriPengumuman = PengumumanDinamisModel::findOrFail($dataPengumuman['fk_m_pengumuman_dinamis']);
@@ -224,15 +226,15 @@ class PengumumanModel extends Model
             }
 
             // Update data pengumuman
-            $pengumuman->update($dataPengumuman);
+            $detailPengumuman->update($dataPengumuman);
 
             // Ambil data upload pengumuman
-            $uploadPengumuman = $pengumuman->UploadPengumuman;
+            $uploadPengumuman = $detailPengumuman->UploadPengumuman;
 
             if (!$uploadPengumuman) {
                 // Jika tidak ada data upload, buat baru
                 $dataUpload = [
-                    'fk_t_pengumuman' => $pengumuman->pengumuman_id,
+                    'fk_t_pengumuman' => $detailPengumuman->pengumuman_id,
                     'up_type' => $request->up_type,
                 ];
             } else {
@@ -340,13 +342,13 @@ class PengumumanModel extends Model
             // Catat log transaksi
             TransactionModel::createData(
                 'UPDATED',
-                $pengumuman->pengumuman_id,
-                $pengumuman->peg_judul ?? $kategoriPengumuman->pd_nama_submenu
+                $detailPengumuman->pengumuman_id,
+                $detailPengumuman->peg_judul ?? $kategoriPengumuman->pd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($pengumuman, 'Pengumuman berhasil diperbarui');
+            return self::responFormatSukses($detailPengumuman, 'Pengumuman berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal memperbarui pengumuman');
@@ -358,11 +360,11 @@ class PengumumanModel extends Model
         try {
             DB::beginTransaction();
 
-            $pengumuman = self::with(['UploadPengumuman'])->findOrFail($id);
+            $detailPengumuman = self::with(['UploadPengumuman'])->findOrFail($id);
 
             // Hapus file terkait jika ada
-            if ($pengumuman->UploadPengumuman) {
-                $uploadPengumuman = $pengumuman->UploadPengumuman;
+            if ($detailPengumuman->UploadPengumuman) {
+                $uploadPengumuman = $detailPengumuman->UploadPengumuman;
 
                 // Hapus thumbnail jika ada
                 if ($uploadPengumuman->up_thumbnail) {
@@ -379,18 +381,18 @@ class PengumumanModel extends Model
             }
 
             // Hapus data pengumuman
-            $pengumuman->delete();
+            $detailPengumuman->delete();
 
             // Catat log transaksi
             TransactionModel::createData(
                 'DELETED',
-                $pengumuman->pengumuman_id,
-                $pengumuman->peg_judul ?? $pengumuman->PengumumanDinamis->pd_nama_submenu
+                $detailPengumuman->pengumuman_id,
+                $detailPengumuman->peg_judul ?? $detailPengumuman->PengumumanDinamis->pd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($pengumuman, 'Pengumuman berhasil dihapus');
+            return self::responFormatSukses($detailPengumuman, 'Pengumuman berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal menghapus pengumuman');

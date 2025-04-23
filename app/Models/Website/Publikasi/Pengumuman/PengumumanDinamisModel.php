@@ -71,7 +71,6 @@ class PengumumanDinamisModel extends Model
                     'id' => $pengumuman->pengumuman_id,
                     'judul' => $pengumuman->peg_judul,
                     'slug' => $pengumuman->peg_slug,
-                    'kategoriSubmenu' => $pengumuman->pd_nama_submenu,
                     'thumbnail' => $thumbnail,
                     'tipe' => $pengumuman->up_type,
                     'value' => $value,
@@ -108,17 +107,17 @@ class PengumumanDinamisModel extends Model
             DB::beginTransaction();
 
             $data = $request->m_pengumuman_dinamis;
-            $pengumumanDinamis = self::create($data);
+            $kategoriPengumuman = self::create($data);
 
             TransactionModel::createData(
                 'CREATED',
-                $pengumumanDinamis->pengumuman_dinamis_id,
-                $pengumumanDinamis->pd_nama_submenu
+                $kategoriPengumuman->pengumuman_dinamis_id,
+                $kategoriPengumuman->pd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($pengumumanDinamis, 'Pengumuman dinamis berhasil dibuat');
+            return self::responFormatSukses($kategoriPengumuman, 'Pengumuman dinamis berhasil dibuat');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal membuat pengumuman dinamis');
@@ -130,20 +129,20 @@ class PengumumanDinamisModel extends Model
         try {
             DB::beginTransaction();
 
-            $pengumumanDinamis = self::findOrFail($id);
+            $kategoriPengumuman = self::findOrFail($id);
             
             $data = $request->m_pengumuman_dinamis;
-            $pengumumanDinamis->update($data);
+            $kategoriPengumuman->update($data);
 
             TransactionModel::createData(
                 'UPDATED',
-                $pengumumanDinamis->pengumuman_dinamis_id, 
-                $pengumumanDinamis->pd_nama_submenu 
+                $kategoriPengumuman->pengumuman_dinamis_id, 
+                $kategoriPengumuman->pd_nama_submenu 
             );
 
             DB::commit();
 
-            return self::responFormatSukses($pengumumanDinamis, 'Pengumuman dinamis berhasil diperbarui');
+            return self::responFormatSukses($kategoriPengumuman, 'Pengumuman dinamis berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal memperbarui pengumuman dinamis');
@@ -155,19 +154,19 @@ class PengumumanDinamisModel extends Model
         try {
             DB::beginTransaction();
             
-            $pengumumanDinamis = self::findOrFail($id);
+            $kategoriPengumuman = self::findOrFail($id);
             
-            $pengumumanDinamis->delete();
+            $kategoriPengumuman->delete();
 
             TransactionModel::createData(
                 'DELETED',
-                $pengumumanDinamis->pengumuman_dinamis_id,
-                $pengumumanDinamis->pd_nama_submenu
+                $kategoriPengumuman->pengumuman_dinamis_id,
+                $kategoriPengumuman->pd_nama_submenu
             );
                 
             DB::commit();
 
-            return self::responFormatSukses($pengumumanDinamis, 'Pengumuman dinamis berhasil dihapus');
+            return self::responFormatSukses($kategoriPengumuman, 'Pengumuman dinamis berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal menghapus pengumuman dinamis');

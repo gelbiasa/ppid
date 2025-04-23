@@ -1,3 +1,8 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $detailFooterUrl = WebMenuModel::getDynamicMenuUrl('detail-footer');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">
         Showing {{ $footer->firstItem() }} to {{ $footer->lastItem() }} of {{ $footer->total() }} results
@@ -19,15 +24,28 @@
             <td>{{ $item->f_judul_footer }}</td>
             <td>{{ $item->kategoriFooter->kt_footer_nama ?? 'Tidak Ada' }}</td>
             <td>
-                <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/footer/editData/{$item->footer_id}") }}')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("adminweb/footer/detailData/{$item->footer_id}") }}')">
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailFooterUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($detailFooterUrl . '/editData/' . $item->footer_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($detailFooterUrl . '/detailData/' . $item->footer_id) }}')">
                     <i class="fas fa-eye"></i> Detail
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/footer/deleteData/{$item->footer_id}") }}')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailFooterUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($detailFooterUrl . '/deleteData/' . $item->footer_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
             </td>
         </tr>
         @empty

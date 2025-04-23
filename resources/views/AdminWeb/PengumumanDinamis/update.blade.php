@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriPengumumanUrl = WebMenuModel::getDynamicMenuUrl('kategori-pengumuman');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Ubah Pengumuman Dinamis</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,12 +10,12 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdatePengumumanDinamis" action="{{ url('AdminWeb/PengumumanDinamis/updateData/' . $pengumumanDinamis->pengumuman_dinamis_id) }}" method="POST">
+    <form id="formUpdatePengumumanDinamis" action="{{ url($kategoriPengumumanUrl . '/updateData/' . $kategoriPengumuman->pengumuman_dinamis_id) }}" method="POST">
         @csrf
 
         <div class="form-group">
             <label for="pd_nama_submenu">Nama Submenu Pengumuman <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="pd_nama_submenu" name="m_pengumuman_dinamis[pd_nama_submenu]" maxlength="255" value="{{ $pengumumanDinamis->pd_nama_submenu }}" placeholder="Masukkan nama submenu pengumuman">
+            <input type="text" class="form-control" id="pd_nama_submenu" name="m_pengumuman_dinamis[pd_nama_submenu]" maxlength="255" value="{{ $kategoriPengumuman->pd_nama_submenu }}" placeholder="Masukkan nama submenu pengumuman">
             <div class="invalid-feedback" id="pd_nama_submenu_error"></div>
             <small class="form-text text-muted">Contoh: Pengumuman Penerimaan, Pengumuman Kelulusan, dll.</small>
         </div>

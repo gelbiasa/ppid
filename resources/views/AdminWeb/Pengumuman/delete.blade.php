@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailPengumumanUrl = WebMenuModel::getDynamicMenuUrl('detail-pengumuman');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Konfirmasi Hapus Pengumuman</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -15,20 +19,20 @@
             <table class="table table-borderless">
                 <tr>
                     <th width="200">Kategori Pengumuman</th>
-                    <td>{{ $pengumuman->PengumumanDinamis->pd_nama_submenu ?? '-' }}</td>
+                    <td>{{ $detailPengumuman->PengumumanDinamis->pd_nama_submenu ?? '-' }}</td>
                 </tr>
                 <tr>
                     <th>Judul Pengumuman</th>
-                    <td>{{ $pengumuman->peg_judul ?? '-' }}</td>
+                    <td>{{ $detailPengumuman->peg_judul ?? '-' }}</td>
                 </tr>
                 <tr>
                     <th>Tipe Konten</th>
                     <td>
-                        @if($pengumuman->UploadPengumuman->up_type == 'link')
+                        @if($detailPengumuman->UploadPengumuman->up_type == 'link')
                             <span class="badge badge-info">Link</span>
-                        @elseif($pengumuman->UploadPengumuman->up_type == 'file')
+                        @elseif($detailPengumuman->UploadPengumuman->up_type == 'file')
                             <span class="badge badge-primary">File</span>
-                        @elseif($pengumuman->UploadPengumuman->up_type == 'konten')
+                        @elseif($detailPengumuman->UploadPengumuman->up_type == 'konten')
                             <span class="badge badge-success">Konten</span>
                         @else
                             -
@@ -38,7 +42,7 @@
                 <tr>
                     <th>Status</th>
                     <td>
-                        @if($pengumuman->status_pengumuman == 'aktif')
+                        @if($detailPengumuman->status_pengumuman == 'aktif')
                             <span class="badge badge-success">Aktif</span>
                         @else
                             <span class="badge badge-danger">Tidak Aktif</span>
@@ -47,11 +51,11 @@
                 </tr>
                 <tr>
                     <th>Tanggal Dibuat</th>
-                    <td>{{ date('d-m-Y H:i:s', strtotime($pengumuman->created_at)) }}</td>
+                    <td>{{ date('d-m-Y H:i:s', strtotime($detailPengumuman->created_at)) }}</td>
                 </tr>
                 <tr>
                     <th>Dibuat Oleh</th>
-                    <td>{{ $pengumuman->created_by }}</td>
+                    <td>{{ $detailPengumuman->created_by }}</td>
                 </tr>
             </table>
         </div>
@@ -67,7 +71,7 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
     <button type="button" class="btn btn-danger" id="confirmDeleteButton" 
-        onclick="confirmDelete('{{ url('AdminWeb/Pengumuman/deleteData/'.$pengumuman->pengumuman_id) }}')">
+    onclick="confirmDelete('{{ url( $detailPengumumanUrl . '/deleteData/' . $detailPengumuman->pengumuman_id) }}')">
         <i class="fas fa-trash mr-1"></i> Hapus
     </button>
 </div>

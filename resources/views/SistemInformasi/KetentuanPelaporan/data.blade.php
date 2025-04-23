@@ -1,7 +1,7 @@
 @php
     use App\Models\Website\WebMenuModel;
     use App\Models\HakAkses\HakAksesModel;
-    $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('management-level');
+    $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('ketentuan-pelaporan');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">

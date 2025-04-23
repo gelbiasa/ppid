@@ -1,3 +1,8 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $timelineUrl = WebMenuModel::getDynamicMenuUrl('timeline');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">
         Showing {{ $timeline->firstItem() }} to {{ $timeline->lastItem() }} of {{ $timeline->total() }} results
@@ -20,15 +25,28 @@
             <td>{{ $item->TimelineKategoriForm->kf_nama ?? '-' }}</td>
             <td>{{ $item->judul_timeline }}</td>
             <td>
-                <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("SistemInformasi/Timeline/editData/{$item->timeline_id}") }}')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("SistemInformasi/Timeline/detailData/{$item->timeline_id}") }}')">
-                    <i class="fas fa-eye"></i> Detail
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("SistemInformasi/Timeline/deleteData/{$item->timeline_id}") }}')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $timelineUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($timelineUrl . '/editData/' . $item->timeline_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                    <button class="btn btn-sm btn-info"
+                        onclick="modalAction('{{ url($timelineUrl . '/detailData/' . $item->timeline_id) }}')">
+                        <i class="fas fa-eye"></i> Detail
+                    </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $timelineUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($timelineUrl . '/deleteData/' . $item->timeline_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
             </td>
         </tr>
         @empty

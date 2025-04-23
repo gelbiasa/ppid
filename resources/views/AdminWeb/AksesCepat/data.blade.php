@@ -1,3 +1,8 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $detailAksesCepatUrl = WebMenuModel::getDynamicMenuUrl('detail-akses-cepat');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">
         Showing {{ $aksesCepat->firstItem() }} to {{ $aksesCepat->lastItem() }} of {{ $aksesCepat->total() }} results
@@ -37,15 +42,28 @@
                 @endif
             </td>
             <td>
-                    <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/akses-cepat/editData/{$item->akses_cepat_id}") }}')">
-                         <i class="fas fa-edit"></i> Edit
-                     </button>
-                     <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("adminweb/akses-cepat/detailData/{$item->akses_cepat_id}") }}')">
-                         <i class="fas fa-eye"></i> Detail
-                     </button>
-                     <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/akses-cepat/deleteData/{$item->akses_cepat_id}") }}')">
-                         <i class="fas fa-trash"></i> Hapus
-                     </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailAksesCepatUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($detailAksesCepatUrl . '/editData/' . $item->akses_cepat_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($detailAksesCepatUrl . '/detailData/' . $item->akses_cepat_id) }}')">
+                    <i class="fas fa-eye"></i> Detail
+                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailAksesCepatUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($detailAksesCepatUrl . '/deleteData/' . $item->akses_cepat_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
             </td>
         </tr>
         @empty

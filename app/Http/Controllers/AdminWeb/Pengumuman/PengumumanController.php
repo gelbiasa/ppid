@@ -34,13 +34,13 @@ class PengumumanController extends Controller
         $activeMenu = 'Pengumuman';
 
         // Gunakan pagination dan pencarian
-        $pengumuman = PengumumanModel::selectData(10, $search);
+        $detailPengumuman = PengumumanModel::selectData(10, $search);
 
         return view("AdminWeb/Pengumuman.index", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
-            'pengumuman' => $pengumuman,
+            'detailPengumuman' => $detailPengumuman,
             'search' => $search
         ]);
     }
@@ -49,13 +49,13 @@ class PengumumanController extends Controller
     public function getData(Request $request)
     {
         $search = $request->query('search', '');
-        $pengumuman = PengumumanModel::selectData(10, $search);
-        
+        $detailPengumuman = PengumumanModel::selectData(10, $search);
+
         if ($request->ajax()) {
-            return view('AdminWeb/Pengumuman.data', compact('pengumuman', 'search'))->render();
+            return view('AdminWeb/Pengumuman.data', compact('detailPengumuman', 'search'))->render();
         }
-        
-        return redirect()->route('pengumuman.index');
+
+        return redirect()->route('detail-pengumuman.index');
     }
 
     public function addData()
@@ -74,7 +74,7 @@ class PengumumanController extends Controller
             $result = PengumumanModel::createData($request);
 
             return $this->jsonSuccess(
-                $result['data'] ?? null, 
+                $result['data'] ?? null,
                 $result['message'] ?? 'Pengumuman berhasil dibuat'
             );
         } catch (ValidationException $e) {
@@ -86,13 +86,17 @@ class PengumumanController extends Controller
 
     public function editData($id)
     {
-        $kategoriPengumuman = PengumumanDinamisModel::where('isDeleted', 0)->get();
-        $pengumuman = PengumumanModel::detailData($id);
+        try {
+            $kategoriPengumuman = PengumumanDinamisModel::where('isDeleted', 0)->get();
+            $detailPengumuman = PengumumanModel::detailData($id);
 
-        return view("AdminWeb/Pengumuman.update", [
-            'kategoriPengumuman' => $kategoriPengumuman,
-            'pengumuman' => $pengumuman
-        ]);
+            return view("AdminWeb/Pengumuman.update", [
+                'kategoriPengumuman' => $kategoriPengumuman,
+                'detailPengumuman' => $detailPengumuman
+            ]);
+        } catch (\Exception $e) {
+            return $this->jsonError($e, 'Gagal mengambil data Pengumuman');
+        }
     }
 
     public function updateData(Request $request, $id)
@@ -102,7 +106,7 @@ class PengumumanController extends Controller
             $result = PengumumanModel::updateData($request, $id);
 
             return $this->jsonSuccess(
-                $result['data'] ?? null, 
+                $result['data'] ?? null,
                 $result['message'] ?? 'Pengumuman berhasil diperbarui'
             );
         } catch (ValidationException $e) {
@@ -114,29 +118,37 @@ class PengumumanController extends Controller
 
     public function detailData($id)
     {
-        $pengumuman = PengumumanModel::detailData($id);
-        
-        return view("AdminWeb/Pengumuman.detail", [
-            'pengumuman' => $pengumuman,
-            'title' => 'Detail Pengumuman'
-        ]);
+        try {
+            $detailPengumuman = PengumumanModel::detailData($id);
+
+            return view("AdminWeb/Pengumuman.detail", [
+                'detailPengumuman' => $detailPengumuman,
+                'title' => 'Detail Pengumuman'
+            ]);
+        } catch (\Exception $e) {
+            return $this->jsonError($e, 'Gagal mengambil detail pengumuman');
+        }
     }
 
     public function deleteData(Request $request, $id)
     {
         if ($request->isMethod('get')) {
-            $pengumuman = PengumumanModel::detailData($id);
-            
-            return view("AdminWeb/Pengumuman.delete", [
-                'pengumuman' => $pengumuman
-            ]);
+            try {
+                $detailPengumuman = PengumumanModel::detailData($id);
+
+                return view("AdminWeb/Pengumuman.delete", [
+                    'detailPengumuman' => $detailPengumuman
+                ]);
+            } catch (\Exception $e) {
+                return $this->jsonError($e, 'Terjadi kesalahan saat mengambil data');
+            }
         }
-        
+
         try {
             $result = PengumumanModel::deleteData($id);
-            
+
             return $this->jsonSuccess(
-                $result['data'] ?? null, 
+                $result['data'] ?? null,
                 $result['message'] ?? 'Pengumuman berhasil dihapus'
             );
         } catch (\Exception $e) {
@@ -152,20 +164,20 @@ class PengumumanController extends Controller
             ]);
 
             $file = $request->file('image');
-            
+
             if (!$file) {
                 return $this->jsonError(
-                    new \Exception('Tidak ada file yang diunggah'), 
-                    '', 
+                    new \Exception('Tidak ada file yang diunggah'),
+                    '',
                     400
                 );
             }
 
             $fileName = 'pengumuman/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
             $file->storeAs('public', $fileName);
-            
+
             return $this->jsonSuccess(
-                ['url' => asset('storage/' . $fileName)], 
+                ['url' => asset('storage/' . $fileName)],
                 'Gambar berhasil diunggah'
             );
         } catch (ValidationException $e) {
@@ -181,29 +193,29 @@ class PengumumanController extends Controller
             $request->validate([
                 'url' => 'required|string'
             ]);
-            
+
             $imageUrl = $request->input('url');
-            
+
             // Extract filename dari full URL
             $pathInfo = parse_url($imageUrl);
             $path = $pathInfo['path'] ?? '';
             $storagePath = str_replace('/storage/', '', $path);
-            
+
             if (!empty($storagePath)) {
                 // Logika untuk menghapus file
                 $filePath = storage_path('app/public/' . $storagePath);
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
-                
+
                 return $this->jsonSuccess(
-                    null, 
+                    null,
                     'Gambar berhasil dihapus'
                 );
             } else {
                 return $this->jsonError(
-                    new \Exception('Path gambar tidak valid'), 
-                    '', 
+                    new \Exception('Path gambar tidak valid'),
+                    '',
                     400
                 );
             }

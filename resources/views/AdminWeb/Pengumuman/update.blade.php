@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailPengumumanUrl = WebMenuModel::getDynamicMenuUrl('detail-pengumuman');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Edit Pengumuman</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,16 +10,16 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdatePengumuman" action="{{ url('AdminWeb/Pengumuman/updateData/' . $pengumuman->pengumuman_id) }}" method="POST" enctype="multipart/form-data">
+    <form id="formUpdatePengumuman" action="{{ url($detailPengumumanUrl . '/updateData/' . $detailPengumuman->pengumuman_id) }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="hidden" name="pengumuman_id" value="{{ $pengumuman->pengumuman_id }}">
+        <input type="hidden" name="pengumuman_id" value="{{ $detailPengumuman->pengumuman_id }}">
 
         <div class="form-group">
             <label for="kategori_pengumuman">Kategori Pengumuman <span class="text-danger">*</span></label>
             <select class="form-control" id="kategori_pengumuman" name="t_pengumuman[fk_m_pengumuman_dinamis]">
                 <option value="">-- Pilih Kategori --</option>
                 @foreach($kategoriPengumuman as $kategori)
-                    <option value="{{ $kategori->pengumuman_dinamis_id }}" {{ $pengumuman->fk_m_pengumuman_dinamis == $kategori->pengumuman_dinamis_id ? 'selected' : '' }}>
+                    <option value="{{ $kategori->pengumuman_dinamis_id }}" {{ $detailPengumuman->fk_m_pengumuman_dinamis == $kategori->pengumuman_dinamis_id ? 'selected' : '' }}>
                         {{ $kategori->pd_nama_submenu }}
                     </option>
                 @endforeach
@@ -27,32 +31,32 @@
             <label for="tipe_pengumuman">Tipe Pengumuman <span class="text-danger">*</span></label>
             <select class="form-control" id="tipe_pengumuman" name="up_type">
                 <option value="">-- Pilih Tipe --</option>
-                <option value="link" {{ $pengumuman->UploadPengumuman->up_type == 'link' ? 'selected' : '' }}>Link</option>
-                <option value="file" {{ $pengumuman->UploadPengumuman->up_type == 'file' ? 'selected' : '' }}>File</option>
-                <option value="konten" {{ $pengumuman->UploadPengumuman->up_type == 'konten' ? 'selected' : '' }}>Konten</option>
+                <option value="link" {{ $detailPengumuman->UploadPengumuman->up_type == 'link' ? 'selected' : '' }}>Link</option>
+                <option value="file" {{ $detailPengumuman->UploadPengumuman->up_type == 'file' ? 'selected' : '' }}>File</option>
+                <option value="konten" {{ $detailPengumuman->UploadPengumuman->up_type == 'konten' ? 'selected' : '' }}>Konten</option>
             </select>
             <div class="invalid-feedback" id="tipe_pengumuman_error"></div>
         </div>
 
         <!-- Judul Pengumuman (disembunyikan untuk tipe link) -->
-        <div class="form-group" id="judul_container" style="{{ $pengumuman->UploadPengumuman->up_type == 'link' ? 'display: none;' : '' }}">
+        <div class="form-group" id="judul_container" style="{{ $detailPengumuman->UploadPengumuman->up_type == 'link' ? 'display: none;' : '' }}">
             <label for="judul_pengumuman">Judul Pengumuman <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="judul_pengumuman" name="t_pengumuman[peg_judul]" maxlength="255" value="{{ $pengumuman->peg_judul }}">
+            <input type="text" class="form-control" id="judul_pengumuman" name="t_pengumuman[peg_judul]" maxlength="255" value="{{ $detailPengumuman->peg_judul }}">
             <div class="invalid-feedback" id="judul_pengumuman_error"></div>
         </div>
 
         <!-- Thumbnail (disembunyikan untuk tipe link) -->
-        <div class="form-group" id="thumbnail_container" style="{{ $pengumuman->UploadPengumuman->up_type == 'link' ? 'display: none;' : '' }}">
-            <label for="thumbnail">Thumbnail {{ $pengumuman->UploadPengumuman->up_thumbnail ? '' : '<span class="text-danger">*</span>' }}</label>
+        <div class="form-group" id="thumbnail_container" style="{{ $detailPengumuman->UploadPengumuman->up_type == 'link' ? 'display: none;' : '' }}">
+            <label for="thumbnail">Thumbnail {{ $detailPengumuman->UploadPengumuman->up_thumbnail ? '' : '<span class="text-danger">*</span>' }}</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="thumbnail" name="up_thumbnail" accept="image/*">
-                <label class="custom-file-label" for="thumbnail">{{ $pengumuman->UploadPengumuman->up_thumbnail ? 'Ganti thumbnail' : 'Pilih file' }}</label>
+                <label class="custom-file-label" for="thumbnail">{{ $detailPengumuman->UploadPengumuman->up_thumbnail ? 'Ganti thumbnail' : 'Pilih file' }}</label>
             </div>
             <small class="form-text text-muted">Format: JPG, PNG, GIF. Ukuran maksimal: 10MB</small>
             <div class="invalid-feedback" id="thumbnail_error"></div>
-            <div class="mt-2" id="thumbnail_preview" style="{{ $pengumuman->UploadPengumuman->up_thumbnail ? '' : 'display: none;' }}">
-                @if($pengumuman->UploadPengumuman->up_thumbnail)
-                    <img src="{{ asset('storage/' . $pengumuman->UploadPengumuman->up_thumbnail) }}" id="thumbnail_image" class="img-thumbnail" style="max-height: 200px;">
+            <div class="mt-2" id="thumbnail_preview" style="{{ $detailPengumuman->UploadPengumuman->up_thumbnail ? '' : 'display: none;' }}">
+                @if($detailPengumuman->UploadPengumuman->up_thumbnail)
+                    <img src="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_thumbnail) }}" id="thumbnail_image" class="img-thumbnail" style="max-height: 200px;">
                 @else
                     <img src="" id="thumbnail_image" class="img-thumbnail" style="max-height: 200px;">
                 @endif
@@ -60,35 +64,35 @@
         </div>
 
         <!-- URL (hanya untuk tipe link) -->
-        <div class="form-group" id="url_container" style="{{ $pengumuman->UploadPengumuman->up_type == 'link' ? '' : 'display: none;' }}">
+        <div class="form-group" id="url_container" style="{{ $detailPengumuman->UploadPengumuman->up_type == 'link' ? '' : 'display: none;' }}">
             <label for="url">URL <span class="text-danger">*</span></label>
-            <input type="url" class="form-control" id="url" name="up_value" placeholder="https://..." value="{{ $pengumuman->UploadPengumuman->up_type == 'link' ? $pengumuman->UploadPengumuman->up_value : '' }}">
+            <input type="url" class="form-control" id="url" name="up_value" placeholder="https://..." value="{{ $detailPengumuman->UploadPengumuman->up_type == 'link' ? $detailPengumuman->UploadPengumuman->up_value : '' }}">
             <div class="invalid-feedback" id="url_error"></div>
         </div>
 
         <!-- File (hanya untuk tipe file) -->
-        <div class="form-group" id="file_container" style="{{ $pengumuman->UploadPengumuman->up_type == 'file' ? '' : 'display: none;' }}">
-            <label for="file">File {{ $pengumuman->UploadPengumuman->up_value ? '' : '<span class="text-danger">*</span>' }}</label>
+        <div class="form-group" id="file_container" style="{{ $detailPengumuman->UploadPengumuman->up_type == 'file' ? '' : 'display: none;' }}">
+            <label for="file">File {{ $detailPengumuman->UploadPengumuman->up_value ? '' : '<span class="text-danger">*</span>' }}</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="file" name="up_value">
-                <label class="custom-file-label" for="file">{{ $pengumuman->UploadPengumuman->up_value ? 'Ganti file' : 'Pilih file' }}</label>
+                <label class="custom-file-label" for="file">{{ $detailPengumuman->UploadPengumuman->up_value ? 'Ganti file' : 'Pilih file' }}</label>
             </div>
             <small class="form-text text-muted">Ukuran maksimal: 50MB</small>
             <div class="invalid-feedback" id="file_error"></div>
-            @if($pengumuman->UploadPengumuman->up_type == 'file' && $pengumuman->UploadPengumuman->up_value)
+            @if($detailPengumuman->UploadPengumuman->up_type == 'file' && $detailPengumuman->UploadPengumuman->up_value)
                 <div class="mt-2">
-                    <a href="{{ asset('storage/' . $pengumuman->UploadPengumuman->up_value) }}" target="_blank" class="btn btn-sm btn-info">
+                    <a href="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_value) }}" target="_blank" class="btn btn-sm btn-info">
                         <i class="fas fa-file mr-1"></i> Lihat File
                     </a>
-                    <span class="ml-2 text-muted">{{ basename($pengumuman->UploadPengumuman->up_value) }}</span>
+                    <span class="ml-2 text-muted">{{ basename($detailPengumuman->UploadPengumuman->up_value) }}</span>
                 </div>
             @endif
         </div>
 
         <!-- Konten (hanya untuk tipe konten) -->
-        <div class="form-group" id="konten_container" style="{{ $pengumuman->UploadPengumuman->up_type == 'konten' ? '' : 'display: none;' }}">
+        <div class="form-group" id="konten_container" style="{{ $detailPengumuman->UploadPengumuman->up_type == 'konten' ? '' : 'display: none;' }}">
             <label for="konten">Konten <span class="text-danger">*</span></label>
-            <textarea id="konten" name="up_konten" class="form-control">{{ $pengumuman->UploadPengumuman->up_type == 'konten' ? $pengumuman->UploadPengumuman->up_konten : '' }}</textarea>
+            <textarea id="konten" name="up_konten" class="form-control">{{ $detailPengumuman->UploadPengumuman->up_type == 'konten' ? $detailPengumuman->UploadPengumuman->up_konten : '' }}</textarea>
             <div class="invalid-feedback" id="konten_error"></div>
         </div>
 
@@ -96,8 +100,8 @@
             <label for="status_pengumuman">Status Pengumuman <span class="text-danger">*</span></label>
             <select class="form-control" id="status_pengumuman" name="t_pengumuman[status_pengumuman]">
                 <option value="">-- Pilih Status --</option>
-                <option value="aktif" {{ $pengumuman->status_pengumuman == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                <option value="tidak aktif" {{ $pengumuman->status_pengumuman == 'tidak aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+                <option value="aktif" {{ $detailPengumuman->status_pengumuman == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                <option value="tidak aktif" {{ $detailPengumuman->status_pengumuman == 'tidak aktif' ? 'selected' : '' }}>Tidak Aktif</option>
             </select>
             <div class="invalid-feedback" id="status_pengumuman_error"></div>
         </div>
@@ -121,7 +125,7 @@
             $('.invalid-feedback').html('');
             $('.note-editor').removeClass('border border-danger');
 
-            const form = $('#formCreatePengumuman');
+            const form = $('#formUpdatePengumuman');
             const formData = new FormData(form[0]);
             const button = $(this);
 

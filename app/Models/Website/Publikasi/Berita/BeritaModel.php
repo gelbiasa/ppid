@@ -33,18 +33,18 @@ class BeritaModel extends Model
         return $this->belongsTo(BeritaDinamisModel::class, 'fk_m_berita_dinamis', 'berita_dinamis_id');
     }
 
-    // Relationship with UploadBerita
-    public function uploadBerita()
+    public function __construct(array $attributes = [])
     {
-        return $this->hasMany(UploadBeritaModel::class, 'fk_t_berita', 'berita_id');
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
     }
 
     // Select data with search and pagination
     public static function selectData($perPage = 10, $search = '')
     {
         $query = self::query()
-            ->where('isDeleted', 0)
-            ->with('BeritaDinamis');
+            ->with('BeritaDinamis')
+            ->where('isDeleted', 0);
 
         // Search functionality
         if (!empty($search)) {
@@ -57,231 +57,166 @@ class BeritaModel extends Model
         // Gunakan paginateResults dari trait BaseModelFunction
         return self::paginateResults($query, $perPage);
     }
-    // Modify createData method to handle image cleanup
+
+    // Menyamakan dengan struktur PengumumanModel
     public static function createData($request)
     {
         try {
             DB::beginTransaction();
 
-            // Validate input
-            self::validasiData($request);
+            // Data berita
+            $dataBerita = $request->t_berita;
 
-            // Prepare data
-            $data = $request->t_berita;
-
-            // Generate unique slug - limit to 100 chars per database constraint
-            $data['berita_slug'] = self::generateUniqueSlug($data['berita_judul']);
+            // Generate slug
+            $kategoriBerita = BeritaDinamisModel::findOrFail($dataBerita['fk_m_berita_dinamis']);
+            $kategoriSlug = Str::slug($kategoriBerita->bd_nama_submenu);
+            $judulSlug = Str::slug($dataBerita['berita_judul']);
+            $dataBerita['berita_slug'] = $kategoriSlug . '/' . $judulSlug;
 
             // Handle thumbnail upload
-            if (request()->hasFile('berita_thumbnail')) {
-                $thumbnailPath = request()->file('berita_thumbnail')->store('public/thumbnails');
-                // Save path with max 100 chars
-                $storagePath = str_replace('public/', '', $thumbnailPath);
-                $data['berita_thumbnail'] = substr($storagePath, 0, 100);
+            if ($request->hasFile('berita_thumbnail')) {
+                $thumbnailPath = $request->file('berita_thumbnail')->store('public/berita/thumbnails');
+                $dataBerita['berita_thumbnail'] = str_replace('public/', '', $thumbnailPath);
             }
 
-            // Create berita record
-            $berita = self::create($data);
+            // Simpan data berita
+            $detailBerita = self::create($dataBerita);
 
-            // Handle image uploads from Summernote and cleanup
-            $uploadedImages = self::handleSummernoteImages($berita, $data['berita_deskripsi']);
-
-            // Log transaction
+            // Catat log transaksi
             TransactionModel::createData(
                 'CREATED',
-                $berita->berita_id,
-                $berita->berita_judul
+                $detailBerita->berita_id,
+                $detailBerita->berita_judul
             );
 
             DB::commit();
-            return $berita;
+
+            return self::responFormatSukses($detailBerita, 'Berita berhasil dibuat');
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // Cleanup uploaded images if transaction fails
-            if (isset($uploadedImages)) {
-                foreach ($uploadedImages as $image) {
-                    Storage::delete('public/' . $image);
-                }
-            }
-
-            throw $e;
+            return self::responFormatError($e, 'Gagal membuat berita');
         }
     }
 
-    // Modify updateData method to handle image cleanup
+    // Menyamakan dengan struktur PengumumanModel
     public static function updateData($request, $id)
     {
         try {
             DB::beginTransaction();
 
-            // Validate input
-            self::validasiData($request, $id);
+            // Data berita
+            $dataBerita = $request->t_berita;
+            $detailBerita = self::findOrFail($id);
 
-            // Find existing record
-            $berita = self::findOrFail($id);
-
-            // Prepare data
-            $data = $request->t_berita;
-
-            // Store old thumbnail and uploaded images for potential cleanup
-            $oldThumbnail = $berita->berita_thumbnail;
-            $oldUploadedImages = self::getExistingUploadedImages($berita);
-
-            // Generate unique slug if judul changed - respect 100 char limit
-            if ($berita->berita_judul !== $data['berita_judul']) {
-                $data['berita_slug'] = self::generateUniqueSlug($data['berita_judul']);
-            }
+            // Generate slug
+            $kategoriBerita = BeritaDinamisModel::findOrFail($dataBerita['fk_m_berita_dinamis']);
+            $kategoriSlug = Str::slug($kategoriBerita->bd_nama_submenu);
+            $judulSlug = Str::slug($dataBerita['berita_judul']);
+            $dataBerita['berita_slug'] = $kategoriSlug . '/' . $judulSlug;
 
             // Handle thumbnail upload
-            if (request()->hasFile('berita_thumbnail')) {
-                // Delete old thumbnail if exists
-                if ($oldThumbnail) {
-                    Storage::delete('public/' . $oldThumbnail);
+            if ($request->hasFile('berita_thumbnail')) {
+                // Hapus thumbnail lama jika ada
+                if ($detailBerita->berita_thumbnail) {
+                    Storage::delete('public/' . $detailBerita->berita_thumbnail);
                 }
 
-                $thumbnailPath = request()->file('berita_thumbnail')->store('public/thumbnails');
-                // Save path with max 100 chars
-                $storagePath = str_replace('public/', '', $thumbnailPath);
-                $data['berita_thumbnail'] = substr($storagePath, 0, 100);
+                $thumbnailPath = $request->file('berita_thumbnail')->store('public/berita/thumbnails');
+                $dataBerita['berita_thumbnail'] = str_replace('public/', '', $thumbnailPath);
             }
 
-            // Update berita record
-            $berita->update($data);
+            // Update data berita
+            $detailBerita->update($dataBerita);
 
-            // Handle image uploads from Summernote and cleanup old images
-            $newUploadedImages = self::handleSummernoteImages($berita, $data['berita_deskripsi']);
-            self::cleanupUnusedImages($oldUploadedImages, $newUploadedImages);
-
-            // Log transaction
+            // Catat log transaksi
             TransactionModel::createData(
                 'UPDATED',
-                $berita->berita_id,
-                $berita->berita_judul
+                $detailBerita->berita_id,
+                $detailBerita->berita_judul
             );
 
             DB::commit();
-            return $berita;
+
+            return self::responFormatSukses($detailBerita, 'Berita berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw $e;
+            return self::responFormatError($e, 'Gagal memperbarui berita');
         }
     }
 
-    // Modify deleteData method to handle image cleanup
+    // Menyamakan dengan struktur PengumumanModel
     public static function deleteData($id)
     {
         try {
             DB::beginTransaction();
 
-            // Find existing record
-            $berita = self::findOrFail($id);
+            $detailBerita = self::findOrFail($id);
 
-            // Store images to be deleted
-            $thumbnailToDelete = $berita->berita_thumbnail;
-            $uploadedImagesToDelete = self::getExistingUploadedImages($berita);
-
-            // Soft delete
-            $berita->isDeleted = 1;
-            $berita->deleted_at = now();
-            $berita->save();
-
-            // Soft delete terkait uploads
-            UploadBeritaModel::where('fk_t_berita', $id)
-                ->update([
-                    'isDeleted' => 1,
-                    'deleted_at' => now()
-                ]);
-
-            // Delete physical files
-            if ($thumbnailToDelete) {
-                Storage::delete('public/' . $thumbnailToDelete);
+            // Hapus thumbnail jika ada
+            if ($detailBerita->berita_thumbnail) {
+                Storage::delete('public/' . $detailBerita->berita_thumbnail);
             }
 
-            foreach ($uploadedImagesToDelete as $image) {
-                Storage::delete('public/' . $image);
-            }
-            // Soft delete dengan menggunakan fitur SoftDeletes dari Trait
-            $berita->delete();
-            // Log transaction
+            // Hapus data berita (soft delete)
+            $detailBerita->delete();
+
+            // Catat log transaksi
             TransactionModel::createData(
                 'DELETED',
-                $berita->berita_id,
-                $berita->berita_judul
+                $detailBerita->berita_id,
+                $detailBerita->berita_judul
             );
 
             DB::commit();
-            return self::responFormatSukses($berita, 'Footer berhasil dihapus');
+
+            return self::responFormatSukses($detailBerita, 'Berita berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal menghapus footer');
+            return self::responFormatError($e, 'Gagal menghapus berita');
         }
     }
 
-    private static function generateUniqueSlug($title)
+    public static function detailData($id)
     {
-        // Create initial slug and limit to 90 chars to allow for possible suffixes
-        $slug = substr(Str::slug($title), 0, 90);
-        $originalSlug = $slug;
-        $count = 1;
-
-        while (self::where('berita_slug', $slug)->exists()) {
-            $suffix = '-' . $count;
-            $slug = substr($originalSlug, 0, 90 - strlen($suffix)) . $suffix;
-            $count++;
-        }
-
-        return $slug;
+        return self::with('BeritaDinamis')->findOrFail($id);
     }
-    // Validation method
+
+    // Menyamakan struktur validasiData dengan PengumumanModel
     public static function validasiData($request, $id = null)
     {
-        $rules = [
-            't_berita.fk_m_berita_dinamis' => 'required|exists:m_berita_dinamis,berita_dinamis_id',
-            't_berita.berita_judul' => [
-                'required',
-                'max:150', // varchar(255) in database
-                function ($attribute, $value, $fail) use ($id) {
-                    $query = self::where('berita_judul', $value)
-                        ->where('isDeleted', 0);
+        $rules = [];
+        $messages = [];
 
-                    if ($id) {
-                        $query->where('berita_id', '!=', $id);
-                    }
+        // Validasi kategori berita
+        $rules['t_berita.fk_m_berita_dinamis'] = 'required|exists:m_berita_dinamis,berita_dinamis_id';
+        $messages['t_berita.fk_m_berita_dinamis.required'] = 'Kategori berita wajib dipilih';
+        $messages['t_berita.fk_m_berita_dinamis.exists'] = 'Kategori berita tidak valid';
 
-                    if ($query->exists()) {
-                        $fail('Judul berita sudah digunakan');
-                    }
-                }
-            ],
-            't_berita.status_berita' => 'required|in:aktif,nonaktif',
-            'berita_thumbnail' => 'nullable|image|max:2560',  // 2.5 MB
-            't_berita.berita_thumbnail_deskripsi' => 'nullable|max:255', // varchar(255) in database
-            't_berita.berita_deskripsi' => 'required'
-        ];
+        // Validasi judul berita
+        $rules['t_berita.berita_judul'] = 'required|max:140';
+        $messages['t_berita.berita_judul.required'] = 'Judul berita wajib diisi';
+        $messages['t_berita.berita_judul.max'] = 'Judul berita maksimal 140 karakter';
 
-        // Check if slug will exceed maximum length (100 chars)
-        if (isset($request->t_berita['berita_judul'])) {
-            $potentialSlug = Str::slug($request->t_berita['berita_judul']);
-            if (strlen($potentialSlug) > 150) {
-                $rules['t_berita.berita_judul'][] = function ($attribute, $value, $fail) {
-                    $fail('Judul terlalu panjang, akan menghasilkan slug yang melebihi batas 100 karakter');
-                };
-            }
+        // Validasi status berita
+        $rules['t_berita.status_berita'] = 'required|in:aktif,nonaktif';
+        $messages['t_berita.status_berita.required'] = 'Status berita wajib dipilih';
+        $messages['t_berita.status_berita.in'] = 'Status berita tidak valid';
+
+        // Validasi thumbnail
+        if ($request->hasFile('berita_thumbnail')) {
+            $rules['berita_thumbnail'] = 'image|mimes:jpeg,png,jpg,gif|max:2560'; // 2.5 MB
+            $messages['berita_thumbnail.image'] = 'Thumbnail harus berupa gambar';
+            $messages['berita_thumbnail.mimes'] = 'Thumbnail harus berformat jpeg, png, jpg, atau gif';
+            $messages['berita_thumbnail.max'] = 'Ukuran thumbnail maksimal 2.5 MB';
         }
 
-        $messages = [
-            't_berita.fk_m_berita_dinamis.required' => 'Kategori berita wajib dipilih',
-            't_berita.fk_m_berita_dinamis.exists' => 'Kategori berita tidak valid',
-            't_berita.berita_judul.required' => 'Judul berita wajib diisi',
-            't_berita.berita_judul.max' => 'Judul berita maksimal 150 karakter',
-            't_berita.status_berita.required' => 'Status berita wajib dipilih',
-            't_berita.status_berita.in' => 'Status berita hanya boleh aktif atau nonaktif',
-            'berita_thumbnail.image' => 'Thumbnail harus berupa gambar',
-            'berita_thumbnail.max' => 'Ukuran thumbnail maksimal 2.5 MB',
-            't_berita.berita_thumbnail_deskripsi.max' => 'Deskripsi thumbnail maksimal 255 karakter',
-            't_berita.berita_deskripsi.required' => 'Konten berita wajib diisi'
-        ];
+        // Validasi deskripsi thumbnail
+        $rules['t_berita.berita_thumbnail_deskripsi'] = 'nullable|max:255';
+        $messages['t_berita.berita_thumbnail_deskripsi.max'] = 'Deskripsi thumbnail maksimal 255 karakter';
+
+        // Validasi konten berita
+        $rules['t_berita.berita_deskripsi'] = 'required';
+        $messages['t_berita.berita_deskripsi.required'] = 'Konten berita wajib diisi';
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
@@ -290,67 +225,5 @@ class BeritaModel extends Model
         }
 
         return true;
-    }
-
-    // Handle image uploads from Summernote and return list of uploaded images
-    private static function handleSummernoteImages($berita, $content)
-    {
-        $uploadedImages = [];
-        $dom = new \DOMDocument();
-        @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        $images = $dom->getElementsByTagName('img');
-
-        foreach ($images as $img) {
-            $src = $img->getAttribute('src');
-
-            // Check if image is base64
-            if (strpos($src, 'data:image') === 0) {
-                // Decode and save base64 image
-                list($type, $data) = explode(';', $src);
-                list(, $data) = explode(',', $data);
-
-                $imageData = base64_decode($data);
-                $fileName = 'berita/' . uniqid() . '.png';
-
-                // Save file
-                Storage::put('public/' . $fileName, $imageData);
-
-                // Update src in content
-                $img->setAttribute('src', asset('storage/' . $fileName));
-
-                // Save to upload berita
-                UploadBeritaModel::create([
-                    'fk_t_berita' => $berita->berita_id,
-                    'ub_type' => 'file',
-                    'ub_value' => $fileName
-                ]);
-
-                $uploadedImages[] = $fileName;
-            }
-        }
-
-        return $uploadedImages;
-    }
-
-    // Get existing uploaded images for a berita
-    private static function getExistingUploadedImages($berita)
-    {
-        return $berita->uploadBerita()
-            ->where('isDeleted', 0)
-            ->pluck('ub_value')
-            ->toArray();
-    }
-
-    // Cleanup unused images
-    private static function cleanupUnusedImages($oldImages, $newImages)
-    {
-        $imagesToDelete = array_diff($oldImages, $newImages);
-
-        foreach ($imagesToDelete as $image) {
-            Storage::delete('public/' . $image);
-
-            // Remove from UploadBeritaModel
-            UploadBeritaModel::where('ub_value', $image)->delete();
-        }
     }
 }

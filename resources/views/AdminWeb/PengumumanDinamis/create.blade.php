@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriPengumumanUrl = WebMenuModel::getDynamicMenuUrl('kategori-pengumuman');
+@endphp
 <div class="modal-header">
   <h5 class="modal-title">Tambah Pengumuman Dinamis Baru</h5>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-  <form id="formCreatePengumumanDinamis" action="{{ url('AdminWeb/PengumumanDinamis/createData') }}" method="POST">
+  <form id="formCreateKategoriPengumuman" action="{{ url($kategoriPengumumanUrl . '/createData') }}" method="POST">
     @csrf
 
     <div class="form-group">
@@ -40,7 +44,7 @@
       $('.is-invalid').removeClass('is-invalid');
       $('.invalid-feedback').html('');
       
-      const form = $('#formCreatePengumumanDinamis');
+      const form = $('#formCreateKategoriPengumuman');
       const formData = new FormData(form[0]);
       const button = $(this);
       
@@ -53,14 +57,9 @@
         data: formData,
         processData: false,
         contentType: false,
-        headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
         success: function(response) {
           if (response.success) {
             $('#myModal').modal('hide');
-            
-            // Perbaikan: Gunakan fungsi loadPengumumanDinamisData() untuk memuat ulang data
             reloadTable();
             
             Swal.fire({
@@ -99,7 +98,6 @@
           }
         },
         error: function(xhr) {
-          console.error('Error:', xhr);
           Swal.fire({
             icon: 'error',
             title: 'Gagal',
