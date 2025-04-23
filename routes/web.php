@@ -1,43 +1,44 @@
 <?php
 
+use App\Models\Website\WebMenuModel;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SummernoteController;
 use App\Http\Controllers\DashboardMPUController;
 use App\Http\Controllers\DashboardSARController;
 use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\HakAkses\HakAksesController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
+use App\Http\Controllers\ManagePengguna\LevelController;
 use App\Http\Controllers\Notifikasi\NotifAdminController;
 use App\Http\Controllers\AdminWeb\Berita\BeritaController;
 use App\Http\Controllers\AdminWeb\Footer\FooterController;
 use App\Http\Controllers\SistemInformasi\EForm\WBSController;
 use App\Http\Controllers\AdminWeb\Berita\BeritaDinamisController;
 use App\Http\Controllers\AdminWeb\Footer\KategoriFooterController;
-use App\Http\Controllers\AdminWeb\InformasiPublik\LHKPN\DetailLhkpnController;
-use App\Http\Controllers\AdminWeb\InformasiPublik\LHKPN\LhkpnController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\AksesCepatController;
 use App\Http\Controllers\SistemInformasi\Timeline\TimelineController;
 use App\Http\Controllers\AdminWeb\MediaDinamis\MediaDinamisController;
+use App\Http\Controllers\AdminWeb\InformasiPublik\LHKPN\LhkpnController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\KategoriAksesController;
 use App\Http\Controllers\AdminWeb\Pengumuman\PengumumanDinamisController;
+use App\Http\Controllers\AdminWeb\KategoriAkses\PintasanLainnyaController;
 use App\Http\Controllers\AdminWeb\MenuManagement\MenuManagementController;
 use App\Http\Controllers\AdminWeb\MediaDinamis\DetailMediaDinamisController;
-use App\Http\Controllers\ManagePengguna\LevelController;
 use App\Http\Controllers\SistemInformasi\EForm\PengaduanMasyarakatController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanInformasiController;
 use App\Http\Controllers\SistemInformasi\EForm\PermohonanPerawatanController;
 use App\Http\Controllers\SistemInformasi\EForm\PernyataanKeberatanController;
 use App\Http\Controllers\SistemInformasi\KategoriForm\KategoriFormController;
-use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
-use App\Http\Controllers\SummernoteController;
-use App\Models\Website\WebMenuModel;
+use App\Http\Controllers\AdminWeb\InformasiPublik\LHKPN\DetailLhkpnController;
 use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\RegulasiController;
+use App\Http\Controllers\AdminWeb\KategoriAkses\DetailPintasanLainnyaController;
 use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\RegulasiDinamisController;
 use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\KategoriRegulasiController;
-use App\Http\Controllers\AdminWeb\KategoriAkses\PintasanLainnyaController;
+use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -222,6 +223,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/detailData/{id}', [PintasanLainnyaController::class, 'detailData']);
         Route::get('/deleteData/{id}', [PintasanLainnyaController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [PintasanLainnyaController::class, 'deleteData']);
+    });
+        Route::group(['prefix' => 'adminweb/DetailPintasanLainnya', 'middleware' => ['authorize:ADM']], function () {
+        Route::get('/', [DetailPintasanLainnyaController::class, 'index']);
+        Route::get('/getData', [DetailPintasanLainnyaController::class, 'getData']);
+        Route::get('/addData', [DetailPintasanLainnyaController::class, 'addData']);
+        Route::post('/createData', [DetailPintasanLainnyaController::class, 'createData']);
+        Route::get('/editData/{id}', [DetailPintasanLainnyaController::class, 'editData']);
+        Route::post('/updateData/{id}', [DetailPintasanLainnyaController::class, 'updateData']);
+        Route::get('/detailData/{id}', [DetailPintasanLainnyaController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [DetailPintasanLainnyaController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [DetailPintasanLainnyaController::class, 'deleteData']);
     });
 
 
