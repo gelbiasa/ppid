@@ -33,8 +33,8 @@
              <th>Icon Statis</th>
              <td>
                @if($aksesCepat->ac_static_icon)
-                 <img src="{{ asset('storage/' . $aksesCepat::STATIC_ICON_PATH . '/' . $aksesCepat->ac_static_icon) }}" 
-                      alt="Icon Statis" class="img-thumbnail" style="height: 80px;">
+               <img src="{{ asset('storage/akses_cepat_static_icons/' . basename($aksesCepat->ac_static_icon)) }}"
+                      alt="Icon Statis" class="img-thumbnail" style="height: 50px;">
                @else
                  -
                @endif
@@ -44,8 +44,8 @@
              <th>Icon Animasi</th>
              <td>
                @if($aksesCepat->ac_animation_icon)
-                 <img src="{{ asset('storage/' . $aksesCepat::ANIMATION_ICON_PATH . '/' . $aksesCepat->ac_animation_icon) }}" 
-                      alt="Icon Animasi" class="img-thumbnail" style="height: 80px;">
+               <img src="{{ asset('storage/akses_cepat_animation_icons/' . basename($aksesCepat->ac_animation_icon)) }}" 
+                      alt="Icon Animasi" class="img-thumbnail" style="height: 50px;">
                @else
                  -
                @endif

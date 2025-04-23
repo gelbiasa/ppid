@@ -56,8 +56,11 @@ class AksesCepatModel extends Model
 
     public static function createData($request)
 {
-    $iconStatic = self::uploadFile($request->file('ac_static_icon'), 'akses_cepat_static_icons');
-    $iconAnim = self::uploadFile($request->file('ac_animation_icon'), 'akses_cepat_animation_icons');
+    $iconStatic = self::uploadFile(
+        $request->file('t_akses_cepat.ac_static_icon'), 
+        'akses_cepat_static_icons'
+    );
+    $iconAnim = self::uploadFile($request->file('t_akses_cepat.ac_animation_icon'), 'akses_cepat_animation_icons');
 
     try {
         DB::beginTransaction();
@@ -71,15 +74,15 @@ class AksesCepatModel extends Model
             $data['ac_animation_icon'] = $iconAnim;
         }
 
-        $akses = self::create($data);
+       $aksesCepat = self::create($data);
 
         TransactionModel::createData(
             'CREATED',
-            $akses->akses_cepat_id,
-            $akses->ac_judul
+           $aksesCepat->akses_cepat_id,
+           $aksesCepat->ac_judul
         );
 
-        $result = self::responFormatSukses($akses, 'Data Akses Cepat berhasil dibuat');
+        $result = self::responFormatSukses($aksesCepat, 'Data Akses Cepat berhasil dibuat');
         DB::commit(); 
         return $result;
 
@@ -99,30 +102,33 @@ class AksesCepatModel extends Model
 
 public static function updateData($request, $id)
 {
-    $iconStatic = self::uploadFile($request->file('ac_static_icon'), 'akses_cepat_static_icons');
-    $iconAnim = self::uploadFile($request->file('ac_animation_icon'), 'akses_cepat_animation_icons');
+    $iconStatic = self::uploadFile(
+        $request->file('t_akses_cepat.ac_static_icon'), 
+        'akses_cepat_static_icons'
+    );
+    $iconAnim = self::uploadFile($request->file('t_akses_cepat.ac_animation_icon'), 'akses_cepat_animation_icons');
 
     try {
         DB::beginTransaction();
 
-        $akses = self::findOrFail($id);
+        $aksesCepat = self::findOrFail($id);
         $data = $request->t_akses_cepat;
 
         if ($iconStatic) {
-            self::removeFile($akses->ac_static_icon);
+            self::removeFile($aksesCepat->ac_static_icon);
             $data['ac_static_icon'] = $iconStatic;
         }
 
         if ($iconAnim) {
-            self::removeFile($akses->ac_animation_icon);
+            self::removeFile($aksesCepat->ac_animation_icon);
             $data['ac_animation_icon'] = $iconAnim;
         }
 
-        $akses->update($data);
+       $aksesCepat->update($data);
 
-        TransactionModel::createData('UPDATED', $akses->akses_cepat_id, $akses->ac_judul);
+        TransactionModel::createData('UPDATED',$aksesCepat->akses_cepat_id,$aksesCepat->ac_judul);
 
-        $result = self::responFormatSukses($akses, 'Data Akses Cepat berhasil diperbarui');
+        $result = self::responFormatSukses($aksesCepat, 'Data Akses Cepat berhasil diperbarui');
         DB::commit(); 
         return $result;
 
@@ -145,18 +151,18 @@ public static function updateData($request, $id)
         try {
             DB::beginTransaction();
 
-            $akses = self::findOrFail($id);
+           $aksesCepat = self::findOrFail($id);
 
             // Hapus file icon jika ada
-            self::removeFile($akses->ac_static_icon);
-            self::removeFile($akses->ac_animation_icon);
+            self::removeFile($aksesCepat->ac_static_icon);
+            self::removeFile($aksesCepat->ac_animation_icon);
 
-            $akses->delete();
+           $aksesCepat->delete();
 
-            TransactionModel::createData('DELETED', $akses->akses_cepat_id, $akses->ac_judul);
+            TransactionModel::createData('DELETED',$aksesCepat->akses_cepat_id,$aksesCepat->ac_judul);
 
             DB::commit();
-            return self::responFormatSukses($akses, 'Data Akses Cepat berhasil dihapus');
+            return self::responFormatSukses($aksesCepat, 'Data Akses Cepat berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
             return self::responFormatError($e, 'Gagal menghapus Akses Cepat');
@@ -178,7 +184,7 @@ public static function updateData($request, $id)
         // Jika create baru atau update dengan file baru
         if ($id === null) {
             // Untuk create baru
-            $rules['t_akses_cepat.ac_static_icon'] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
+            $rules['t_akses_cepat.ac_static_icon'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
             $rules['t_akses_cepat.ac_animation_icon'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2500';
         } else {
             // Untuk update

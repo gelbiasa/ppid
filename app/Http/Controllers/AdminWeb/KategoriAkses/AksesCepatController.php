@@ -63,7 +63,7 @@ class AksesCepatController extends Controller
     public function addData()
     {
         $kategoriAkses = KategoriAksesModel::where('mka_judul_kategori', 'Akses Menu Cepat')
-            ->where('kategori_akses_id', '=', 2)
+            ->where('kategori_akses_id', '=', 1)
             ->where('isDeleted', 0)
             ->first();
         if (!$kategoriAkses) {
