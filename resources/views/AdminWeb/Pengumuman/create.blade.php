@@ -1,4 +1,7 @@
-
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailPengumumanUrl = WebMenuModel::getDynamicMenuUrl('detail-pengumuman');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Tambah Pengumuman Baru</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -7,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formCreatePengumuman" action="{{ url('AdminWeb/Pengumuman/createData') }}" method="POST"
+    <form id="formCreatePengumuman" action="{{ url($detailPengumumanUrl . '/createData') }}" method="POST"
         enctype="multipart/form-data">
         @csrf
 

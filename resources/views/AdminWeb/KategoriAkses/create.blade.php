@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriAksesCepatUrl = WebMenuModel::getDynamicMenuUrl('kategori-akses-cepat');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Tambah Kategori Akses</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
   </div>
   
   <div class="modal-body">
-    <form id="formCreateKategoriAkses" action="{{ url('adminweb/kategori-akses/createData') }}" method="POST">
+    <form id="formCreateKategoriAksesCepat" action="{{ url($kategoriAksesCepatUrl . '/createData') }}" method="POST">
       @csrf
   
       <div class="form-group">
@@ -39,7 +43,7 @@
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').html('');
         
-        const form = $('#formCreateKategoriAkses');
+        const form = $('#formCreateKategoriAksesCepat');
         const formData = new FormData(form[0]);
         const button = $(this);
         

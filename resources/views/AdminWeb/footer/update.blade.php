@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailFooterUrl = WebMenuModel::getDynamicMenuUrl('detail-footer');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Ubah Footer</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdateFooter" action="{{ url('adminweb/footer/updateData/' . $footer->footer_id) }}"
+    <form id="formUpdateFooter" action="{{ url($detailFooterUrl . '/updateData/' . $footer->footer_id) }}"
         method="POST" enctype="multipart/form-data">
         @csrf
 
@@ -126,9 +130,18 @@
                         });
                     } else {
                         if (response.errors) {
+                            // Tampilkan pesan error pada masing-masing field
                             $.each(response.errors, function(key, value) {
-                                $(`#${key}`).addClass('is-invalid');
-                                $(`#${key}_error`).html(value[0]);
+                                // Untuk t_footer fields
+                                if (key.startsWith('t_footer.')) {
+                                    const fieldName = key.replace('t_footer.', '');
+                                    $(`#${fieldName}`).addClass('is-invalid');
+                                    $(`#${fieldName}_error`).html(value[0]);
+                                } else {
+                                    // Untuk field biasa
+                                    $(`#${key}`).addClass('is-invalid');
+                                    $(`#${key}_error`).html(value[0]);
+                                }
                             });
                             
                             Swal.fire({

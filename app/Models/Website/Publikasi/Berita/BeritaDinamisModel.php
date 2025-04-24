@@ -35,43 +35,6 @@ class BeritaDinamisModel extends Model
         return $this->hasMany(BeritaModel::class, 'fk_m_berita_dinamis', 'berita_dinamis_id');
     }
 
-    // public static function getDataBeritaLandingPage()
-    // {
-    //     $kategori = 1;
-    //     $arr_data = DB::table('t_berita', 'tb')
-    //         ->select([
-    //             'tb.berita_id',
-    //             'tb.berita_judul',
-    //             'tb.berita_slug',
-    //             'm_berita_dinamis.bd_nama_submenu',
-    //             'tb.created_at',
-    //             'tb.berita_deskripsi'
-    //         ])
-    //         ->join('m_berita_dinamis', 'tb.fk_m_berita_dinamis', '=', 'm_berita_dinamis.berita_dinamis_id')
-    //         ->where('tb.isDeleted', 0)
-    //         ->where('tb.status_berita', 'aktif')
-    //         ->where('m_berita_dinamis.berita_dinamis_id', $kategori)
-    //         ->orderBy('tb.created_at', 'DESC')
-    //         ->limit(3)
-    //         ->get()
-    //         ->map(function ($berita) {
-    //             $deskripsi = strip_tags($berita->berita_deskripsi);
-    //             $paragraf = preg_split('/\n\s*\n/', $deskripsi)[0] ?? '';
-
-    //             return [
-    //                 'kategori' => $berita->bd_nama_submenu,
-    //                 'judul' => $berita->berita_judul,
-    //                 'slug' => $berita->berita_slug,
-    //                 'deskripsi' => strlen($paragraf) > 200
-    //                     ? substr($paragraf, 0, 200) . '...'
-    //                     : $paragraf,
-    //                 'url_selengkapnya' => url('#')
-    //             ];
-    //         })
-    //         ->toArray();
-
-    //     return $arr_data;
-    // }
     public static function getDataBeritaLandingPage()
     {
         $kategori = 1;
@@ -202,183 +165,92 @@ class BeritaDinamisModel extends Model
           return self::paginateResults($query, $perPage);
     }
 
-    // Fungsi untuk membuat data baru
     public static function createData($request)
     {
         try {
-            // Validasi input
-            self::validasiData($request);
-
             DB::beginTransaction();
 
-            // Cek apakah ada data yang sudah dihapus dengan nama yang sama
-            $existingDeleted = self::withTrashed()
-                ->where('isDeleted', 1)
-                ->where('bd_nama_submenu', $request->bd_nama_submenu)
-                ->get();
+            $data = $request->m_berita_dinamis;
+            $kategoriBerita = self::create($data);
 
-            // Hapus data yang soft deleted dengan nama yang sama secara permanen
-            foreach ($existingDeleted as $item) {
-                $item->forceDelete();
-            }
-
-            // Persiapan data
-            $data = $request->only([
-                'bd_nama_submenu'
-            ]);
-
-            // Buat record
-            $saveData = self::create($data);
-
-            // Catat log transaksi
             TransactionModel::createData(
                 'CREATED',
-                $saveData->berita_dinamis_id,
-                $saveData->bd_nama_submenu
+                $kategoriBerita->berita_dinamis_id,
+                $kategoriBerita->bd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($saveData, 'Berita Dinamis berhasil dibuat');
+            return self::responFormatSukses($kategoriBerita, 'Kategori Sub Menu Berita Berhasil Dibuat');
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal membuat Berita Dinamis');
+            return self::responFormatError($e, 'Gagal Membuat Kategori Sub Menu Berita');
         }
     }
 
-    // Fungsi untuk mengupdate data
     public static function updateData($request, $id)
     {
         try {
-            // Validasi input
-            self::validasiData($request, $id);
-
-            // Cari record
-            $saveData = self::findOrFail($id);
-
             DB::beginTransaction();
 
-            // Cek apakah ada data yang sudah dihapus dengan nama yang sama
-            $existingDeleted = self::withTrashed()
-                ->where('isDeleted', 1)
-                ->where('berita_dinamis_id', '!=', $id)
-                ->where('bd_nama_submenu', $request->bd_nama_submenu)
-                ->get();
+            $kategoriBerita = self::findOrFail($id);
 
-            // Hapus data yang soft deleted dengan nama yang sama secara permanen
-            foreach ($existingDeleted as $item) {
-                $item->forceDelete();
-            }
+            $data = $request->m_berita_dinamis;
+            $kategoriBerita->update($data);
 
-            // Persiapan data
-            $data = $request->only([
-                'bd_nama_submenu'
-            ]);
-
-            // Update record
-            $saveData->update($data);
-
-            // Catat log transaksi
             TransactionModel::createData(
                 'UPDATED',
-                $saveData->berita_dinamis_id,
-                $saveData->bd_nama_submenu
+                $kategoriBerita->berita_dinamis_id,
+                $kategoriBerita->bd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($saveData, 'Berita Dinamis berhasil diperbarui');
+            return self::responFormatSukses($kategoriBerita, 'Kategori Sub Menu Berita berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal memperbarui Berita Dinamis');
+            return self::responFormatError($e, 'Gagal memperbarui Kategori Sub Menu Berita');
         }
     }
 
-    // Fungsi untuk menghapus data
     public static function deleteData($id)
     {
         try {
-            // Cari record
-            $saveData = self::findOrFail($id);
-
-            // Periksa apakah submenu sedang digunakan
-            $beritaCount = BeritaModel::where('fk_m_berita_dinamis', $id)
-                ->where('isDeleted', 0)
-                ->count();
-
-            if ($beritaCount > 0) {
-                return self::responFormatError(
-                    new \Exception('Submenu tidak dapat dihapus karena masih digunakan oleh berita'),
-                    'Submenu tidak dapat dihapus karena masih digunakan oleh berita'
-                );
-            }
-
             DB::beginTransaction();
 
-            // Set isDeleted = 1 secara manual sebelum memanggil delete()
-            $saveData->isDeleted = 1;
-            $saveData->deleted_at = now();
-            $saveData->save();
+            $kategoriBerita = self::findOrFail($id);
 
-            // Soft delete dengan menggunakan fitur SoftDeletes dari Trait
-            $saveData->delete();
+            $kategoriBerita->delete();
 
-            // Catat log transaksi
             TransactionModel::createData(
                 'DELETED',
-                $saveData->berita_dinamis_id,
-                $saveData->bd_nama_submenu
+                $kategoriBerita->berita_dinamis_id,
+                $kategoriBerita->bd_nama_submenu
             );
 
             DB::commit();
 
-            return self::responFormatSukses($saveData, 'Berita Dinamis berhasil dihapus');
+            return self::responFormatSukses($kategoriBerita, 'Kategori Sub Menu Berita berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Gagal menghapus Berita Dinamis');
+            return self::responFormatError($e, 'Gagal menghapus Kategori Sub Menu Berita');
         }
     }
 
-    // Fungsi untuk detail data
     public static function detailData($id)
     {
-        try {
-            $beritaDinamis = self::findOrFail($id);
-            return $beritaDinamis;
-        } catch (\Exception $e) {
-            throw $e;
-        }
+        return self::findOrFail($id);
     }
 
-    // Fungsi untuk memvalidasi data
-    public static function validasiData($request, $id = null)
+    public static function validasiData($request)
     {
         $rules = [
-            'bd_nama_submenu' => [
-                'required',
-                'max:100',
-                function ($attribute, $value, $fail) use ($id) {
-                    // Cari data dengan nama yang sama (hanya yang TIDAK soft deleted)
-                    $query = self::where('bd_nama_submenu', $value)
-                        ->where('isDeleted', 0);
-
-                    // Jika sedang update, kecualikan ID saat ini
-                    if ($id) {
-                        $query->where('berita_dinamis_id', '!=', $id);
-                    }
-
-                    $existingData = $query->first();
-
-                    if ($existingData) {
-                        $fail('Nama submenu berita sudah digunakan');
-                    }
-                }
-            ],
+            'm_berita_dinamis.bd_nama_submenu' => 'required|max:255',
         ];
 
         $messages = [
-            'bd_nama_submenu.required' => 'Nama submenu berita wajib diisi',
-            'bd_nama_submenu.max' => 'Nama submenu berita maksimal 100 karakter',
+            'm_berita_dinamis.bd_nama_submenu.required' => 'Nama Sub Menu Berita wajib diisi',
+            'm_berita_dinamis.bd_nama_submenu.max' => 'Nama Sub Menu Berita maksimal 255 karakter',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);

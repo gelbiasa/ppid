@@ -25,11 +25,18 @@ function aturSummernote(selector = '#content', urlUnggahGambar = null, urlHapusG
     
     // Atur URL default berdasarkan konteks jika tidak disediakan
     if (!urlUnggahGambar) {
-        urlUnggahGambar = BASE_URL + konteks + '/uploadImage';
+        // Jika BASE_URL tidak diakhiri dengan slash, tambahkan
+        const baseUrl = BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/';
+        urlUnggahGambar = baseUrl + konteks + '/uploadImage';
     }
     if (!urlHapusGambar) {
-        urlHapusGambar = BASE_URL + konteks + '/removeImage';
+        // Jika BASE_URL tidak diakhiri dengan slash, tambahkan
+        const baseUrl = BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/';
+        urlHapusGambar = baseUrl + konteks + '/removeImage';
     }
+    
+    console.log('URL Unggah Gambar:', urlUnggahGambar);
+    console.log('URL Hapus Gambar:', urlHapusGambar);
     
     // Opsi default Summernote
     const opsiDefault = {
@@ -77,7 +84,8 @@ function aturSummernote(selector = '#content', urlUnggahGambar = null, urlHapusG
                 const urlGambar = target[0].src;
                 hapusGambarSummernote(urlGambar, this, urlHapusGambar);
             }
-        }
+        },
+        lang: 'id-ID' // Menggunakan bahasa Indonesia jika tersedia
     };
     
     // Gabungkan opsi default dengan opsi kustom
@@ -95,14 +103,29 @@ function tentukanKonteks() {
     let konteks = '';
     const path = window.location.pathname;
     
-    if (path.includes('/SistemInformasi/KetentuanPelaporan')) {
-        konteks = '/SistemInformasi/KetentuanPelaporan';
-    } else if (path.includes('/AdminWeb/Pengumuman')) {
-        konteks = '/AdminWeb/Pengumuman';
-    } else if (path.includes('/adminweb/berita')) {
-        konteks = '/adminweb/berita';
+    // Cek konteks berdasarkan URL
+    if (path.includes('ketentuan-pelaporan')) {
+        konteks = 'ketentuan-pelaporan';
+    } else if (path.includes('detail-pengumuman')) {
+        konteks = 'detail-pengumuman';
+    } else if (path.includes('detail-berita')) {
+        konteks = 'detail-berita';
     }
     
+    // Jika tidak ditemukan konteks spesifik, gunakan fallback
+    if (!konteks) {
+        // Cek apakah path mengandung urutan folder yang dapat digunakan sebagai konteks
+        const pathSegments = path.split('/').filter(segment => segment.length > 0);
+        if (pathSegments.length >= 1) {
+            // Gunakan segment terakhir yang bermakna sebagai konteks
+            konteks = pathSegments[pathSegments.length - 1];
+        } else {
+            // Fallback ke 'default'
+            konteks = 'default';
+        }
+    }
+    
+    console.log('Konteks terdeteksi:', konteks);
     return konteks;
 }
 

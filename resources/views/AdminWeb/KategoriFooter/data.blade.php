@@ -1,3 +1,8 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $kategoriFooterUrl = WebMenuModel::getDynamicMenuUrl('kategori-footer');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
      <div class="showing-text">
          Showing {{ $kategoriFooter->firstItem() }} to {{ $kategoriFooter->lastItem() }} of {{ $kategoriFooter->total() }} results
@@ -20,16 +25,29 @@
              <td>{{ $item->kt_footer_kode }}</td>
              <td>{{ $item->kt_footer_nama }}</td>
              <td>
-                 <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/kategori-footer/editData/{$item->kategori_footer_id}") }}')">
-                     <i class="fas fa-edit"></i> Edit
-                 </button>
-                 <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("adminweb/kategori-footer/detailData/{$item->kategori_footer_id}") }}')">
-                     <i class="fas fa-eye"></i> Detail
-                 </button>
-                 <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/kategori-footer/deleteData/{$item->kategori_footer_id}") }}')">
-                     <i class="fas fa-trash"></i> Hapus
-                 </button>
-             </td>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFooterUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($kategoriFooterUrl . '/editData/' . $item->kategori_footer_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($kategoriFooterUrl . '/detailData/' . $item->kategori_footer_id) }}')">
+                    <i class="fas fa-eye"></i> Detail
+                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFooterUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($kategoriFooterUrl . '/deleteData/' . $item->kategori_footer_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
+            </td>
          </tr>
          @empty
          <tr>

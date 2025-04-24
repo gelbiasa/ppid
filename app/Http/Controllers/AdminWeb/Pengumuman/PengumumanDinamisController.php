@@ -29,16 +29,16 @@ class PengumumanDinamisController extends Controller
             'title' => 'Daftar Pengumuman Dinamis'
         ];
 
-        $activeMenu = 'PengumumanDinamis';
+        $activeMenu = 'kategoriPengumuman';
 
         // Gunakan pagination dan pencarian
-        $pengumumanDinamis = PengumumanDinamisModel::selectData(10, $search);
+        $kategoriPengumuman = PengumumanDinamisModel::selectData(10, $search);
 
         return view("AdminWeb/PengumumanDinamis.index", [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
-            'pengumumanDinamis' => $pengumumanDinamis,
+            'kategoriPengumuman' => $kategoriPengumuman,
             'search' => $search
         ]);
     }
@@ -47,12 +47,12 @@ class PengumumanDinamisController extends Controller
     public function getData(Request $request)
     {
         $search = $request->query('search', '');
-        $pengumumanDinamis = PengumumanDinamisModel::selectData(10, $search);
-        
+        $kategoriPengumuman = PengumumanDinamisModel::selectData(10, $search);
+
         if ($request->ajax()) {
-            return view('AdminWeb.PengumumanDinamis.data', compact('pengumumanDinamis', 'search'))->render();
+            return view('AdminWeb.PengumumanDinamis.data', compact('kategoriPengumuman', 'search'))->render();
         }
-        
+
         return redirect()->route('pengumuman-dinamis.index');
     }
 
@@ -74,7 +74,7 @@ class PengumumanDinamisController extends Controller
             $result = PengumumanDinamisModel::createData($request);
 
             return $this->jsonSuccess(
-                $result['data'] ?? null, 
+                $result['data'] ?? null,
                 $result['message'] ?? 'Pengumuman dinamis berhasil dibuat'
             );
         } catch (ValidationException $e) {
@@ -89,10 +89,10 @@ class PengumumanDinamisController extends Controller
     public function editData($id)
     {
         try {
-            $pengumumanDinamis = PengumumanDinamisModel::detailData($id);
+            $kategoriPengumuman = PengumumanDinamisModel::detailData($id);
 
             return view("AdminWeb.PengumumanDinamis.update", [
-                'pengumumanDinamis' => $pengumumanDinamis
+                'kategoriPengumuman' => $kategoriPengumuman
             ]);
         } catch (\Exception $e) {
             // Log error
@@ -108,7 +108,7 @@ class PengumumanDinamisController extends Controller
             $result = PengumumanDinamisModel::updateData($request, $id);
 
             return $this->jsonSuccess(
-                $result['data'] ?? null, 
+                $result['data'] ?? null,
                 $result['message'] ?? 'Pengumuman dinamis berhasil diperbarui'
             );
         } catch (ValidationException $e) {
@@ -123,10 +123,10 @@ class PengumumanDinamisController extends Controller
     public function detailData($id)
     {
         try {
-            $pengumumanDinamis = PengumumanDinamisModel::detailData($id);
-        
+            $kategoriPengumuman = PengumumanDinamisModel::detailData($id);
+
             return view("AdminWeb.PengumumanDinamis.detail", [
-                'pengumumanDinamis' => $pengumumanDinamis,
+                'kategoriPengumuman' => $kategoriPengumuman,
                 'title' => 'Detail Pengumuman Dinamis'
             ]);
         } catch (\Exception $e) {
@@ -140,17 +140,17 @@ class PengumumanDinamisController extends Controller
     {
         try {
             if ($request->isMethod('get')) {
-                $pengumumanDinamis = PengumumanDinamisModel::detailData($id);
-                
+                $kategoriPengumuman = PengumumanDinamisModel::detailData($id);
+
                 return view("AdminWeb.PengumumanDinamis.delete", [
-                    'pengumumanDinamis' => $pengumumanDinamis
+                    'kategoriPengumuman' => $kategoriPengumuman
                 ]);
             }
-            
+
             $result = PengumumanDinamisModel::deleteData($id);
-            
+
             return $this->jsonSuccess(
-                $result['data'] ?? null, 
+                $result['data'] ?? null,
                 $result['message'] ?? 'Pengumuman dinamis berhasil dihapus'
             );
         } catch (\Exception $e) {

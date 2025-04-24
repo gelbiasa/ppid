@@ -1,6 +1,11 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $kategoriPengumumanUrl = WebMenuModel::getDynamicMenuUrl('kategori-pengumuman');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">
-        Showing {{ $pengumumanDinamis->firstItem() }} to {{ $pengumumanDinamis->lastItem() }} of {{ $pengumumanDinamis->total() }} results
+        Showing {{ $kategoriPengumuman->firstItem() }} to {{ $kategoriPengumuman->lastItem() }} of {{ $kategoriPengumuman->total() }} results
     </div>
 </div>
 
@@ -13,20 +18,33 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($pengumumanDinamis as $key => $item)
+        @forelse($kategoriPengumuman as $key => $item)
         <tr>
-            <td>{{ ($pengumumanDinamis->currentPage() - 1) * $pengumumanDinamis->perPage() + $key + 1 }}</td>
+            <td>{{ ($kategoriPengumuman->currentPage() - 1) * $kategoriPengumuman->perPage() + $key + 1 }}</td>
             <td>{{ $item->pd_nama_submenu }}</td>
             <td>
-                <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("AdminWeb/PengumumanDinamis/editData/{$item->pengumuman_dinamis_id}") }}')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("AdminWeb/PengumumanDinamis/detailData/{$item->pengumuman_dinamis_id}") }}')">
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPengumumanUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($kategoriPengumumanUrl . '/editData/' . $item->pengumuman_dinamis_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($kategoriPengumumanUrl . '/detailData/' . $item->pengumuman_dinamis_id) }}')">
                     <i class="fas fa-eye"></i> Detail
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("AdminWeb/PengumumanDinamis/deleteData/{$item->pengumuman_dinamis_id}") }}')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPengumumanUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($kategoriPengumumanUrl . '/deleteData/' . $item->pengumuman_dinamis_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
             </td>
         </tr>
         @empty
@@ -44,5 +62,5 @@
 </table>
 
 <div class="mt-3">
-    {{ $pengumumanDinamis->appends(['search' => $search])->links() }}
+    {{ $kategoriPengumuman->appends(['search' => $search])->links() }}
 </div>

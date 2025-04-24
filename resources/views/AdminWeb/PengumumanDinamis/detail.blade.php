@@ -11,24 +11,24 @@
         <table class="table table-borderless">
           <tr>
             <th width="200">Nama Submenu Pengumuman</th>
-            <td>{{ $pengumumanDinamis->pd_nama_submenu }}</td>
+            <td>{{ $kategoriPengumuman->pd_nama_submenu }}</td>
           </tr>
           <tr>
             <th>Tanggal Dibuat</th>
-            <td>{{ date('d-m-Y H:i:s', strtotime($pengumumanDinamis->created_at)) }}</td>
+            <td>{{ date('d-m-Y H:i:s', strtotime($kategoriPengumuman->created_at)) }}</td>
           </tr>
           <tr>
             <th>Dibuat Oleh</th>
-            <td>{{ $pengumumanDinamis->created_by }}</td>
+            <td>{{ $kategoriPengumuman->created_by }}</td>
           </tr>
-          @if($pengumumanDinamis->updated_by)
+          @if($kategoriPengumuman->updated_by)
           <tr>
             <th>Terakhir Diperbarui</th>
-            <td>{{ date('d-m-Y H:i:s', strtotime($pengumumanDinamis->updated_at)) }}</td>
+            <td>{{ date('d-m-Y H:i:s', strtotime($kategoriPengumuman->updated_at)) }}</td>
           </tr>
           <tr>
             <th>Diperbarui Oleh</th>
-            <td>{{ $pengumumanDinamis->updated_by }}</td>
+            <td>{{ $kategoriPengumuman->updated_by }}</td>
           </tr>
           @endif
         </table>

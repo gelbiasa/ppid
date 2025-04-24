@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailFooterUrl = WebMenuModel::getDynamicMenuUrl('detail-footer');
+@endphp
 <div class="modal-header">
   <h5 class="modal-title">Konfirmasi Hapus Footer</h5>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -58,8 +62,8 @@
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
   <button type="button" class="btn btn-danger" id="confirmDeleteButton" 
-    onclick="confirmDelete('{{ url('adminweb/footer/deleteData/'.$footer->footer_id) }}')">
-    <i class="fas fa-trash mr-1"></i> Hapus
+  onclick="confirmDelete('{{ url( $detailFooterUrl . '/deleteData/' . $footer->footer_id) }}')">
+  <i class="fas fa-trash mr-1"></i> Hapus
   </button>
 </div>
 

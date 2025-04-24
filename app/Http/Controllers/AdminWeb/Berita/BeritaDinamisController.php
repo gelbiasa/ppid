@@ -28,13 +28,13 @@ class BeritaDinamisController extends Controller
         $activeMenu = 'berita-dinamis';
         
         // Modify the query to include search functionality
-        $beritaDinamis = BeritaDinamisModel::selectData(10, $search);
+        $kategoriBerita = BeritaDinamisModel::selectData(10, $search);
 
         return view('AdminWeb.BeritaDinamis.index', [
             'breadcrumb' => $breadcrumb,
             'page' => $page,
             'activeMenu' => $activeMenu,
-            'beritaDinamis' => $beritaDinamis,
+            'kategoriBerita' => $kategoriBerita,
             'search' => $search
         ]);
     }
@@ -42,18 +42,18 @@ class BeritaDinamisController extends Controller
     public function getData(Request $request)
     {
         $search = $request->query('search', '');
-        $beritaDinamis = BeritaDinamisModel::selectData(10, $search);
+        $kategoriBerita = BeritaDinamisModel::selectData(10, $search);
         
         if ($request->ajax()) {
-            return view('AdminWeb.BeritaDinamis.data', compact('beritaDinamis', 'search'))->render();
+            return view('AdminWeb/BeritaDinamis.data', compact('kategoriBerita', 'search'))->render();
         }
         
-        return redirect()->route('berita-dinamis.index');
+        return redirect()->route('kategori-berita.index');
     }
   
     public function addData()
     {
-        return view('AdminWeb.BeritaDinamis.create');
+        return view('AdminWeb/BeritaDinamis.create');
     }
 
     public function createData(Request $request)
@@ -61,73 +61,73 @@ class BeritaDinamisController extends Controller
         try {
             BeritaDinamisModel::validasiData($request);
             $result = BeritaDinamisModel::createData($request);
-            return response()->json($result);
+
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Kategori Sub Menu Berita berhasil dibuat'
+            );
         } catch (ValidationException $e) {
-            return response()->json(BeritaDinamisModel::responValidatorError($e));
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(BeritaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat membuat berita dinamis'));
+            return $this->jsonError($e, 'Terjadi kesalahan saat membuat Kategori Sub Menu Berita');
         }
     }
 
     public function editData($id)
     {
-        try {
-            $beritaDinamis = BeritaDinamisModel::findOrFail($id);
-            
-            return view('AdminWeb.BeritaDinamis.update', [
-                'beritaDinamis' => $beritaDinamis
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(BeritaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
-        }
+        $kategoriBerita = BeritaDinamisModel::detailData($id);
+
+        return view("AdminWeb/BeritaDinamis.update", [
+            'kategoriBerita' => $kategoriBerita
+        ]);
     }
 
     public function updateData(Request $request, $id)
     {
         try {
-            BeritaDinamisModel::validasiData($request, $id);
+            BeritaDinamisModel::validasiData($request);
             $result = BeritaDinamisModel::updateData($request, $id);
-            return response()->json($result);
+
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Kategori Sub Menu Berita berhasil diperbarui'
+            );
         } catch (ValidationException $e) {
-            return response()->json(BeritaDinamisModel::responValidatorError($e));
+            return $this->jsonValidationError($e);
         } catch (\Exception $e) {
-            return response()->json(BeritaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat memperbarui berita dinamis'));
+            return $this->jsonError($e, 'Terjadi kesalahan saat memperbarui Kategori Sub Menu Berita');
         }
     }
 
     public function detailData($id)
     {
-        try {
-            $beritaDinamis = BeritaDinamisModel::findOrFail($id);
-            
-            return view('AdminWeb.BeritaDinamis.detail', [
-                'beritaDinamis' => $beritaDinamis,
-                'title' => 'Detail Berita Dinamis'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(BeritaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil detail'));
-        }
+        $kategoriBerita = BeritaDinamisModel::detailData($id);
+        
+        return view("AdminWeb/BeritaDinamis.detail", [
+            'kategoriBerita' => $kategoriBerita,
+            'title' => 'Detail Kategori Berita'
+        ]);
     }
 
     public function deleteData(Request $request, $id)
     {
         if ($request->isMethod('get')) {
-            try {
-                $beritaDinamis = BeritaDinamisModel::findOrFail($id);
-                
-                return view('AdminWeb.BeritaDinamis.delete', [
-                    'beritaDinamis' => $beritaDinamis
-                ]);
-            } catch (\Exception $e) {
-                return response()->json(BeritaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat mengambil data'));
-            }
+            $kategoriBerita = BeritaDinamisModel::detailData($id);
+            
+            return view("AdminWeb/BeritaDinamis.delete", [
+                'kategoriBerita' => $kategoriBerita
+            ]);
         }
         
         try {
             $result = BeritaDinamisModel::deleteData($id);
-            return response()->json($result);
+            
+            return $this->jsonSuccess(
+                $result['data'] ?? null, 
+                $result['message'] ?? 'Kategori Sub Menu Berita berhasil dihapus'
+            );
         } catch (\Exception $e) {
-            return response()->json(BeritaDinamisModel::responFormatError($e, 'Terjadi kesalahan saat menghapus berita dinamis'));
+            return $this->jsonError($e, 'Terjadi kesalahan saat menghapus Kategori Sub Menu Berita');
         }
     }
 }

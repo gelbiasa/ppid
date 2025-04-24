@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('management-level');
+  $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('ketentuan-pelaporan');
 @endphp
 <div class="modal-header">
     <h5 class="modal-title">Edit Ketentuan Pelaporan</h5>

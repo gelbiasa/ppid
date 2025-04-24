@@ -16,13 +16,13 @@
       <div class="card-tools">
         <!-- Perbaikan bagian tombol tambah -->
         @if(
-      Auth::user()->level->level_kode === 'SAR' ||
-      HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'create')
-    )
+          Auth::user()->level->level_kode === 'SAR' ||
+          HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'create')
+          )
           <button onclick="modalAction('{{ url($kategoriFormUrl . '/addData') }}')" class="btn btn-sm btn-success">
           <i class="fas fa-plus"></i> Tambah
           </button>
-    @endif
+      @endif
       </div>
       </div>
     </div>
@@ -74,87 +74,87 @@
 @endpush
 
 @push('js')
-<script>
-  // Perbaikan untuk mengatasi error 404 pada modalAction
-  $(document).ready(function () {
-  // URL dinamis untuk Management KategoriForm
-  var kategoriFormUrl = '{{ $kategoriFormUrl }}';
+  <script>
+    // Perbaikan untuk mengatasi error 404 pada modalAction
+    $(document).ready(function () {
+    // URL dinamis untuk Management KategoriForm
+    var kategoriFormUrl = '{{ $kategoriFormUrl }}';
 
-  // Handle search form submission
-  $('#searchForm').on('submit', function (e) {
-    e.preventDefault();
-    var search = $(this).find('input[name="search"]').val();
-    loadKategoriFormData(1, search);
-  });
-
-  // Handle pagination links with delegation
-  $(document).on('click', '.pagination a', function (e) {
-    e.preventDefault();
-    var page = $(this).attr('href').split('page=')[1];
-    var search = $('#searchForm input[name="search"]').val();
-    loadKategoriFormData(page, search);
-  });
-
-  // Fungsi untuk memuat data KategoriForm
-  function loadKategoriFormData(page, search) {
-    $.ajax({
-    url: '{{ url('') }}/' + kategoriFormUrl + '/getData',
-    type: 'GET',
-    data: {
-      page: page,
-      search: search
-    },
-    success: function (response) {
-      $('#table-container').html(response);
-    },
-    error: function (xhr) {
-      alert('Terjadi kesalahan saat memuat data');
-    }
+    // Handle search form submission
+    $('#searchForm').on('submit', function (e) {
+      e.preventDefault();
+      var search = $(this).find('input[name="search"]').val();
+      loadKategoriFormData(1, search);
     });
-  }
 
-  // PERBAIKAN: Fungsi modalAction yang sudah diperbaiki
-  function modalAction(action) {
-    $('#myModal .modal-content').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading...</p></div>');
-    $('#myModal').modal('show');
+    // Handle pagination links with delegation
+    $(document).on('click', '.pagination a', function (e) {
+      e.preventDefault();
+      var page = $(this).attr('href').split('page=')[1];
+      var search = $('#searchForm input[name="search"]').val();
+      loadKategoriFormData(page, search);
+    });
 
-    // Perbaikan: Gunakan URL lengkap tanpa concatenation yang berlebihan
-    $.ajax({
-    url: action, // Gunakan URL lengkap yang sudah dibentuk
-    type: 'GET',
-    success: function (response) {
-      $('#myModal .modal-content').html(response);
-    },
-    error: function (xhr) {
-      console.error('Ajax Error:', xhr);
-      $('#myModal .modal-content').html(`
+    // Fungsi untuk memuat data KategoriForm
+    function loadKategoriFormData(page, search) {
+      $.ajax({
+      url: '{{ url('') }}/' + kategoriFormUrl + '/getData',
+      type: 'GET',
+      data: {
+        page: page,
+        search: search
+      },
+      success: function (response) {
+        $('#table-container').html(response);
+      },
+      error: function (xhr) {
+        alert('Terjadi kesalahan saat memuat data');
+      }
+      });
+    }
+
+    // PERBAIKAN: Fungsi modalAction yang sudah diperbaiki
+    function modalAction(action) {
+      $('#myModal .modal-content').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading...</p></div>');
+      $('#myModal').modal('show');
+
+      // Perbaikan: Gunakan URL lengkap tanpa concatenation yang berlebihan
+      $.ajax({
+      url: action, // Gunakan URL lengkap yang sudah dibentuk
+      type: 'GET',
+      success: function (response) {
+        $('#myModal .modal-content').html(response);
+      },
+      error: function (xhr) {
+        console.error('Ajax Error:', xhr);
+        $('#myModal .modal-content').html(`
       <div class="modal-header">
       <h5 class="modal-title">Error</h5>
       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+      <span aria-hidden="true">&times;</span>
       </button>
       </div>
       <div class="modal-body">
       <div class="alert alert-danger">
-        Terjadi kesalahan: ${xhr.status} ${xhr.statusText}
+      Terjadi kesalahan: ${xhr.status} ${xhr.statusText}
       </div>
       </div>
     `);
+      }
+      });
     }
+
+    // Fungsi untuk me-reload tabel
+    function reloadTable() {
+      var currentPage = $('.pagination .active .page-link').text();
+      currentPage = currentPage || 1;
+      var search = $('#searchForm input[name="search"]').val();
+      loadKategoriFormData(currentPage, search);
+    }
+
+    // Expose fungsi-fungsi ke lingkup global agar bisa dipanggil dari luar
+    window.modalAction = modalAction;
+    window.reloadTable = reloadTable;
     });
-  }
-
-  // Fungsi untuk me-reload tabel
-  function reloadTable() {
-    var currentPage = $('.pagination .active .page-link').text();
-    currentPage = currentPage || 1;
-    var search = $('#searchForm input[name="search"]').val();
-    loadKategoriFormData(currentPage, search);
-  }
-
-  // Expose fungsi-fungsi ke lingkup global agar bisa dipanggil dari luar
-  window.modalAction = modalAction;
-  window.reloadTable = reloadTable;
-  });
-</script>
+  </script>
 @endpush

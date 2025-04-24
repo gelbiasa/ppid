@@ -16,13 +16,13 @@
                 <div class="col-md-6">
                     <div class="info-group mb-3">
                         <label class="d-block text-muted small">Kategori Berita</label>
-                        <div class="font-weight-medium">{{ $berita->BeritaDinamis->bd_nama_submenu ?? 'Tidak ada' }}</div>
+                        <div class="font-weight-medium">{{ $detailBerita->kategoriBerita->bd_nama_submenu ?? 'Tidak ada' }}</div>
                     </div>
                     
                     <div class="info-group mb-3">
                         <label class="d-block text-muted small">Status Berita</label>
-                        <span class="badge badge-pill {{ $berita->status_berita == 'aktif' ? 'badge-success' : 'badge-danger' }} px-3 py-2">
-                            {{ $berita->status_berita }}
+                        <span class="badge badge-pill {{ $detailBerita->status_berita == 'aktif' ? 'badge-success' : 'badge-danger' }} px-3 py-2">
+                            {{ $detailBerita->status_berita }}
                         </span>
                     </div>
                 </div>
@@ -30,44 +30,44 @@
                 <div class="col-md-6">
                     <div class="info-group mb-3">
                         <label class="d-block text-muted small">Tanggal Dibuat</label>
-                        <div class="font-weight-medium">{{ $berita->created_at->format('d-m-Y H:i:s') }}</div>
+                        <div class="font-weight-medium">{{ $detailBerita->created_at->format('d-m-Y H:i:s') }}</div>
                     </div>
                     
                     <div class="info-group mb-3">
                         <label class="d-block text-muted small">Dibuat Oleh</label>
-                        <div class="font-weight-medium">{{ $berita->created_by }}</div>
+                        <div class="font-weight-medium">{{ $detailBerita->created_by }}</div>
                     </div>
                 </div>
             </div>
             
-            @if($berita->updated_by)
+            @if($detailBerita->updated_by)
             <div class="row mt-2">
                 <div class="col-md-6">
                     <div class="info-group mb-3">
                         <label class="d-block text-muted small">Terakhir Diperbarui</label>
-                        <div class="font-weight-medium">{{ $berita->updated_at->format('d-m-Y H:i:s') }}</div>
+                        <div class="font-weight-medium">{{ $detailBerita->updated_at->format('d-m-Y H:i:s') }}</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="info-group mb-3">
                         <label class="d-block text-muted small">Diperbarui Oleh</label>
-                        <div class="font-weight-medium">{{ $berita->updated_by }}</div>
+                        <div class="font-weight-medium">{{ $detailBerita->updated_by }}</div>
                     </div>
                 </div>
             </div>
             @endif
             
-            @if($berita->berita_thumbnail)
+            @if($detailBerita->berita_thumbnail)
             <div class="mt-3">
                 <label class="d-block text-muted small">Thumbnail</label>
                 <div class="mt-2">
-                    <img src="{{ asset('storage/' . $berita->berita_thumbnail) }}" 
+                    <img src="{{ asset('storage/' . $detailBerita->berita_thumbnail) }}" 
                          class="img-thumbnail rounded shadow-sm" 
                          style="max-width: 250px; height: auto; object-fit: cover;"
                          alt="Thumbnail Berita">
-                    @if($berita->berita_thumbnail_deskripsi)
+                    @if($detailBerita->berita_thumbnail_deskripsi)
                         <small class="d-block text-muted mt-2">
-                            {{ $berita->berita_thumbnail_deskripsi }}
+                            {{ $detailBerita->berita_thumbnail_deskripsi }}
                         </small>
                     @endif
                 </div>
@@ -79,11 +79,11 @@
     <!-- Content Card -->
     <div class="card shadow-sm">
         <div class="card-header bg-light">
-            <h5 class="card-title mb-0 font-weight-bold">{{ $berita->berita_judul }}</h5>
+            <h5 class="card-title mb-0 font-weight-bold">{{ $detailBerita->berita_judul }}</h5>
         </div>
         <div class="card-body">
             <div class="berita-content">
-                {!! $berita->berita_deskripsi !!}
+                {!! $detailBerita->berita_deskripsi !!}
             </div>
         </div>
     </div>
