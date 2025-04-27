@@ -2,17 +2,17 @@
 
 namespace App\Helpers;
 
-use App\Models\HakAkses\HakAksesModel;
+use App\Models\HakAkses\SetHakAksesModel;
 use App\Models\Website\WebMenuModel;
 use Illuminate\Support\Facades\Auth;
 
 class MenuHelper
 {
-    public static function renderSidebarMenus($levelKode, $activeMenu)
+    public static function renderSidebarMenus($hakAksesKode, $activeMenu)
     {
         $userId = Auth::user()->user_id;
-        $menus = WebMenuModel::getMenusByLevelWithPermissions($levelKode, $userId);
-        $totalNotifikasi = WebMenuModel::getNotifikasiCount($levelKode);
+        $menus = WebMenuModel::getMenusByLevelWithPermissions($hakAksesKode, $userId);
+        $totalNotifikasi = WebMenuModel::getNotifikasiCount($hakAksesKode);
 
         $menuIcons = [
             'Dashboard' => 'fa-tachometer-alt',
@@ -27,7 +27,7 @@ class MenuHelper
 
         // Dashboard dan Profil selalu ada
         $html .= self::generateMenuItem(
-            url('/dashboard' . strtoupper($levelKode)),
+            url('/dashboard' . strtoupper($hakAksesKode)),
             'Dashboard',
             $menuIcons['Dashboard'],
             $activeMenu
@@ -41,12 +41,12 @@ class MenuHelper
         );
 
         // Notifikasi untuk level tertentu
-        if (in_array($levelKode, ['ADM', 'VFR', 'MPU'])) {
+        if (in_array($hakAksesKode, ['ADM', 'VFR', 'MPU'])) {
             $notifUrl = [
                 'ADM' => '/Notifikasi/NotifAdmin',
                 'VFR' => '/notifikasi',
                 'MPU' => '/notifMPU'
-            ][$levelKode];
+            ][$hakAksesKode];
 
             $html .= self::generateNotificationMenuItem(
                 url($notifUrl),
@@ -78,7 +78,7 @@ class MenuHelper
         }
 
         // Menu khusus SAR
-        if ($levelKode == 'SAR') {
+        if ($hakAksesKode == 'SAR') {
             $html .= self::generateMenuItem(
                 url('/HakAkses'),
                 'Pengaturan Hak Akses',

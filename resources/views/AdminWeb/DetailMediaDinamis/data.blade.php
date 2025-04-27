@@ -1,6 +1,6 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
     $detailMediaUrlUrl = WebMenuModel::getDynamicMenuUrl('detail-media');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -27,8 +27,8 @@
             <td>{{ ucfirst($item->dm_type_media) }}</td>
             <td>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailMediaUrlUrl, 'update')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailMediaUrlUrl, 'update')
                 )
                     <button class="btn btn-sm btn-warning"
                         onclick="modalAction('{{ url($detailMediaUrlUrl . '/editData/' . $item->detail_media_dinamis_id) }}')">
@@ -40,8 +40,8 @@
                     <i class="fas fa-eye"></i> Detail
                 </button>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailMediaUrlUrl, 'delete')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailMediaUrlUrl, 'delete')
                 )
                     <button class="btn btn-sm btn-danger"
                         onclick="modalAction('{{ url($detailMediaUrlUrl . '/deleteData/' . $item->detail_media_dinamis_id) }}')">

@@ -50,7 +50,7 @@ class TransactionModel extends Model
             'log_transaction_jenis' => $transactionType,
             'log_transaction_aktivitas_id' => $aktivitasId,
             'log_transaction_aktivitas' => $aktivitas,
-            'log_transaction_level' => Auth::user()->level->level_nama,
+            'log_transaction_level' => Auth::user()->level->hak_akses_nama,
             'log_transaction_pelaku' => session('alias'),
             'log_transaction_tanggal_aktivitas' => now()
         ]);

@@ -1,6 +1,6 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
     $detailFooterUrl = WebMenuModel::getDynamicMenuUrl('detail-footer');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -25,8 +25,8 @@
             <td>{{ $item->kategoriFooter->kt_footer_nama ?? 'Tidak Ada' }}</td>
             <td>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailFooterUrl, 'update')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailFooterUrl, 'update')
                 )
                     <button class="btn btn-sm btn-warning"
                         onclick="modalAction('{{ url($detailFooterUrl . '/editData/' . $item->footer_id) }}')">
@@ -38,8 +38,8 @@
                     <i class="fas fa-eye"></i> Detail
                 </button>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailFooterUrl, 'delete')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailFooterUrl, 'delete')
                 )
                     <button class="btn btn-sm btn-danger"
                         onclick="modalAction('{{ url($detailFooterUrl . '/deleteData/' . $item->footer_id) }}')">

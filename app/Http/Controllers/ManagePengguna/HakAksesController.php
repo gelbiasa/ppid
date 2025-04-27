@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\ManagePengguna;
 
 use App\Http\Controllers\TraitsController;
-use App\Models\LevelModel;
+use App\Models\HakAksesModel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-class LevelController extends Controller
+class HakAksesController extends Controller
 {
     use TraitsController;
 
     public $breadcrumb = 'Pengaturan Level';
-    public $pagename = 'ManagePengguna';
+    public $pagename = 'ManagePengguna/ManagementLevel';
 
     public function index(Request $request)
     {
@@ -32,7 +32,7 @@ class LevelController extends Controller
         $activeMenu = 'managementlevel';
 
         // Gunakan pagination dan pencarian
-        $level = LevelModel::selectData(10, $search);
+        $level = HakAksesModel::selectData(10, $search);
 
         return view("ManagePengguna/ManageLevel.index", [
             'breadcrumb' => $breadcrumb,
@@ -47,7 +47,7 @@ class LevelController extends Controller
     public function getData(Request $request)
     {
         $search = $request->query('search', '');
-        $level = LevelModel::selectData(10, $search);
+        $level = HakAksesModel::selectData(10, $search);
 
         if ($request->ajax()) {
             return view('ManagePengguna/ManageLevel.data', compact('level', 'search'))->render();
@@ -69,8 +69,8 @@ class LevelController extends Controller
     public function createData(Request $request)
     {
         try {
-            LevelModel::validasiData($request);
-            $result = LevelModel::createData($request);
+            HakAksesModel::validasiData($request);
+            $result = HakAksesModel::createData($request);
 
             return $this->jsonSuccess(
                 $result['data'] ?? null,
@@ -85,7 +85,7 @@ class LevelController extends Controller
 
     public function editData($id)
     {
-        $level = LevelModel::detailData($id);
+        $level = HakAksesModel::detailData($id);
 
         return view("ManagePengguna/ManageLevel.update", [
             'level' => $level
@@ -95,8 +95,8 @@ class LevelController extends Controller
     public function updateData(Request $request, $id)
     {
         try {
-            LevelModel::validasiData($request);
-            $result = LevelModel::updateData($request, $id);
+            HakAksesModel::validasiData($request);
+            $result = HakAksesModel::updateData($request, $id);
 
             return $this->jsonSuccess(
                 $result['data'] ?? null,
@@ -111,7 +111,7 @@ class LevelController extends Controller
 
     public function detailData($id)
     {
-        $level = LevelModel::detailData($id);
+        $level = HakAksesModel::detailData($id);
 
         return view("ManagePengguna/ManageLevel.detail", [
             'level' => $level,
@@ -122,7 +122,7 @@ class LevelController extends Controller
     public function deleteData(Request $request, $id)
     {
         if ($request->isMethod('get')) {
-            $level = LevelModel::detailData($id);
+            $level = HakAksesModel::detailData($id);
 
             return view("ManagePengguna/ManageLevel.delete", [
                 'level' => $level
@@ -130,7 +130,7 @@ class LevelController extends Controller
         }
 
         try {
-            $result = LevelModel::deleteData($id);
+            $result = HakAksesModel::deleteData($id);
 
             return $this->jsonSuccess(
                 $result['data'] ?? null,

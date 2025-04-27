@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  use App\Models\HakAkses\HakAksesModel;
+  use App\Models\HakAkses\SetHakAksesModel;
   $permohonanPerawatanAdminUrl = WebMenuModel::getDynamicMenuUrl('permohonan-sarana-dan-prasarana-admin');
 @endphp
 @extends('layouts.template')
@@ -75,8 +75,8 @@ $ketentuanPelaporan = $data['ketentuanPelaporan'];
             <div class="col-md-4">
                 <div class="card-tools">
                     @if(
-                      Auth::user()->level->level_kode === 'SAR' ||
-                      HakAksesModel::cekHakAkses(Auth::user()->user_id, $permohonanPerawatanAdminUrl, 'create')
+                      Auth::user()->level->hak_akses_kode === 'SAR' ||
+                      SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $permohonanPerawatanAdminUrl, 'create')
                     )
                     <a href="{{ url($permohonanPerawatanAdminUrl . '/addData') }}" class="custom-button d-block p-3 mb-2">
                         <i class="fas fa-edit fa-2x"></i>

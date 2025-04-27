@@ -92,7 +92,7 @@ class PernyataanKeberatanController extends Controller
 
     private function getUserFolder()
     {
-        $levelKode = Auth::user()->level->level_kode;
-        return ($levelKode === 'ADM' || $levelKode === 'RPN') ? $levelKode : abort(403);
+        $hakAksesKode = Auth::user()->level->hak_akses_kode;
+        return ($hakAksesKode === 'ADM' || $hakAksesKode === 'RPN') ? $hakAksesKode : abort(403);
     }
 }

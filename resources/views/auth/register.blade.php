@@ -38,7 +38,7 @@
 
                     <!-- Pilih Level -->
                     <div class="input-group mb-3">
-                        <select class="form-control" id="level_id" name="m_user[fk_m_level]" required>
+                        <select class="form-control" id="hak_akses_id" name="m_user[fk_m_hak_akses]" required>
                             <option value="2">Responden</option> 
                         </select>
                         <div class="input-group-append">
@@ -47,7 +47,7 @@
                             </div>
                         </div>
                     </div>
-                    <small id="error-fk_m_level" class="error-text text-danger d-block"></small>
+                    <small id="error-fk_m_hak_akses" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
                         <input type="text" id="nama_pengguna" name="m_user[nama_pengguna]" class="form-control" placeholder="Nama (sesuai KTP)" required>

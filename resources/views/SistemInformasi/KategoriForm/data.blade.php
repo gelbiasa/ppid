@@ -1,6 +1,6 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
     $kategoriFormUrl = WebMenuModel::getDynamicMenuUrl('kategori-form');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -25,8 +25,8 @@
                     <td>{{ $item->kf_nama }}</td>
                     <td>
                         @if(
-                            Auth::user()->level->level_kode === 'SAR' ||
-                            HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'update')
+                            Auth::user()->level->hak_akses_kode === 'SAR' ||
+                            SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'update')
                         )
                             <button class="btn btn-sm btn-warning"
                                 onclick="modalAction('{{ url($kategoriFormUrl . '/editData/' . $item->kategori_form_id) }}')">
@@ -38,8 +38,8 @@
                             <i class="fas fa-eye"></i> Detail
                         </button>
                         @if(
-                            Auth::user()->level->level_kode === 'SAR' ||
-                            HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'delete')
+                            Auth::user()->level->hak_akses_kode === 'SAR' ||
+                            SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriFormUrl, 'delete')
                         )
                             <button class="btn btn-sm btn-danger"
                                 onclick="modalAction('{{ url($kategoriFormUrl . '/deleteData/' . $item->kategori_form_id) }}')">

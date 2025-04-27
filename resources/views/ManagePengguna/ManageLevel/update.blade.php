@@ -10,22 +10,22 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdateLevel" action="{{ url($managementLevelUrl . '/updateData/' . $level->level_id) }}"
+    <form id="formUpdateLevel" action="{{ url($managementLevelUrl . '/updateData/' . $level->hak_akses_id) }}"
         method="POST">
         @csrf
 
         <div class="form-group">
-            <label for="level_kode">Kode Level <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="level_kode" name="m_level[level_kode]" maxlength="50"
-                value="{{ $level->level_kode }}">
-            <div class="invalid-feedback" id="level_kode_error"></div>
+            <label for="hak_akses_kode">Kode Level <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="hak_akses_kode" name="m_hak_akses[hak_akses_kode]" maxlength="50"
+                value="{{ $level->hak_akses_kode }}">
+            <div class="invalid-feedback" id="hak_akses_kode_error"></div>
         </div>
 
         <div class="form-group">
-            <label for="level_nama">Nama Level <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="level_nama" name="m_level[level_nama]" maxlength="255"
-                value="{{ $level->level_nama }}">
-            <div class="invalid-feedback" id="level_nama_error"></div>
+            <label for="hak_akses_nama">Nama Level <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="hak_akses_nama" name="m_hak_akses[hak_akses_nama]" maxlength="255"
+                value="{{ $level->hak_akses_nama }}">
+            <div class="invalid-feedback" id="hak_akses_nama_error"></div>
         </div>
     </form>
 </div>
@@ -79,9 +79,9 @@
                         if (response.errors) {
                             // Tampilkan pesan error pada masing-masing field
                             $.each(response.errors, function(key, value) {
-                                // Untuk m_level fields
-                                if (key.startsWith('m_level.')) {
-                                    const fieldName = key.replace('m_level.', '');
+                                // Untuk m_hak_akses fields
+                                if (key.startsWith('m_hak_akses.')) {
+                                    const fieldName = key.replace('m_hak_akses.', '');
                                     $(`#${fieldName}`).addClass('is-invalid');
                                     $(`#${fieldName}_error`).html(value[0]);
                                 } else {

@@ -8,10 +8,10 @@ use App\Http\Controllers\SummernoteController;
 use App\Http\Controllers\DashboardMPUController;
 use App\Http\Controllers\DashboardSARController;
 use App\Http\Controllers\DashboardAdminController;
-use App\Http\Controllers\HakAkses\HakAksesController;
+use App\Http\Controllers\HakAkses\SetHakAksesController;
 use App\Http\Controllers\DashboardRespondenController;
 use App\Http\Controllers\DashboardVerifikatorController;
-use App\Http\Controllers\ManagePengguna\LevelController;
+use App\Http\Controllers\ManagePengguna\HakAksesController;
 use App\Http\Controllers\Notifikasi\NotifAdminController;
 use App\Http\Controllers\AdminWeb\Berita\BeritaController;
 use App\Http\Controllers\AdminWeb\Footer\FooterController;
@@ -56,6 +56,7 @@ Route::pattern('id', '[0-9]+'); // Artinya: Ketika ada parameter {id}, maka haru
 Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
 Route::get('logout', [AuthController::class, 'logout'])->middleware('auth');
+Route::post('/pilih-level', [AuthController::class, 'pilihLevel'])->name('pilih.level');
 
 Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'postRegister']);
@@ -69,11 +70,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboardVFR', [DashboardVerifikatorController::class, 'index'])->middleware('authorize:VFR');
 
     Route::group(['prefix' => 'HakAkses', 'middleware' => 'authorize:SAR'], function () {
-        Route::get('/', [HakAksesController::class, 'index']);
-        Route::get('/addData', [HakAksesController::class, 'addData']);
-        Route::post('/createData', [HakAksesController::class, 'createData']);
-        Route::get('/getHakAksesData/{param1}/{param2?}', [HakAksesController::class, 'editData']);
-        Route::post('/updateData', [HakAksesController::class, 'updateData']);
+        Route::get('/', [SetHakAksesController::class, 'index']);
+        Route::get('/addData', [SetHakAksesController::class, 'addData']);
+        Route::post('/createData', [SetHakAksesController::class, 'createData']);
+        Route::get('/getHakAksesData/{param1}/{param2?}', [SetHakAksesController::class, 'editData']);
+        Route::post('/updateData', [SetHakAksesController::class, 'updateData']);
     });
 
     Route::get('/session', [AuthController::class, 'getData']);
@@ -96,7 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}/delete', [MenuManagementController::class, 'delete'])->middleware('permission:delete');
         Route::get('/{id}/detail_menu', [MenuManagementController::class, 'detail_menu']);
         Route::post('/reorder', [MenuManagementController::class, 'reorder']); // New route for drag-drop reordering
-        Route::get('/get-parent-menus/{levelId}', [MenuManagementController::class, 'getParentMenus']);
+        Route::get('/get-parent-menus/{hakAksesId}', [MenuManagementController::class, 'getParentMenus']);
     });
     Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('kategori-footer')], function () {
         Route::get('/', [KategoriFooterController::class, 'index'])->middleware('permission:view');
@@ -418,14 +419,14 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('management-level')], function () {
-        Route::get('/', [LevelController::class, 'index'])->middleware('permission:view');
-        Route::get('/getData', [LevelController::class, 'getData']);
-        Route::get('/addData', [LevelController::class, 'addData']);
-        Route::post('/createData', [LevelController::class, 'createData'])->middleware('permission:create');
-        Route::get('/editData/{id}', [LevelController::class, 'editData']);
-        Route::post('/updateData/{id}', [LevelController::class, 'updateData'])->middleware('permission:update');
-        Route::get('/detailData/{id}', [LevelController::class, 'detailData']);
-        Route::get('/deleteData/{id}', [LevelController::class, 'deleteData']);
-        Route::delete('/deleteData/{id}', [LevelController::class, 'deleteData'])->middleware('permission:delete');
+        Route::get('/', [HakAksesController::class, 'index'])->middleware('permission:view');
+        Route::get('/getData', [HakAksesController::class, 'getData']);
+        Route::get('/addData', [HakAksesController::class, 'addData']);
+        Route::post('/createData', [HakAksesController::class, 'createData'])->middleware('permission:create');
+        Route::get('/editData/{id}', [HakAksesController::class, 'editData']);
+        Route::post('/updateData/{id}', [HakAksesController::class, 'updateData'])->middleware('permission:update');
+        Route::get('/detailData/{id}', [HakAksesController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [HakAksesController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [HakAksesController::class, 'deleteData'])->middleware('permission:delete');
     });
 });

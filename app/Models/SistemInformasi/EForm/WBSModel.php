@@ -70,7 +70,7 @@ class WBSModel extends Model
             DB::beginTransaction();
 
             $data = $request->t_wbs;
-            $userLevel = Auth::user()->level->level_kode;
+            $userLevel = Auth::user()->level->hak_akses_kode;
             $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
 
             // Jika user RPN, gunakan data dari auth
@@ -126,7 +126,7 @@ class WBSModel extends Model
     public static function validasiData($request)
     {
         // Dapatkan level user saat ini
-        $userLevel = Auth::user()->level->level_kode;
+        $userLevel = Auth::user()->level->hak_akses_kode;
 
         // rules validasi dasar untuk Whistle Blowing System
         $rules = [

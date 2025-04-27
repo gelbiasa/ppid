@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  use App\Models\HakAkses\HakAksesModel;
+  use App\Models\HakAkses\SetHakAksesModel;
   $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('kategori-regulasi');
 @endphp
 @extends('layouts.template')
@@ -14,8 +14,8 @@
           </div>
           <div class="col-md-6 text-right">
             @if(
-          Auth::user()->level->level_kode === 'SAR' ||
-          HakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrl, 'create')
+          Auth::user()->level->hak_akses_kode === 'SAR' ||
+          SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrl, 'create')
           )
           <button onclick="modalAction('{{ url($regulasiDinamisUrl . '/addData') }}')" class="btn btn-sm btn-success">
           <i class="fas fa-plus"></i> Tambah

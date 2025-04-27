@@ -64,7 +64,7 @@ class PermohonanPerawatanModel extends Model
             DB::beginTransaction();
 
             $data = $request->t_permohonan_perawatan;
-            $userLevel = Auth::user()->level->level_kode;
+            $userLevel = Auth::user()->level->hak_akses_kode;
             $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
 
             // Jika user RPN, gunakan data dari auth
@@ -125,7 +125,7 @@ class PermohonanPerawatanModel extends Model
     public static function validasiData($request)
     {
         // Dapatkan level user saat ini
-        $userLevel = Auth::user()->level->level_kode;
+        $userLevel = Auth::user()->level->hak_akses_kode;
 
         // rules validasi dasar untuk Permohonan Perawatan Sarana Prasarana
         $rules = [

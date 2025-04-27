@@ -1,6 +1,6 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
     $regulasiDinamisUrlUrl = WebMenuModel::getDynamicMenuUrl('regulasi-dinamis');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -24,8 +24,8 @@
              <td>{{ $item->rd_judul_reg_dinamis }}</td>
              <td>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrlUrl, 'update')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrlUrl, 'update')
                 )
                     <button class="btn btn-sm btn-warning"
                         onclick="modalAction('{{ url($regulasiDinamisUrlUrl . '/editData/' . $item->regulasi_dinamis_id) }}')">
@@ -37,8 +37,8 @@
                     <i class="fas fa-eye"></i> Detail
                 </button>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrlUrl, 'delete')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrlUrl, 'delete')
                 )
                     <button class="btn btn-sm btn-danger"
                         onclick="modalAction('{{ url($regulasiDinamisUrlUrl . '/deleteData/' . $item->regulasi_dinamis_id) }}')">

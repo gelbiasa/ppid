@@ -2,8 +2,8 @@
 
 namespace App\Models\Website;
 
-use App\Models\HakAkses\HakAksesModel;
-use App\Models\LevelModel;
+use App\Models\HakAkses\SetHakAksesModel;
+use App\Models\HakAksesModel;
 use App\Models\Log\NotifAdminModel;
 use App\Models\Log\NotifVerifikatorModel;
 use App\Models\Log\TransactionModel;
@@ -28,7 +28,7 @@ class WebMenuModel extends Model
 
     protected $fillable = [
         'fk_web_menu_global',
-        'fk_m_level',
+        'fk_m_hak_akses',
         'wm_parent_id',
         'wm_urutan_menu',
         'wm_menu_nama',
@@ -48,7 +48,7 @@ class WebMenuModel extends Model
 
     public function Level()
     {
-        return $this->belongsTo(LevelModel::class, 'fk_m_level', 'level_id');
+        return $this->belongsTo(HakAksesModel::class, 'fk_m_hak_akses', 'hak_akses_id');
     }
 
     public function WebMenuUrl()
@@ -76,7 +76,7 @@ class WebMenuModel extends Model
 
     public function hakAkses()
     {
-        return $this->hasMany(HakAksesModel::class, 'fk_web_menu', 'web_menu_id');
+        return $this->hasMany(SetHakAksesModel::class, 'fk_web_menu', 'web_menu_id');
     }
 
     public function __construct(array $attributes = [])
@@ -88,11 +88,11 @@ class WebMenuModel extends Model
     public static function getJenisMenuList()
     {
         // Dapatkan daftar jenis menu dari tabel level
-        $levels = LevelModel::where('isDeleted', 0)->get();
+        $levels = HakAksesModel::where('isDeleted', 0)->get();
         $jenisMenuList = [];
 
         foreach ($levels as $level) {
-            $jenisMenuList[$level->level_kode] = $level->level_nama;
+            $jenisMenuList[$level->hak_akses_kode] = $level->hak_akses_nama;
         }
 
         return $jenisMenuList;
@@ -101,7 +101,7 @@ class WebMenuModel extends Model
     public static function getDataMenu()
     {
         // Ambil data menu berdasarkan level 'RPN'
-        $levelRPN = DB::table('m_level')->where('level_kode', 'RPN')->first();
+        $levelRPN = DB::table('m_hak_akses')->where('hak_akses_kode', 'RPN')->first();
         
         if (!$levelRPN) {
             return [];
@@ -109,7 +109,7 @@ class WebMenuModel extends Model
         
         $arr_data = self::query()
             ->select('web_menu.*')
-            ->where('fk_m_level', $levelRPN->level_id)
+            ->where('fk_m_hak_akses', $levelRPN->hak_akses_id)
             ->where('wm_status_menu', 'aktif')
             ->where('isDeleted', 0)
             ->orderBy('wm_urutan_menu')
@@ -227,9 +227,9 @@ class WebMenuModel extends Model
         return $arr_data;
     }
 
-    public static function mengecekKetersediaanMenu($menuName, $levelId, $excludeId = null)
+    public static function mengecekKetersediaanMenu($menuName, $hakAksesId, $excludeId = null)
     {
-        $query = self::where('fk_m_level', $levelId)
+        $query = self::where('fk_m_hak_akses', $hakAksesId)
             ->where('wm_menu_nama', $menuName)
             ->where('isDeleted', 0);
 
@@ -270,11 +270,11 @@ class WebMenuModel extends Model
             $data = $request->web_menu;
 
             // Validasi apakah user mencoba membuat menu dengan level SAR
-            $levelId = $data['fk_m_level'] ?? null;
-            $level = LevelModel::find($levelId);
+            $hakAksesId = $data['fk_m_hak_akses'] ?? null;
+            $level = HakAksesModel::find($hakAksesId);
 
             // Jika level adalah SAR dan user bukan SAR, tolak permintaan
-            if ($level && $level->level_kode === 'SAR' && Auth::user()->level->level_kode !== 'SAR') {
+            if ($level && $level->hak_akses_kode === 'SAR' && Auth::user()->level->hak_akses_kode !== 'SAR') {
                 return [
                     'success' => false,
                     'message' => 'Hanya pengguna dengan level Super Administrator yang dapat menambahkan menu SAR'
@@ -282,12 +282,12 @@ class WebMenuModel extends Model
             }
 
             // Validasi data yang dikirim
-            $levelId = $data['fk_m_level'] ?? null;
+            $hakAksesId = $data['fk_m_hak_akses'] ?? null;
             $menuName = $data['wm_menu_nama'];
             $menuUrl = $data['fk_web_menu_url'] ?? null;
 
             // Cek ketersediaan menu dengan nama yang sama pada level yang sama
-            $menuCheck = self::mengecekKetersediaanMenu($menuName, $levelId);
+            $menuCheck = self::mengecekKetersediaanMenu($menuName, $hakAksesId);
             if ($menuCheck['exists']) {
                 return [
                     'success' => false,
@@ -312,7 +312,7 @@ class WebMenuModel extends Model
 
                 // Cek apakah sudah ada menu dengan WebMenuGlobal ini dan level yang dipilih
                 $existingMenu = self::where('fk_web_menu_global', $webMenuGlobal->web_menu_global_id)
-                    ->where('fk_m_level', $levelId)
+                    ->where('fk_m_hak_akses', $hakAksesId)
                     ->where('isDeleted', 0)
                     ->first();
 
@@ -382,8 +382,8 @@ class WebMenuModel extends Model
             $data = $request->web_menu;
 
             // Periksa level menu
-            $level = LevelModel::find($saveData->fk_m_level);
-            if ($level && $level->level_kode === 'SAR' && Auth::user()->level->level_kode !== 'SAR') {
+            $level = HakAksesModel::find($saveData->fk_m_hak_akses);
+            if ($level && $level->hak_akses_kode === 'SAR' && Auth::user()->level->hak_akses_kode !== 'SAR') {
                 return [
                     'success' => false,
                     'message' => 'Hanya pengguna dengan level Super Administrator yang dapat mengubah menu SAR'
@@ -391,16 +391,16 @@ class WebMenuModel extends Model
             }
 
             // Simpan nilai lama untuk perbandingan
-            $oldLevelId = $saveData->fk_m_level;
-            $newLevelId = $data['fk_m_level'] ?? $oldLevelId;
+            $oldhakAksesId = $saveData->fk_m_hak_akses;
+            $newhakAksesId = $data['fk_m_hak_akses'] ?? $oldhakAksesId;
             $menuName = $data['wm_menu_nama'];
             $menuUrl = $data['fk_web_menu_url'] ?? null;
 
             // Jika level berubah
-            if ($oldLevelId != $newLevelId) {
+            if ($oldhakAksesId != $newhakAksesId) {
                 // Cek apakah menu dengan nama yang sama sudah ada di level tujuan
                 $existingMenu = self::where('wm_menu_nama', $menuName)
-                    ->where('fk_m_level', $newLevelId)
+                    ->where('fk_m_hak_akses', $newhakAksesId)
                     ->where('web_menu_id', '!=', $id)
                     ->where('isDeleted', 0)
                     ->first();
@@ -413,7 +413,7 @@ class WebMenuModel extends Model
                 }
 
                 // Update level
-                $saveData->fk_m_level = $newLevelId;
+                $saveData->fk_m_hak_akses = $newhakAksesId;
             }
 
             // Jika URL berubah
@@ -479,10 +479,10 @@ class WebMenuModel extends Model
             $menu = self::findOrFail($id);
 
             // Cek level pengguna yang sedang login
-            $level = LevelModel::find($menu->fk_m_level);
+            $level = HakAksesModel::find($menu->fk_m_hak_akses);
 
             // Jika level SAR dan pengguna bukan SAR, tolak
-            if ($level && $level->level_kode === 'SAR' && Auth::user()->level->level_kode !== 'SAR') {
+            if ($level && $level->hak_akses_kode === 'SAR' && Auth::user()->level->hak_akses_kode !== 'SAR') {
                 return [
                     'success' => false,
                     'message' => 'Hanya pengguna dengan level Super Administrator yang dapat menghapus menu SAR'
@@ -528,7 +528,7 @@ class WebMenuModel extends Model
             'web_menu.wm_parent_id' => 'nullable|exists:web_menu,web_menu_id',
             'web_menu.wm_status_menu' => 'required|in:aktif,nonaktif',
             'web_menu.fk_web_menu_url' => 'nullable|exists:web_menu_url,web_menu_url_id',
-            'web_menu.fk_m_level' => 'required|exists:m_level,level_id',
+            'web_menu.fk_m_hak_akses' => 'required|exists:m_hak_akses,hak_akses_id',
         ];
 
         $messages = [
@@ -538,8 +538,8 @@ class WebMenuModel extends Model
             'web_menu.wm_status_menu.required' => 'Status menu wajib diisi',
             'web_menu.wm_status_menu.in' => 'Status menu harus aktif atau nonaktif',
             'web_menu.fk_web_menu_url.exists' => 'URL menu tidak valid',
-            'web_menu.fk_m_level.required' => 'Level menu wajib dipilih',
-            'web_menu.fk_m_level.exists' => 'Level menu tidak valid',
+            'web_menu.fk_m_hak_akses.required' => 'Level menu wajib dipilih',
+            'web_menu.fk_m_hak_akses.exists' => 'Level menu tidak valid',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -551,10 +551,10 @@ class WebMenuModel extends Model
         return true;
     }
 
-    public static function getParentMenusByLevel($levelId)
+    public static function getParentMenusByLevel($hakAksesId)
     {
         // Dapatkan menu-menu untuk level tertentu
-        return self::where('fk_m_level', $levelId)
+        return self::where('fk_m_hak_akses', $hakAksesId)
             ->whereNull('wm_parent_id')
             ->where('isDeleted', 0)
             ->where('wm_status_menu', 'aktif')
@@ -579,7 +579,7 @@ class WebMenuModel extends Model
             $menu = self::with(['WebMenuGlobal.WebMenuUrl'])->findOrFail($id);
 
             // Dapatkan parent menu untuk level tersebut
-            $parentMenus = self::getParentMenusByLevel($menu->fk_m_level);
+            $parentMenus = self::getParentMenusByLevel($menu->fk_m_hak_akses);
 
             $result = [
                 'success' => true,
@@ -589,8 +589,8 @@ class WebMenuModel extends Model
                     'wm_status_menu' => $menu->wm_status_menu,
                     'wm_parent_id' => $menu->wm_parent_id,
                     'fk_web_menu_url' => $menu->WebMenuGlobal ? $menu->WebMenuGlobal->fk_web_menu_url : null,
-                    'fk_m_level' => $menu->fk_m_level,
-                    'level_kode' => $menu->Level ? $menu->Level->level_kode : null
+                    'fk_m_hak_akses' => $menu->fk_m_hak_akses,
+                    'hak_akses_kode' => $menu->Level ? $menu->Level->hak_akses_kode : null
                 ],
                 'parentMenus' => $parentMenus
             ];
@@ -622,8 +622,8 @@ class WebMenuModel extends Model
                     'wm_status_menu' => $menu->wm_status_menu,
                     'wm_parent_id' => $menu->wm_parent_id,
                     'wm_urutan_menu' => $menu->wm_urutan_menu,
-                    'jenis_menu_nama' => $menu->Level ? $menu->Level->level_nama : 'Tidak terdefinisi',
-                    'level_kode' => $menu->Level ? $menu->Level->level_kode : '',
+                    'jenis_menu_nama' => $menu->Level ? $menu->Level->hak_akses_nama : 'Tidak terdefinisi',
+                    'hak_akses_kode' => $menu->Level ? $menu->Level->hak_akses_kode : '',
                     'parent_menu_nama' => $menu->parentMenu ? ($menu->parentMenu->wm_menu_nama ?: ($menu->parentMenu->WebMenuGlobal ? $menu->parentMenu->WebMenuGlobal->wmg_nama_default : null)) : null,
                     'created_by' => $menu->created_by,
                     'created_at' => $menu->created_at->format('Y-m-d H:i:s'),
@@ -666,14 +666,14 @@ class WebMenuModel extends Model
             $menuNamesByLevel = [];
 
             // Cek apakah ada menu SAR yang dimodifikasi oleh non-SAR
-            $userLevelKode = Auth::user()->level->level_kode;
+            $userhakAksesKode = Auth::user()->level->hak_akses_kode;
             $hasSARMenuModification = false;
 
             // Map dari menu ID ke level kode untuk validasi
             $menuLevelMap = [];
             foreach ($originalMenus as $menu) {
                 if ($menu->Level) {
-                    $menuLevelMap[$menu->web_menu_id] = $menu->Level->level_kode;
+                    $menuLevelMap[$menu->web_menu_id] = $menu->Level->hak_akses_kode;
                 }
             }
 
@@ -683,7 +683,7 @@ class WebMenuModel extends Model
                 $originalLevel = $menuLevelMap[$menuId] ?? null;
 
                 // Jika menu adalah SAR tapi user bukan SAR, tandai ada modifikasi menu SAR
-                if ($originalLevel === 'SAR' && $userLevelKode !== 'SAR') {
+                if ($originalLevel === 'SAR' && $userhakAksesKode !== 'SAR') {
                     if (isset($item['parent_id']) && $item['parent_id'] != null) {
                         $hasSARMenuModification = true;
                         break;
@@ -697,13 +697,13 @@ class WebMenuModel extends Model
                         $childOriginalLevel = $menuLevelMap[$childId] ?? null;
 
                         // Jika child menu adalah SAR tapi user bukan SAR, tandai ada modifikasi
-                        if ($childOriginalLevel === 'SAR' && $userLevelKode !== 'SAR') {
+                        if ($childOriginalLevel === 'SAR' && $userhakAksesKode !== 'SAR') {
                             $hasSARMenuModification = true;
                             break;
                         }
 
                         // Jika parent bukan SAR tapi child SAR, ini juga modifikasi tidak valid
-                        if ($originalLevel !== 'SAR' && $childOriginalLevel === 'SAR' && $userLevelKode !== 'SAR') {
+                        if ($originalLevel !== 'SAR' && $childOriginalLevel === 'SAR' && $userhakAksesKode !== 'SAR') {
                             $hasSARMenuModification = true;
                             break;
                         }
@@ -728,7 +728,7 @@ class WebMenuModel extends Model
                 if (!$menu) continue;
 
                 $menuName = $menu->wm_menu_nama ?: ($menu->WebMenuGlobal ? $menu->WebMenuGlobal->wmg_nama_default : '');
-                $level = $menu->fk_m_level;
+                $level = $menu->fk_m_hak_akses;
 
                 // Inisialisasi array untuk level ini jika belum ada
                 if (!isset($menuNamesByLevel[$level])) {
@@ -866,21 +866,21 @@ class WebMenuModel extends Model
         return $menuName;
     }
 
-    public static function getMenusByLevelWithPermissions($levelKode, $userId)
+    public static function getMenusByLevelWithPermissions($hakAksesKode, $userId)
     {
-        // Dapatkan level_id dari level_kode
-        $level = LevelModel::where('level_kode', $levelKode)->first();
+        // Dapatkan hak_akses_id dari hak_akses_kode
+        $level = HakAksesModel::where('hak_akses_kode', $hakAksesKode)->first();
         if (!$level) return collect([]);
 
-        $levelId = $level->level_id;
+        $hakAksesId = $level->hak_akses_id;
 
         // Ambil menu berdasarkan level
-        $menus = self::where('fk_m_level', $levelId)
+        $menus = self::where('fk_m_hak_akses', $hakAksesId)
             ->where('wm_status_menu', 'aktif')
             ->where('isDeleted', 0)
             ->whereNull('wm_parent_id')
-            ->with(['children' => function ($query) use ($levelId) {
-                $query->where('fk_m_level', $levelId)
+            ->with(['children' => function ($query) use ($hakAksesId) {
+                $query->where('fk_m_hak_akses', $hakAksesId)
                     ->where('wm_status_menu', 'aktif')
                     ->where('isDeleted', 0)
                     ->orderBy('wm_urutan_menu');
@@ -889,17 +889,17 @@ class WebMenuModel extends Model
             ->get();
 
         // Filter menu berdasarkan hak akses
-        $filteredMenus = $menus->filter(function ($menu) use ($userId, $levelKode) {
+        $filteredMenus = $menus->filter(function ($menu) use ($userId, $hakAksesKode) {
             // Untuk menu utama (parent)
             if (!$menu->wm_parent_id) {
                 // Jika tidak ada submenu, cek hak akses langsung
                 if ($menu->children->isEmpty()) {
-                    return HakAksesModel::cekHakAksesMenu($userId, $menu->WebMenuUrl->wmu_nama ?? '');
+                    return SetHakAksesModel::cekHakAksesMenu($userId, $menu->WebMenuUrl->wmu_nama ?? '');
                 }
 
                 // Jika ada submenu, cek apakah salah satu submenu punya hak akses
                 $hasAccessibleChildren = $menu->children->contains(function ($child) use ($userId) {
-                    return HakAksesModel::cekHakAksesMenu($userId, $child->WebMenuUrl->wmu_nama ?? '');
+                    return SetHakAksesModel::cekHakAksesMenu($userId, $child->WebMenuUrl->wmu_nama ?? '');
                 });
 
                 return $hasAccessibleChildren;
@@ -912,9 +912,9 @@ class WebMenuModel extends Model
     }
 
     // Method untuk mendapatkan notifikasi
-    public static function getNotifikasiCount($levelKode)
+    public static function getNotifikasiCount($hakAksesKode)
     {
-        switch ($levelKode) {
+        switch ($hakAksesKode) {
             case 'ADM':
                 return NotifAdminModel::where('sudah_dibaca_notif_admin', null)->count();
             case 'VFR':

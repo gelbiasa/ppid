@@ -44,7 +44,7 @@ class FormPkDiriSendiriModel extends Model
         try {
             $data = $request->t_form_pk_diri_sendiri;
 
-            $userLevel = Auth::user()->level->level_kode;
+            $userLevel = Auth::user()->level->hak_akses_kode;
             if ($userLevel === 'RPN') {
                 $data['pk_nama_pengguna'] = Auth::user()->nama_pengguna;
                 $data['pk_alamat_pengguna'] = Auth::user()->alamat_pengguna;
@@ -82,7 +82,7 @@ class FormPkDiriSendiriModel extends Model
     public static function validasiData($request)
     {
         // Cek apakah validasi untuk admin diperlukan
-        if (Auth::user()->level->level_kode === 'ADM') {
+        if (Auth::user()->level->hak_akses_kode === 'ADM') {
             // rules validasi untuk form diri sendiri
             $rules = [
                 't_form_pk_diri_sendiri.pk_nama_pengguna' => 'required',

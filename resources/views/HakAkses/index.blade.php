@@ -41,10 +41,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        @foreach($levelUsers as $levelKode => $levelData)
+                        @foreach($levelUsers as $hakAksesKode => $levelData)
                             <div class="col-md-4 mb-2">
                                 <button class="btn btn-warning btn-block text-center set-hak-level"
-                                    data-level="{{ $levelKode }}" data-name="{{ $levelData['nama'] }}">
+                                    data-level="{{ $hakAksesKode }}" data-name="{{ $levelData['nama'] }}">
                                     <strong>{{ $levelData['nama'] }}</strong>
                                 </button>
                             </div>
@@ -69,7 +69,7 @@
                             <div class="modal-body">
                                 <form id="formHakAksesLevel">
                                     @csrf
-                                    <input type="hidden" id="levelKode" name="level_kode">
+                                    <input type="hidden" id="hakAksesKode" name="hak_akses_kode">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
@@ -106,19 +106,19 @@
             <form action="{{ url('/HakAkses/updateData') }}" method="POST" id="form-hak-akses">
                 @csrf
                 <div class="accordion" id="accordionHakAkses">
-                    @foreach($levelUsers as $levelKode => $levelData)
+                    @foreach($levelUsers as $hakAksesKode => $levelData)
                         <div class="card">
-                            <div class="card-header" id="heading{{ $levelKode }}">
+                            <div class="card-header" id="heading{{ $hakAksesKode }}">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
-                                        data-target="#collapse{{ $levelKode }}" aria-expanded="true"
-                                        aria-controls="collapse{{ $levelKode }}">
-                                        <strong>{{ $levelData['nama'] }} ({{ $levelKode }})</strong>
+                                        data-target="#collapse{{ $hakAksesKode }}" aria-expanded="true"
+                                        aria-controls="collapse{{ $hakAksesKode }}">
+                                        <strong>{{ $levelData['nama'] }} ({{ $hakAksesKode }})</strong>
                                     </button>
                                 </h2>
                             </div>
 
-                            <div id="collapse{{ $levelKode }}" class="collapse" aria-labelledby="heading{{ $levelKode }}"
+                            <div id="collapse{{ $hakAksesKode }}" class="collapse" aria-labelledby="heading{{ $hakAksesKode }}"
                                 data-parent="#accordionHakAkses">
                                 <div class="card-body">
                                     @foreach($levelData['menus'] as $kategori => $submenus)
@@ -248,12 +248,12 @@
             // Hilangkan tombol "Tambah Hak Akses" karena fitur ini tidak diperlukan lagi sesuai revisi
 
             $(document).on('click', '.set-hak-level', function () {
-                let levelKode = $(this).data('level');
-                $('#levelKode').val(levelKode);
+                let hakAksesKode = $(this).data('level');
+                $('#hakAksesKode').val(hakAksesKode);
                 $('#levelTitle').text($(this).data('name'));
 
                 $.ajax({
-                    url: `{{ url('/HakAkses/getHakAksesData') }}/${levelKode}`,
+                    url: `{{ url('/HakAkses/getHakAksesData') }}/${hakAksesKode}`,
                     type: 'GET',
                     dataType: 'json',
                     success: function (data) {

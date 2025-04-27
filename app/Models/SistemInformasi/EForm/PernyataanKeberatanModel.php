@@ -65,7 +65,7 @@ class PernyataanKeberatanModel extends Model
         try {
             $data = $request->t_pernyataan_keberatan;
             $kategoriPemohon = $data['pk_kategori_pemohon'];
-            $userLevel = Auth::user()->level->level_kode;
+            $userLevel = Auth::user()->level->hak_akses_kode;
             $kategoriAduan = $userLevel === 'ADM' ? 'offline' : 'online';
 
             if ($userLevel === 'ADM') {
@@ -148,7 +148,7 @@ class PernyataanKeberatanModel extends Model
         ];
 
         // Tambahkan validasi untuk admin jika diperlukan
-        if (Auth::user()->level->level_kode === 'ADM') {
+        if (Auth::user()->level->hak_akses_kode === 'ADM') {
             $rules['pk_bukti_aduan'] = 'required|file|mimes:pdf,jpg,jpeg,png,svg,doc,docx|max:10240';
             $message['pk_bukti_aduan.required'] = 'Bukti aduan wajib diupload untuk Admin';
             $message['pk_bukti_aduan.file'] = 'Bukti aduan harus berupa file';

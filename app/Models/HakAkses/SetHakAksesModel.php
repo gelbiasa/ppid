@@ -2,7 +2,7 @@
 
 namespace App\Models\HakAkses;
 
-use App\Models\LevelModel;
+use App\Models\HakAksesModel;
 use App\Models\Log\TransactionModel;
 use App\Models\TraitsModel;
 use App\Models\UserModel;
@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class HakAksesModel extends Model
+class SetHakAksesModel extends Model
 {
     use TraitsModel;
 
@@ -36,17 +36,17 @@ class HakAksesModel extends Model
     public static function selectData()
     {
         // Dapatkan data level selain SAR dan RPN
-        $levels = LevelModel::whereNotIn('level_kode', ['SAR', 'RPN'])->get();
+        $levels = HakAksesModel::whereNotIn('hak_akses_kode', ['SAR', 'RPN'])->get();
 
         // Struktur data untuk view
         $levelUsers = [];
 
         foreach ($levels as $level) {
-            $users = UserModel::where('fk_m_level', $level->level_id)->get();
-            $menus = self::getMenusByJenisMenu($level->level_kode);
+            $users = UserModel::where('fk_m_hak_akses', $level->hak_akses_id)->get();
+            $menus = self::getMenusByJenisMenu($level->hak_akses_kode);
 
-            $levelUsers[$level->level_kode] = [
-                'nama' => $level->level_nama,
+            $levelUsers[$level->hak_akses_kode] = [
+                'nama' => $level->hak_akses_nama,
                 'users' => $users,
                 'menus' => $menus
             ];
@@ -67,16 +67,16 @@ class HakAksesModel extends Model
 
             // Jika simpan berdasarkan level
             if ($isLevel) {
-                $levelKode = $data['level_kode'];
+                $hakAksesKode = $data['hak_akses_kode'];
                 $menuAkses = $data['menu_akses'] ?? [];
 
-                // Ambil semua pengguna dalam level_kode tertentu
-                $users = UserModel::whereHas('level', function ($query) use ($levelKode) {
-                    $query->where('level_kode', $levelKode);
+                // Ambil semua pengguna dalam hak_akses_kode tertentu
+                $users = UserModel::whereHas('level', function ($query) use ($hakAksesKode) {
+                    $query->where('hak_akses_kode', $hakAksesKode);
                 })->pluck('user_id');
 
-                $level = LevelModel::where('level_kode', $levelKode)->first();
-                $levelNama = $level ? $level->level_nama : $levelKode;
+                $level = HakAksesModel::where('hak_akses_kode', $hakAksesKode)->first();
+                $hakAksesNama = $level ? $level->hak_akses_nama : $hakAksesKode;
 
                 // Simpan status hak akses lama untuk dibandingkan nanti
                 $oldHakAksesStatus = [];
@@ -86,9 +86,9 @@ class HakAksesModel extends Model
 
                 // Dapatkan status hak akses saat ini untuk semua menu
                 foreach ($menuIds as $menu_id) {
-                    // Cari menu yang sesuai dengan level_id
+                    // Cari menu yang sesuai dengan hak_akses_id
                     $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                        ->where('fk_m_level', $level->level_id)
+                        ->where('fk_m_hak_akses', $level->hak_akses_id)
                         ->where('isDeleted', 0)
                         ->first();
 
@@ -125,9 +125,9 @@ class HakAksesModel extends Model
                 foreach ($menuIds as $menu_id) {
                     $akses = $menuAkses[$menu_id] ?? [];
 
-                    // Cari menu yang sesuai dengan level_id
+                    // Cari menu yang sesuai dengan hak_akses_id
                     $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                        ->where('fk_m_level', $level->level_id)
+                        ->where('fk_m_hak_akses', $level->hak_akses_id)
                         ->where('isDeleted', 0)
                         ->first();
 
@@ -178,7 +178,7 @@ class HakAksesModel extends Model
                     if ($isChanged) {
                         $menu = WebMenuModel::find($menu_id);
                         if ($menu) {
-                            $detailAktivitas = $menu->wm_menu_nama . " untuk semua " . $levelNama;
+                            $detailAktivitas = $menu->wm_menu_nama . " untuk semua " . $hakAksesNama;
 
                             TransactionModel::createData(
                                 'UPDATED',
@@ -216,10 +216,10 @@ class HakAksesModel extends Model
                             $user = UserModel::find($pengakses_id);
                             if (!$user) continue;
 
-                            $levelId = $user->fk_m_level;
+                            $hakAksesId = $user->fk_m_hak_akses;
 
                             $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                                ->where('fk_m_level', $levelId)
+                                ->where('fk_m_hak_akses', $hakAksesId)
                                 ->where('isDeleted', 0)
                                 ->first();
 
@@ -361,10 +361,10 @@ class HakAksesModel extends Model
     {
         // Jika parameter kedua kosong, berarti ini request untuk hak akses level
         if ($param2 === null) {
-            $level_kode = $param1;
+            $hak_akses_kode = $param1;
             try {
-                // Ambil semua menu berdasarkan jenis_menu (level_kode)
-                $menus = self::getMenusByJenisMenu($level_kode);
+                // Ambil semua menu berdasarkan jenis_menu (hak_akses_kode)
+                $menus = self::getMenusByJenisMenu($hak_akses_kode);
 
                 // Flatten array untuk mendapatkan semua ID menu
                 $ambilSemuaMenuId = [];
@@ -374,22 +374,22 @@ class HakAksesModel extends Model
                     }
                 }
 
-                // Ambil level_id berdasarkan level_kode
-                $level = LevelModel::where('level_kode', $level_kode)->first();
+                // Ambil hak_akses_id berdasarkan hak_akses_kode
+                $level = HakAksesModel::where('hak_akses_kode', $hak_akses_kode)->first();
                 if (!$level) return [];
 
-                // Ambil semua pengguna dalam level_kode tertentu untuk mendapatkan ha_pengakses
-                $users = UserModel::whereHas('level', function ($query) use ($level_kode) {
-                    $query->where('level_kode', $level_kode);
+                // Ambil semua pengguna dalam hak_akses_kode tertentu untuk mendapatkan ha_pengakses
+                $users = UserModel::whereHas('level', function ($query) use ($hak_akses_kode) {
+                    $query->where('hak_akses_kode', $hak_akses_kode);
                 })->pluck('user_id');
 
                 // Gabungkan data menu dengan hak akses
                 $menuData = [];
                 foreach ($menus as $menu_utama => $submenus) {
                     foreach ($submenus as $sub_menu => $menu_id) {
-                        // Cari menu berdasarkan menu_id dan level_id
+                        // Cari menu berdasarkan menu_id dan hak_akses_id
                         $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                            ->where('fk_m_level', $level->level_id)
+                            ->where('fk_m_hak_akses', $level->hak_akses_id)
                             ->where('isDeleted', 0)
                             ->first();
 
@@ -430,9 +430,9 @@ class HakAksesModel extends Model
             $user = UserModel::find($pengakses_id);
             if (!$user) return null;
 
-            // Cari menu berdasarkan menu_id dan level_id
+            // Cari menu berdasarkan menu_id dan hak_akses_id
             $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                ->where('fk_m_level', $user->fk_m_level)
+                ->where('fk_m_hak_akses', $user->fk_m_hak_akses)
                 ->where('isDeleted', 0)
                 ->first();
 
@@ -445,18 +445,18 @@ class HakAksesModel extends Model
         }
     }
 
-    // Method untuk mendapatkan menu berdasarkan jenis_menu (level_kode)
-    public static function getMenusByJenisMenu($level_kode)
+    // Method untuk mendapatkan menu berdasarkan jenis_menu (hak_akses_kode)
+    public static function getMenusByJenisMenu($hak_akses_kode)
     {
         // Ambil level berdasarkan kode level
-        $level = LevelModel::where('level_kode', $level_kode)->first();
+        $level = HakAksesModel::where('hak_akses_kode', $hak_akses_kode)->first();
 
         if (!$level) {
             return [];
         }
 
         // Ambil semua parent menu untuk level ini
-        $parentMenus = WebMenuModel::where('fk_m_level', $level->level_id)
+        $parentMenus = WebMenuModel::where('fk_m_hak_akses', $level->hak_akses_id)
             ->whereNull('wm_parent_id')
             ->where('wm_status_menu', 'aktif')
             ->where('isDeleted', 0)
@@ -513,17 +513,17 @@ class HakAksesModel extends Model
         $user = UserModel::find($user_id);
 
         // Jika user adalah super admin, berikan akses penuh
-        if ($user && $user->level->level_kode === 'SAR') {
+        if ($user && $user->level->hak_akses_kode === 'SAR') {
             return true;
         }
 
-        $levelId = $user->fk_m_level;
+        $hakAksesId = $user->fk_m_hak_akses;
 
         // Prioritas 1: Cari menu berdasarkan URL dan level pengguna
         $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
             $query->where('wmu_nama', $menu_url);
         })
-        ->where('fk_m_level', $levelId)
+        ->where('fk_m_hak_akses', $hakAksesId)
         ->where('wm_status_menu', 'aktif')
         ->where('isDeleted', 0)
         ->first();
@@ -560,17 +560,17 @@ class HakAksesModel extends Model
         $user = UserModel::find($user_id);
 
         // Jika user adalah super admin, berikan akses penuh
-        if ($user && $user->level->level_kode === 'SAR') {
+        if ($user && $user->level->hak_akses_kode === 'SAR') {
             return true;
         }
 
-        $levelId = $user->fk_m_level;
+        $hakAksesId = $user->fk_m_hak_akses;
 
         // Prioritas 1: Cari menu berdasarkan URL dan level pengguna
         $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
             $query->where('wmu_nama', $menu_url);
         })
-        ->where('fk_m_level', $levelId)
+        ->where('fk_m_hak_akses', $hakAksesId)
         ->where('wm_status_menu', 'aktif')
         ->where('isDeleted', 0)
         ->first();

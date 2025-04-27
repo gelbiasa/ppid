@@ -17,7 +17,7 @@ class UserModel extends Authenticatable implements JWTSubject
     protected $table = 'm_user';
     protected $primaryKey = 'user_id';
     protected $fillable = [
-        'fk_m_level',
+        'fk_m_hak_akses',
         'password',
         'nama_pengguna',
         'alamat_pengguna',
@@ -34,7 +34,7 @@ class UserModel extends Authenticatable implements JWTSubject
     // Relasi ke tabel level
     public function level()
     {
-        return $this->belongsTo(LevelModel::class, 'fk_m_level', 'level_id');
+        return $this->belongsTo(HakAksesModel::class, 'fk_m_hak_akses', 'hak_akses_id');
     }
 
     public function __construct(array $attributes = [])
@@ -45,18 +45,18 @@ class UserModel extends Authenticatable implements JWTSubject
 
     public function getRoleName(): string
     {
-        return $this->level->level_nama;
+        return $this->level->hak_akses_nama;
     }
 
     public function hasRole($role): bool
     {
-        return $this->level->level_kode == $role;
+        return $this->level->hak_akses_kode == $role;
     }
 
     /* Mendapatkan Kode Role */
     public function getRole()
     {
-        return $this->level->level_kode;
+        return $this->level->hak_akses_kode;
     }
 
     public function getJWTIdentifier()
@@ -89,7 +89,7 @@ class UserModel extends Authenticatable implements JWTSubject
             session($userData);
 
             // Perbaikan routing - sesuaikan dengan definisi route yang ada
-            $levelCode = $user->level->level_kode;
+            $levelCode = $user->level->hak_akses_kode;
             $redirectUrl = url('/dashboard' . $levelCode);
 
             return [
@@ -196,7 +196,7 @@ class UserModel extends Authenticatable implements JWTSubject
             'm_user.alamat_pengguna' => 'required|string',
             'm_user.pekerjaan_pengguna' => 'required|string',
             'm_user.nik_pengguna' => 'required|digits:16|unique:m_user,nik_pengguna',
-            'm_user.fk_m_level' => 'required|exists:m_level,level_id',
+            'm_user.fk_m_hak_akses' => 'required|exists:m_hak_akses,hak_akses_id',
         ], [
             'password.min' => 'Password minimal harus 5 karakter.',
             'password.confirmed' => 'Verifikasi password tidak sesuai dengan password baru.',
@@ -217,8 +217,8 @@ class UserModel extends Authenticatable implements JWTSubject
             'm_user.nik_pengguna.required' => 'NIK wajib diisi.',
             'm_user.nik_pengguna.digits' => 'NIK harus terdiri dari 16 digit.',
             'm_user.nik_pengguna.unique' => 'NIK sudah terdaftar.',
-            'm_user.fk_m_level.required' => 'Level pengguna wajib dipilih.',
-            'm_user.fk_m_level.exists' => 'Level pengguna tidak valid.',
+            'm_user.fk_m_hak_akses.required' => 'Level pengguna wajib dipilih.',
+            'm_user.fk_m_hak_akses.exists' => 'Level pengguna tidak valid.',
         ]);
 
         if ($validator->fails()) {

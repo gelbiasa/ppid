@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\HakAkses;
 
 use App\Http\Controllers\TraitsController;
-use App\Models\HakAkses\HakAksesModel;
+use App\Models\HakAkses\SetHakAksesModel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
-class HakAksesController extends Controller
+class SetHakAksesController extends Controller
 {
     use TraitsController;
 
@@ -28,7 +28,7 @@ class HakAksesController extends Controller
         $activeMenu = 'pengaturanhakakses';
 
         // Mengambil data dari model
-        $result = HakAksesModel::selectData();
+        $result = SetHakAksesModel::selectData();
         $levelUsers = $result['data'];
 
         return view("HakAkses.index", [
@@ -55,15 +55,15 @@ class HakAksesController extends Controller
     {
         // Jika param2 tidak ada, maka ini adalah permintaan hak akses berdasarkan level
         if ($param2 === null) {
-            $level_kode = $param1;
-            $menuData = HakAksesModel::getHakAksesData($level_kode);
+            $hak_akses_kode = $param1;
+            $menuData = SetHakAksesModel::getHakAksesData($hak_akses_kode);
             return response()->json($menuData);
         }
         // Jika param2 ada, maka ini adalah permintaan hak akses spesifik user dan menu
         else {
             $pengakses_id = $param1;
             $menu_id = $param2;
-            $hakAkses = HakAksesModel::getHakAksesData($pengakses_id, $menu_id);
+            $hakAkses = SetHakAksesModel::getHakAksesData($pengakses_id, $menu_id);
             return response()->json($hakAkses);
         }
     }
@@ -75,7 +75,7 @@ class HakAksesController extends Controller
             // Jika ada ajax request, maka ini adalah permintaan dari form level
             if ($request->ajax() || $isLevel) {
                 // Proses data dengan model
-                $result = HakAksesModel::updateData($request->all(), true);
+                $result = SetHakAksesModel::updateData($request->all(), true);
 
                 if ($result['success']) {
                     return response()->json(['success' => true, 'message' => $result['message']]);
@@ -86,7 +86,7 @@ class HakAksesController extends Controller
             // Jika bukan ajax request, maka ini adalah permintaan dari form individual
             else {
                 // Proses data menggunakan model
-                $result = HakAksesModel::updateData($request->all(), false);
+                $result = SetHakAksesModel::updateData($request->all(), false);
 
                 if ($result['success']) {
                     return redirect()->back()->with('success', $result['message']);

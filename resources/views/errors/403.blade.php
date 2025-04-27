@@ -14,8 +14,8 @@
                 // Tentukan URL dashboard berdasarkan level pengguna
                 $dashboardUrl = '/';
                 if (Auth::check()) {
-                    $levelKode = Auth::user()->level->level_kode;
-                    $dashboardUrl = '/dashboard' . $levelKode;
+                    $hakAksesKode = Auth::user()->level->hak_akses_kode;
+                    $dashboardUrl = '/dashboard' . $hakAksesKode;
                 }
             @endphp
             <a href="{{ url($dashboardUrl) }}" class="btn btn-primary">Kembali ke Dashboard</a>
