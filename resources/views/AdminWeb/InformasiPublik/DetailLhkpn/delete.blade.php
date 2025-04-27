@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailLHKPNUrl = WebMenuModel::getDynamicMenuUrl('detail-lhkpn');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Konfirmasi Hapus</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -34,58 +38,52 @@
    
    <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-     <button type="button" class="btn btn-danger" id="btnConfirmDelete">
-       <i class="fas fa-trash mr-1"></i> Hapus
+     <button type="button" class="btn btn-danger" id="btnConfirmDelete"
+        onclick="confirmDelete('{{ url( $detailLHKPNUrl . '/deleteData/' . $detailLhkpn->detail_lhkpn_id) }}')">
+        <i class="fas fa-trash mr-1"></i> Hapus
      </button>
    </div>
    
    <script>
-     $(document).ready(function() {
-       $('#btnConfirmDelete').on('click', function() {
-         const button = $(this);
-         
-         // Tampilkan loading state pada tombol
-         button.html('<i class="fas fa-spinner fa-spin"></i> Menghapus...').attr('disabled', true);
-         
-         $.ajax({
-           url: '{{ url("adminweb/informasipublik/detail-lhkpn/deleteData/{$detailLhkpn->detail_lhkpn_id}") }}',
-           type: 'DELETE',
-           headers: {
-             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-           },
-           success: function(response) {
-             if (response.success) {
-               $('#myModal').modal('hide');
-               
-               // Reload tabel
-               reloadTable();
-               
-               Swal.fire({
-                 icon: 'success',
-                 title: 'Berhasil',
-                 text: response.message
-               });
-             } else {
-               Swal.fire({
-                 icon: 'error',
-                 title: 'Gagal',
-                 text: response.message || 'Terjadi kesalahan saat menghapus data'
-               });
-             }
-           },
-           error: function(xhr) {
-             console.error('Error:', xhr);
-             Swal.fire({
-               icon: 'error',
-               title: 'Gagal',
-               text: 'Terjadi kesalahan saat menghapus data. Silakan coba lagi.'
-             });
-           },
-           complete: function() {
-             // Kembalikan tombol ke keadaan semula
-             button.html('<i class="fas fa-trash mr-1"></i> Hapus').attr('disabled', false);
-           }
-         });
-       });
-     });
+     function confirmDelete(url) {
+    const button = $('#confirmDeleteButton');
+
+    button.html('<i class="fas fa-spinner fa-spin"></i> Menghapus...').prop('disabled', true);
+
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function (response) {
+        $('#myModal').modal('hide');
+
+        if (response.success) {
+          reloadTable();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: response.message
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: response.message
+          });
+        }
+      },
+      error: function (xhr) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Terjadi kesalahan saat menghapus data. Silakan coba lagi.'
+        });
+
+        button.html('<i class="fas fa-trash mr-1"></i> Hapus').prop('disabled', false);
+      }
+    });
+  }
    </script>

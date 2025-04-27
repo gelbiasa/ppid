@@ -110,6 +110,8 @@ function tentukanKonteks() {
         konteks = 'detail-pengumuman';
     } else if (path.includes('detail-berita')) {
         konteks = 'detail-berita';
+    } else if (path.includes('kategori-tahun-lhkpn')) {
+        konteks = 'kategori-tahun-lhkpn';
     }
     
     // Jika tidak ditemukan konteks spesifik, gunakan fallback
@@ -253,6 +255,12 @@ function aturFormModal() {
         if ($('#berita_deskripsi').length) {
             aturSummernote('#berita_deskripsi', null, null, {
                 placeholder: 'Tuliskan konten berita di sini...'
+            });
+        }
+
+        if ($('#peraturan_lhkpn').length) {
+            aturSummernote('#peraturan_lhkpn', null, null, {
+                placeholder: 'Tuliskan konten LHKPN di sini...'
             });
         }
         

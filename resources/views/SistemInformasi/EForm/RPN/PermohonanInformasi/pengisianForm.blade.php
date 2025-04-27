@@ -1,10 +1,14 @@
 <!-- pengisian form halaman responden -->
+@php
+  use App\Models\Website\WebMenuModel;
+  $permohonanInformasiRespondenUrl = WebMenuModel::getDynamicMenuUrl('permohonan-informasi');
+@endphp
 @extends('layouts.template')
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanInformasi') }}" class="btn btn-secondary">
+                <a href="{{ url($permohonanInformasiRespondenUrl) }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -21,7 +25,7 @@
             </div>
         @endif
 
-            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PermohonanInformasi/createData') }}" method="POST"
+            <form action="{{ url($permohonanInformasiRespondenUrl . '/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 <div class="form-group">

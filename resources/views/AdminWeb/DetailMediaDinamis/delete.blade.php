@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailMediaUrl = WebMenuModel::getDynamicMenuUrl('detail-media');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Konfirmasi Hapus Media Dinamis</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -53,7 +57,7 @@
  <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
      <button type="button" class="btn btn-danger" id="confirmDeleteButton" 
-     onclick="confirmDelete('{{ url('adminweb/media-detail/deleteData/'.$detailMediaDinamis->detail_media_dinamis_id) }}')">
+     onclick="confirmDelete('{{ url($detailMediaUrl . '/deleteData/' . $detailMediaDinamis->detail_media_dinamis_id) }}')">
          <i class="fas fa-trash mr-1"></i> Hapus
      </button>
  </div>

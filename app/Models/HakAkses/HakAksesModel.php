@@ -15,8 +15,8 @@ class HakAksesModel extends Model
 {
     use TraitsModel;
 
-    protected $table = 'm_hak_akses';
-    protected $primaryKey = 'hak_akses_id';
+    protected $table = 'set_hak_akses';
+    protected $primaryKey = 'set_hak_akses_id';
     protected $fillable = [
         'fk_web_menu',
         'ha_pengakses',
@@ -202,11 +202,11 @@ class HakAksesModel extends Model
 
                 // Proses data dari form
                 foreach ($data as $key => $value) {
-                    if (strpos($key, 'hak_akses_') === 0) {
-                        // Format key: hak_akses_[pengakses_id]_[menu_id]_[hak]
+                    if (strpos($key, 'set_hak_akses_') === 0) {
+                        // Format key: set_hak_akses_[pengakses_id]_[menu_id]_[hak]
                         $parts = explode('_', $key);
 
-                        // Pastikan format sesuai: hak_akses_[pengakses_id]_[menu_id]_[hak]
+                        // Pastikan format sesuai: set_hak_akses_[pengakses_id]_[menu_id]_[hak]
                         if (count($parts) >= 5) {
                             $pengakses_id = $parts[2];
                             $menu_id = $parts[3];

@@ -1,3 +1,8 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  use App\Models\HakAkses\HakAksesModel;
+  $pernyataanKeberatanAdminUrl = WebMenuModel::getDynamicMenuUrl('pernyataan-keberatan-admin');
+@endphp
 @extends('layouts.template')
 @section('content')
 
@@ -68,12 +73,19 @@ $ketentuanPelaporan = $data['ketentuanPelaporan'];
         <hr class="thick-line">
         <div class="row text-center">
             <div class="col-md-4">
-                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PernyataanKeberatan/addData') }}" class="custom-button d-block p-3 mb-2">
-                    <i class="fas fa-edit fa-2x"></i>
-                    <h5>E-Form Pernyataan Keberatan</h5>
-                </a>
-                <div class="custom-container p-3">
-                    <p>Silakan Mengklik Button Diatas Untuk Melakukan Pengisian Form Pernyataan Keberatan</p>
+                <div class="card-tools">
+                    @if(
+                      Auth::user()->level->level_kode === 'SAR' ||
+                      HakAksesModel::cekHakAkses(Auth::user()->user_id, $pernyataanKeberatanAdminUrl, 'create')
+                    )
+                    <a href="{{ url($pernyataanKeberatanAdminUrl . '/addData') }}" class="custom-button d-block p-3 mb-2">
+                        <i class="fas fa-edit fa-2x"></i>
+                        <h5>E-Form Permohonan Informasi</h5>
+                    </a>
+                        <div class="custom-container p-3">
+                            <p>Silakan Mengklik Button Diatas Untuk Melakukan Pengisian Form Pernyataan Keberatan</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

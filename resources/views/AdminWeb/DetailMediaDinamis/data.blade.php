@@ -1,4 +1,8 @@
-
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $detailMediaUrlUrl = WebMenuModel::getDynamicMenuUrl('detail-media');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="showing-text">
         Showing {{ $detailMediaDinamis->firstItem() }} to {{ $detailMediaDinamis->lastItem() }} of {{$detailMediaDinamis->total() }} results
@@ -22,15 +26,28 @@
             <td>{{ $item->dm_judul_media }}</td>
             <td>{{ ucfirst($item->dm_type_media) }}</td>
             <td>
-                <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/media-detail/editData/{$item->detail_media_dinamis_id}") }}')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("adminweb/media-detail/detailData/{$item->detail_media_dinamis_id}") }}')">
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailMediaUrlUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($detailMediaUrlUrl . '/editData/' . $item->detail_media_dinamis_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($detailMediaUrlUrl . '/detailData/' . $item->detail_media_dinamis_id) }}')">
                     <i class="fas fa-eye"></i> Detail
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/media-detail/deleteData/{$item->detail_media_dinamis_id}") }}')">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailMediaUrlUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($detailMediaUrlUrl . '/deleteData/' . $item->detail_media_dinamis_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
             </td>
         </tr>
         @empty

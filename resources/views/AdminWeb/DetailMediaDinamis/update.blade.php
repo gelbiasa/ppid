@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailMediaUrlUrl = WebMenuModel::getDynamicMenuUrl('detail-media');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Edit Detail Media Dinamis</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdateDetailMediaDinamis" action="{{ url('adminweb/media-detail/updateData/' . $detailMediaDinamis->detail_media_dinamis_id) }}" method="POST"
+    <form id="formUpdateDetailMediaDinamis" action="{{ url($detailMediaUrlUrl . '/updateData/' . $detailMediaDinamis->detail_media_dinamis_id) }}" method="POST"
         enctype="multipart/form-data">
         @csrf
 

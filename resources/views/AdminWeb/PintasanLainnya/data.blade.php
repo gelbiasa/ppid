@@ -1,3 +1,8 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $kategoriPintasanLainnyaUrl = WebMenuModel::getDynamicMenuUrl('kategori-pintasan-lainnya');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
      <div class="showing-text">
          Showing {{ $pintasanLainnya->firstItem() }} to {{ $pintasanLainnya->lastItem() }} of {{ $pintasanLainnya->total() }} results
@@ -20,16 +25,29 @@
               <td>{{ $item->kategoriAkses->mka_judul_kategori ?? 'Kategori Tidak Tersedia' }}</td>
               <td>{{ $item->tpl_nama_kategori }}</td>
               <td>
-                 <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/pintasan-lainnya/editData/{$item->pintasan_lainnya_id}") }}')">
-                     <i class="fas fa-edit"></i> Edit
-                 </button>
-                 <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("adminweb/pintasan-lainnya/detailData/{$item->pintasan_lainnya_id}") }}')">
-                     <i class="fas fa-eye"></i> Detail
-                 </button>
-                 <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/pintasan-lainnya/deleteData/{$item->pintasan_lainnya_id}") }}')">
-                     <i class="fas fa-trash"></i> Hapus
-                 </button>
-             </td>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPintasanLainnyaUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($kategoriPintasanLainnyaUrl . '/editData/' . $item->pintasan_lainnya_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($kategoriPintasanLainnyaUrl . '/detailData/' . $item->pintasan_lainnya_id) }}')">
+                    <i class="fas fa-eye"></i> Detail
+                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPintasanLainnyaUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($kategoriPintasanLainnyaUrl . '/deleteData/' . $item->pintasan_lainnya_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
+            </td>
          </tr>
          @empty
          <tr>

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Http\Controllers\TraitsController;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\Website\InformasiPublik\LHKPN\LhkpnModel;
 
 class LhkpnController extends Controller
@@ -131,6 +133,79 @@ class LhkpnController extends Controller
             );
         } catch (\Exception $e) {
             return $this->jsonError($e, 'Terjadi kesalahan saat menghapus data LHKPN');
+        }
+    }
+    
+    /**
+     * Upload gambar dari Summernote
+     */
+    public function uploadImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+            ]);
+
+            $file = $request->file('image');
+
+            if (!$file) {
+                return $this->jsonError(
+                    new \Exception('Tidak ada file yang diunggah'),
+                    '',
+                    400
+                );
+            }
+
+            $fileName = 'kategori_tahun_lhkpn/' . Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public', $fileName);
+
+            return $this->jsonSuccess(
+                ['url' => asset('storage/' . $fileName)],
+                'Gambar berhasil diunggah'
+            );
+        } catch (ValidationException $e) {
+            return $this->jsonValidationError($e);
+        } catch (\Exception $e) {
+            return $this->jsonError($e);
+        }
+    }
+
+    public function removeImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'url' => 'required|string'
+            ]);
+
+            $imageUrl = $request->input('url');
+
+            // Extract filename dari full URL
+            $pathInfo = parse_url($imageUrl);
+            $path = $pathInfo['path'] ?? '';
+            $storagePath = str_replace('/storage/', '', $path);
+
+            if (!empty($storagePath)) {
+                // Logika untuk menghapus file
+                $filePath = storage_path('app/public/' . $storagePath);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                return $this->jsonSuccess(
+                    null,
+                    'Gambar berhasil dihapus'
+                );
+            } else {
+                return $this->jsonError(
+                    new \Exception('Path gambar tidak valid'),
+                    '',
+                    400
+                );
+            }
+        } catch (ValidationException $e) {
+            return $this->jsonValidationError($e);
+        } catch (\Exception $e) {
+            return $this->jsonError($e);
         }
     }
 }

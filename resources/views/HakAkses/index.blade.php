@@ -150,13 +150,13 @@
                                                                         <td>{{ $user->nama_pengguna }}</td>
                                                                         <td class="text-center">
                                                                             <input type="hidden"
-                                                                                name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_menu"
+                                                                                name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_menu"
                                                                                 value="0">
                                                                             <div class="custom-control custom-checkbox">
                                                                                 <input type="checkbox"
                                                                                     class="custom-control-input hak-akses-checkbox"
                                                                                     id="menu_{{ $user->user_id }}_{{ $submenuId }}"
-                                                                                    name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_menu"
+                                                                                    name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_menu"
                                                                                     value="1" data-user="{{ $user->user_id }}"
                                                                                     data-menu="{{ $submenuId }}" data-hak="menu">
                                                                                 <label class="custom-control-label"
@@ -165,13 +165,13 @@
                                                                         </td>
                                                                         <td class="text-center">
                                                                             <input type="hidden"
-                                                                                name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_view"
+                                                                                name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_view"
                                                                                 value="0">
                                                                             <div class="custom-control custom-checkbox">
                                                                                 <input type="checkbox"
                                                                                     class="custom-control-input hak-akses-checkbox"
                                                                                     id="view_{{ $user->user_id }}_{{ $submenuId }}"
-                                                                                    name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_view"
+                                                                                    name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_view"
                                                                                     value="1" data-user="{{ $user->user_id }}"
                                                                                     data-menu="{{ $submenuId }}" data-hak="view">
                                                                                 <label class="custom-control-label"
@@ -180,13 +180,13 @@
                                                                         </td>
                                                                         <td class="text-center">
                                                                             <input type="hidden"
-                                                                                name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_create"
+                                                                                name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_create"
                                                                                 value="0">
                                                                             <div class="custom-control custom-checkbox">
                                                                                 <input type="checkbox"
                                                                                     class="custom-control-input hak-akses-checkbox"
                                                                                     id="create_{{ $user->user_id }}_{{ $submenuId }}"
-                                                                                    name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_create"
+                                                                                    name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_create"
                                                                                     value="1" data-user="{{ $user->user_id }}"
                                                                                     data-menu="{{ $submenuId }}" data-hak="create">
                                                                                 <label class="custom-control-label"
@@ -195,13 +195,13 @@
                                                                         </td>
                                                                         <td class="text-center">
                                                                             <input type="hidden"
-                                                                                name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_update"
+                                                                                name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_update"
                                                                                 value="0">
                                                                             <div class="custom-control custom-checkbox">
                                                                                 <input type="checkbox"
                                                                                     class="custom-control-input hak-akses-checkbox"
                                                                                     id="update_{{ $user->user_id }}_{{ $submenuId }}"
-                                                                                    name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_update"
+                                                                                    name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_update"
                                                                                     value="1" data-user="{{ $user->user_id }}"
                                                                                     data-menu="{{ $submenuId }}" data-hak="update">
                                                                                 <label class="custom-control-label"
@@ -210,13 +210,13 @@
                                                                         </td>
                                                                         <td class="text-center">
                                                                             <input type="hidden"
-                                                                                name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_delete"
+                                                                                name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_delete"
                                                                                 value="0">
                                                                             <div class="custom-control custom-checkbox">
                                                                                 <input type="checkbox"
                                                                                     class="custom-control-input hak-akses-checkbox"
                                                                                     id="delete_{{ $user->user_id }}_{{ $submenuId }}"
-                                                                                    name="hak_akses_{{ $user->user_id }}_{{ $submenuId }}_delete"
+                                                                                    name="set_hak_akses_{{ $user->user_id }}_{{ $submenuId }}_delete"
                                                                                     value="1" data-user="{{ $user->user_id }}"
                                                                                     data-menu="{{ $submenuId }}" data-hak="delete">
                                                                                 <label class="custom-control-label"

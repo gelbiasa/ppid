@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('kategori-regulasi');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Tambah Kategori Regulasi Baru</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
  </div>
  
  <div class="modal-body">
-     <form id="formCreateKategoriRegulasi" action="{{ url('adminweb/informasipublik/kategori-regulasi/createData') }}" method="POST">
+     <form id="formCreateKategoriRegulasi" action="{{ url($regulasiDinamisUrl . '/createData') }}" method="POST">
          @csrf
  
          <div class="form-group">

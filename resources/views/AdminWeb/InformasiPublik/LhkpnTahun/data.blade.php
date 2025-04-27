@@ -1,3 +1,8 @@
+@php
+    use App\Models\Website\WebMenuModel;
+    use App\Models\HakAkses\HakAksesModel;
+    $kategoriTahunLHKPNUrl = WebMenuModel::getDynamicMenuUrl('kategori-tahun-lhkpn');
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
      <div class="showing-text">
          Showing {{ $lhkpn->firstItem() }} to {{ $lhkpn->lastItem() }} of {{ $lhkpn->total() }} results
@@ -20,16 +25,29 @@
              <td>{{ $item->lhkpn_tahun }}</td>
              <td>{{ $item->lhkpn_judul_informasi }}</td>
              <td>
-                 <button class="btn btn-sm btn-warning" onclick="modalAction('{{ url("adminweb/informasipublik/lhkpn-tahun/editData/{$item->lhkpn_id}") }}')">
-                     <i class="fas fa-edit"></i> Edit
-                 </button>
-                 <button class="btn btn-sm btn-info" onclick="modalAction('{{ url("adminweb/informasipublik/lhkpn-tahun/detailData/{$item->lhkpn_id}") }}')">
-                     <i class="fas fa-eye"></i> Detail
-                 </button>
-                 <button class="btn btn-sm btn-danger" onclick="modalAction('{{ url("adminweb/informasipublik/lhkpn-tahun/deleteData/{$item->lhkpn_id}") }}')">
-                     <i class="fas fa-trash"></i> Hapus
-                 </button>
-             </td>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriTahunLHKPNUrl, 'update')
+                )
+                    <button class="btn btn-sm btn-warning"
+                        onclick="modalAction('{{ url($kategoriTahunLHKPNUrl . '/editData/' . $item->lhkpn_id) }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-info"
+                    onclick="modalAction('{{ url($kategoriTahunLHKPNUrl . '/detailData/' . $item->lhkpn_id) }}')">
+                    <i class="fas fa-eye"></i> Detail
+                </button>
+                @if(
+                    Auth::user()->level->level_kode === 'SAR' ||
+                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriTahunLHKPNUrl, 'delete')
+                )
+                    <button class="btn btn-sm btn-danger"
+                        onclick="modalAction('{{ url($kategoriTahunLHKPNUrl . '/deleteData/' . $item->lhkpn_id) }}')">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                @endif
+            </td>
          </tr>
          @empty
          <tr>

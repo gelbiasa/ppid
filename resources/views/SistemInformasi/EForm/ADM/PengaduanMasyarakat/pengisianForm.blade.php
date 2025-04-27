@@ -1,11 +1,14 @@
 <!-- SistemInformasi/EForm/ADM/PengaduanMasyarakat/pengisianForm.blade.php-->
-
+@php
+  use App\Models\Website\WebMenuModel;
+  $pengaduanMasyarakatAdminUrl = WebMenuModel::getDynamicMenuUrl('pengaduan-masyarakat-admin');
+@endphp
 @extends('layouts.template')
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div>
-                <a href="{{ url('SistemInformasi/EForm/ADM/PengaduanMasyarakat') }}" class="btn btn-secondary">
+                <a href="{{ url($pengaduanMasyarakatAdminUrl) }}" class="btn btn-secondary">
                     <i class="fa fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -22,7 +25,7 @@
                 </div>
             @endif
 
-            <form action="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PengaduanMasyarakat/createData') }}" method="POST"
+            <form action="{{ url($pengaduanMasyarakatAdminUrl . '/createData') }}" method="POST"
                 enctype="multipart/form-data" novalidate>
                 @csrf
                 
