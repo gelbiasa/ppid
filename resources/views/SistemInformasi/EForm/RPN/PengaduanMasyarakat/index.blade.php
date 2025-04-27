@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $pengaduanMasyarakatRespondenUrl = WebMenuModel::getDynamicMenuUrl('pengaduan-masyarakat');
+@endphp
 @extends('layouts.template')
 @section('content')
 
@@ -68,7 +72,7 @@ $ketentuanPelaporan = $data['ketentuanPelaporan'];
         <hr class="thick-line">
         <div class="row text-center">
             <div class="col-md-4">
-                <a href="{{ url('SistemInformasi/EForm/' . Auth::user()->level->level_kode . '/PengaduanMasyarakat/addData') }}" class="custom-button d-block p-3 mb-2">
+                <a href="{{ url($pengaduanMasyarakatRespondenUrl . '/addData') }}" class="custom-button d-block p-3 mb-2">
                     <i class="fas fa-edit fa-2x"></i>
                     <h5>E-Form Pengaduan Masyarakat</h5>
                 </a>

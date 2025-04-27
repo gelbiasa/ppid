@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailMediaUrlUrl = WebMenuModel::getDynamicMenuUrl('detail-media');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Tambah Detail Media Dinamis</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formCreateDetailMediaDinamis" action="{{ url('adminweb/media-detail/createData') }}" method="POST"
+    <form id="formCreateDetailMediaDinamis" action="{{ url($detailMediaUrlUrl . '/createData') }}" method="POST"
         enctype="multipart/form-data">
         @csrf
 

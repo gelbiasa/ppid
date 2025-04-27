@@ -1,7 +1,7 @@
 @php
   use App\Models\Website\WebMenuModel;
   use App\Models\HakAkses\HakAksesModel;
-  $permohonanInformasiAdminUrl = WebMenuModel::getDynamicMenuUrl('management-level');
+  $permohonanInformasiAdminUrl = WebMenuModel::getDynamicMenuUrl('permohonan-informasi-admin');
 @endphp
 @extends('layouts.template')
 @section('content')
@@ -88,7 +88,7 @@ $ketentuanPelaporan = $data['ketentuanPelaporan'];
                             <p>Silakan Mengklik Button Diatas Untuk Melakukan Pengisian Form Permohonan Informasi</p>
                         </div>
                     @endif
-                  </div>
+                </div>
             </div>
         </div>
     </div>

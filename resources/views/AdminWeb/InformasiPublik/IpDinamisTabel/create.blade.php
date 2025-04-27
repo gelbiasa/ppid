@@ -1,23 +1,24 @@
-@php
-  use App\Models\Website\WebMenuModel;
-  $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('regulasi-dinamis');
-@endphp
 <div class="modal-header">
-     <h5 class="modal-title">Tambah Regulasi Dinamis Baru</h5>
+     <h5 class="modal-title">Tambah IP Dinamis Tabel Baru</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
        <span aria-hidden="true">&times;</span>
      </button>
    </div>
    
    <div class="modal-body">
-     <form id="formCreateRegulasiDinamis" action="{{ url($regulasiDinamisUrl . '/createData') }}" method="POST">
+     <form id="formCreateIpDinamisTabel" action="{{ url('adminweb/informasipublik/IpDinamisTabel/createData') }}" method="POST">
        @csrf
    
        <div class="form-group">
-         <label for="rd_judul_reg_dinamis">Judul Regulasi Dinamis <span class="text-danger">*</span></label>
-         <input type="text" class="form-control" id="rd_judul_reg_dinamis" name="m_regulasi_dinamis[rd_judul_reg_dinamis]" maxlength="150" placeholder="Masukkan judul regulasi dinamis">
-         <div class="invalid-feedback" id="rd_judul_reg_dinamis_error"></div>
-         <small class="form-text text-muted">Contoh:Regulasi.</small>
+         <label for="ip_nama_submenu">Nama Submenu <span class="text-danger">*</span></label>
+         <input type="text" class="form-control" id="ip_nama_submenu" name="m_ip_dinamis_tabel[ip_nama_submenu]" maxlength="100">
+         <div class="invalid-feedback" id="ip_nama_submenu_error"></div>
+       </div>
+   
+       <div class="form-group">
+         <label for="ip_judul">Judul <span class="text-danger">*</span></label>
+         <input type="text" class="form-control" id="ip_judul" name="m_ip_dinamis_tabel[ip_judul]" maxlength="100">
+         <div class="invalid-feedback" id="ip_judul_error"></div>
        </div>
      </form>
    </div>
@@ -31,24 +32,61 @@
    
    <script>
      $(document).ready(function () {
-       // Hapus error ketika input berubah
+       // Menghapus error saat user mengedit input
        $(document).on('input change', 'input, select, textarea', function() {
          $(this).removeClass('is-invalid');
          const errorId = `#${$(this).attr('id')}_error`;
          $(errorId).html('');
        });
    
-       // Handle submit form
+       function validateForm() {
+         let isValid = true;
+   
+         const namaSubmenu = $('#ip_nama_submenu').val().trim();
+         const judul = $('#ip_judul').val().trim();
+   
+         if (namaSubmenu === '') {
+           $('#ip_nama_submenu').addClass('is-invalid');
+           $('#ip_nama_submenu_error').html('Nama Submenu wajib diisi.');
+           isValid = false;
+         } else if (namaSubmenu.length > 100) {
+           $('#ip_nama_submenu').addClass('is-invalid');
+           $('#ip_nama_submenu_error').html('Maksimal 100 karakter.');
+           isValid = false;
+         }
+   
+         if (judul === '') {
+           $('#ip_judul').addClass('is-invalid');
+           $('#ip_judul_error').html('Judul wajib diisi.');
+           isValid = false;
+         } else if (judul.length > 100) {
+           $('#ip_judul').addClass('is-invalid');
+           $('#ip_judul_error').html('Maksimal 100 karakter.');
+           isValid = false;
+         }
+   
+         return isValid;
+       }
+   
        $('#btnSubmitForm').on('click', function() {
-         // Reset semua error
+         // Bersihkan error
          $('.is-invalid').removeClass('is-invalid');
          $('.invalid-feedback').html('');
-         
-         const form = $('#formCreateRegulasiDinamis');
+   
+         // Validasi form terlebih dahulu
+         if (!validateForm()) {
+           Swal.fire({
+             icon: 'error',
+             title: 'Terjadi Kesalahan',
+             text: 'Mohon periksa kembali input Anda.'
+           });
+           return;
+         }
+   
+         const form = $('#formCreateIpDinamisTabel');
          const formData = new FormData(form[0]);
          const button = $(this);
          
-         // Tampilkan loading state pada tombol submit
          button.html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').attr('disabled', true);
          
          $.ajax({
@@ -57,16 +95,10 @@
            data: formData,
            processData: false,
            contentType: false,
-           headers: {
-             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-           },
            success: function(response) {
              if (response.success) {
                $('#myModal').modal('hide');
-               
-               // Reload table data
                reloadTable();
-               
                Swal.fire({
                  icon: 'success',
                  title: 'Berhasil',
@@ -74,23 +106,13 @@
                });
              } else {
                if (response.errors) {
-                 // Tampilkan pesan error pada masing-masing field
                  $.each(response.errors, function(key, value) {
-                   // Untuk m_regulasi_dinamis fields
-                   if (key.startsWith('m_regulasi_dinamis.')) {
-                     const fieldName = key.replace('m_regulasi_dinamis.', '');
-                     $(`#${fieldName}`).addClass('is-invalid');
-                     $(`#${fieldName}_error`).html(value[0]);
-                   } else {
-                     // Untuk field biasa
-                     $(`#${key}`).addClass('is-invalid');
-                     $(`#${key}_error`).html(value[0]);
-                   }
+                   $(`#${key}`).addClass('is-invalid');
+                   $(`#${key}_error`).html(value[0]);
                  });
-                 
                  Swal.fire({
                    icon: 'error',
-                   title: 'Validasi Gagal',
+                   title: 'Terjadi Kesalahan',
                    text: 'Mohon periksa kembali input Anda'
                  });
                } else {
@@ -103,7 +125,6 @@
              }
            },
            error: function(xhr) {
-             console.error('Error:', xhr);
              Swal.fire({
                icon: 'error',
                title: 'Gagal',
@@ -111,7 +132,6 @@
              });
            },
            complete: function() {
-             // Kembalikan tombol submit ke keadaan semula
              button.html('<i class="fas fa-save mr-1"></i> Simpan').attr('disabled', false);
            }
          });

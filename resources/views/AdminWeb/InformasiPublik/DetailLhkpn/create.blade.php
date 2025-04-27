@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailLHKPNUrl = WebMenuModel::getDynamicMenuUrl('detail-lhkpn');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Tambah Detail LHKPN Baru</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
    </div>
    
    <div class="modal-body">
-     <form id="formCreateDetailLhkpn" action="{{ url('adminweb/informasipublik/detail-lhkpn/createData') }}" method="POST" enctype="multipart/form-data">
+     <form id="formCreateDetailLhkpn" action="{{ url($detailLHKPNUrl . '/createData') }}" method="POST" enctype="multipart/form-data">
        @csrf
    
        <div class="form-group">

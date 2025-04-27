@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriMediaUrlUrl = WebMenuModel::getDynamicMenuUrl('kategori-media');
+@endphp
 <div class="modal-header">
     <h5 class="modal-title">Ubah Media Dinamis</h5>
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
 </div>
 
 <div class="modal-body">
-    <form id="formUpdateMediaDinamis" action="{{ url('adminweb/media-dinamis/updateData/' . $mediaDinamis->media_dinamis_id) }}" method="POST">
+    <form id="formUpdateMediaDinamis" action="{{ url($kategoriMediaUrlUrl . '/updateData/' . $mediaDinamis->media_dinamis_id) }}" method="POST">
         @csrf
 
         <div class="form-group">

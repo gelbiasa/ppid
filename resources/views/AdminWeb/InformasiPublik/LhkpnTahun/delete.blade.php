@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriTahunLHKPNUrl = WebMenuModel::getDynamicMenuUrl('kategori-tahun-lhkpn');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Konfirmasi Hapus Data LHKPN</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -11,19 +15,18 @@
      </div>
      
      <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Informasi LHKPN</h5>
+        </div>
          <div class="card-body">
              <table class="table table-borderless">
                  <tr>
-                     <th width="200">Tahun</th>
+                     <th width="200">Tahun LHKPN</th>
                      <td>{{ $lhkpn->lhkpn_tahun ?? '-' }}</td>
                  </tr>
                  <tr>
                      <th>Judul Informasi</th>
                      <td>{{ $lhkpn->lhkpn_judul_informasi ?? '-' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Deskripsi</th>
-                     <td>{{ Str::limit($lhkpn->lhkpn_deskripsi_informasi, 100) ?? '-' }}</td>
                  </tr>
                  <tr>
                      <th>Tanggal Dibuat</th>
@@ -33,9 +36,28 @@
                      <th>Dibuat Oleh</th>
                      <td>{{ $lhkpn->created_by ?? '-' }}</td>
                  </tr>
+                 @if($lhkpn->updated_by ?? null)
+                 <tr>
+                     <th>Terakhir Diperbarui</th>
+                     <td>{{ date('d-m-Y H:i:s', strtotime($lhkpn->updated_at)) }}</td>
+                 </tr>
+                 <tr>
+                     <th>Diperbarui Oleh</th>
+                     <td>{{ $lhkpn->updated_by }}</td>
+                 </tr>
+                 @endif
              </table>
          </div>
      </div>
+
+     <div class="card mt-3">
+        <div class="card-header">
+            <h5 class="card-title">Detail Deskripsi Informasi</h5>
+        </div>
+        <div class="card-body">
+            {!! $lhkpn->lhkpn_deskripsi_informasi ?? '<div class="alert alert-info">Tidak ada deskripsi yang tersedia.</div>' !!}
+        </div>
+    </div>
  
      <div class="alert alert-warning mt-3">
          <i class="fas fa-info-circle mr-2"></i> <strong>Perhatian:</strong> 
@@ -47,7 +69,7 @@
  <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
      <button type="button" class="btn btn-danger" id="confirmDeleteButton" 
-         onclick="confirmDelete('{{ url('adminweb/informasipublik/lhkpn-tahun/deleteData/'.$lhkpn->lhkpn_id) }}')">
+     onclick="confirmDelete('{{ url( $kategoriTahunLHKPNUrl . '/deleteData/' . $lhkpn->lhkpn_id) }}')">
          <i class="fas fa-trash mr-1"></i> Hapus
      </button>
  </div>

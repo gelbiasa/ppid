@@ -1,7 +1,7 @@
 <!-- pengisian form halaman admin -->
 @php
   use App\Models\Website\WebMenuModel;
-  $permohonanInformasiAdminUrl = WebMenuModel::getDynamicMenuUrl('management-level');
+  $permohonanInformasiAdminUrl = WebMenuModel::getDynamicMenuUrl('permohonan-informasi-admin');
 @endphp
 @extends('layouts.template')
 @section('content')

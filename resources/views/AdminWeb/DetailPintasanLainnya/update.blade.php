@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $detailPintasanLainnyaUrl = WebMenuModel::getDynamicMenuUrl('detail-pintasan-lainnya');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Edit Detail Pintasan Lainnya</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,7 +10,7 @@
    </div>
    
    <div class="modal-body">
-     <form id="formUpdateDetailPintasanLainnya" action="{{ url('adminweb/DetailPintasanLainnya/updateData/'.$detailPintasanLainnya->detail_pintasan_lainnya_id) }}" method="POST">
+     <form id="formUpdateDetailPintasanLainnya" action="{{ url($detailPintasanLainnyaUrl . '/updateData/' . $detailPintasanLainnya->detail_pintasan_lainnya_id) }}" method="POST">
          @csrf
    
          <div class="form-group">

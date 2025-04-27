@@ -1,3 +1,7 @@
+@php
+  use App\Models\Website\WebMenuModel;
+  $kategoriPintasanLainnyaUrl = WebMenuModel::getDynamicMenuUrl('kategori-pintasan-lainnya');
+@endphp
 <div class="modal-header">
      <h5 class="modal-title">Edit Pintasan Lainnya</h5>
      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -6,8 +10,9 @@
    </div>
    
    <div class="modal-body">
-     <form id="formUpdatePintasanLainnya" action="{{ url('adminweb/pintasan-lainnya/updateData/' . $pintasanLainnya->pintasan_lainnya_id) }}" method="POST">
-         @csrf
+     <form id="formUpdatePintasanLainnya" action="{{ url($kategoriPintasanLainnyaUrl . '/updateData/' . $pintasanLainnya->pintasan_lainnya_id) }}"
+        method="POST">
+        @csrf
          
          <div class="form-group">
              <label for="fk_m_kategori_akses">Kategori Akses</label>
@@ -87,11 +92,7 @@
                  if (response.success) {
                      // Close modal and reload table on success
                      $('#myModal').modal('hide');
-                     
-                     // Assuming reloadTable() is defined elsewhere
-                     if (typeof reloadTable === 'function') {
-                         reloadTable();
-                     }
+                     reloadTable();
                      
                      // Success notification
                      Swal.fire({

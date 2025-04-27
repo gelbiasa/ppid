@@ -7,6 +7,9 @@
 
 <div class="modal-body">
     <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Informasi Pengumumn</h5>
+        </div>
         <div class="card-body">
             <table class="table table-borderless">
                 <tr>
@@ -54,18 +57,31 @@
                     <td>{{ $detailPengumuman->created_by }}</td>
                 </tr>
                 @if($detailPengumuman->updated_by)
-                <tr>
-                    <th>Terakhir Diperbarui</th>
-                    <td>{{ date('d-m-Y H:i:s', strtotime($detailPengumuman->updated_at)) }}</td>
-                </tr>
-                <tr>
-                    <th>Diperbarui Oleh</th>
-                    <td>{{ $detailPengumuman->updated_by }}</td>
-                </tr>
+                    <tr>
+                        <th>Terakhir Diperbarui</th>
+                        <td>{{ date('d-m-Y H:i:s', strtotime($detailPengumuman->updated_at)) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Diperbarui Oleh</th>
+                        <td>{{ $detailPengumuman->updated_by }}</td>
+                    </tr>
                 @endif
             </table>
         </div>
     </div>
+
+    @if($detailPengumuman->UploadPengumuman->up_thumbnail)
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Thumbnail</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_thumbnail) }}"
+                    class="img-fluid max-height-300" alt="Thumbnail Pengumuman">
+            </div>
+        </div>
+    @endif
 
     <div class="card mt-3">
         <div class="card-header">
@@ -76,37 +92,22 @@
                 <h6>URL Tujuan:</h6>
                 <div class="mb-3">
                     <a href="{{ $detailPengumuman->UploadPengumuman->up_value }}" target="_blank" class="btn btn-info">
-                        <i class="fas fa-external-link-alt mr-1"></i> 
+                        <i class="fas fa-external-link-alt mr-1"></i>
                         {{ $detailPengumuman->UploadPengumuman->up_value }}
                     </a>
                 </div>
             @elseif($detailPengumuman->UploadPengumuman->up_type == 'file')
-                @if($detailPengumuman->UploadPengumuman->up_thumbnail)
-                <h6>Thumbnail:</h6>
                 <div class="mb-3">
-                    <img src="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_thumbnail) }}" class="img-thumbnail" style="max-height: 200px;">
-                </div>
-                @endif
-
-                <h6>File:</h6>
-                <div class="mb-3">
-                    <a href="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_value) }}" target="_blank" class="btn btn-info">
+                    <a href="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_value) }}" target="_blank"
+                        class="btn btn-info">
                         <i class="fas fa-file-download mr-1"></i> Lihat File
                     </a>
                     <span class="ml-2 text-muted">{{ basename($detailPengumuman->UploadPengumuman->up_value) }}</span>
                 </div>
             @elseif($detailPengumuman->UploadPengumuman->up_type == 'konten')
-                @if($detailPengumuman->UploadPengumuman->up_thumbnail)
-                <h6>Thumbnail:</h6>
-                <div class="mb-3">
-                    <img src="{{ asset('storage/' . $detailPengumuman->UploadPengumuman->up_thumbnail) }}" class="img-thumbnail" style="max-height: 200px;">
-                </div>
-                @endif
 
-                <h6>Konten:</h6>
-                <div class="content-preview border p-3 rounded">
-                    {!! $detailPengumuman->UploadPengumuman->up_konten !!}
-                </div>
+                {!! $detailPengumuman->UploadPengumuman->up_konten !!}
+
             @else
                 <div class="alert alert-info">
                     Tidak ada detail konten yang tersedia.
@@ -126,6 +127,7 @@
         overflow-y: auto;
         background-color: #fff;
     }
+
     .content-preview img {
         max-width: 100%;
         height: auto;
