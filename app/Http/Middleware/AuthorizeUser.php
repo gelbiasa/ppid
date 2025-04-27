@@ -15,9 +15,9 @@ class AuthorizeUser
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $user_role = $request->user()->getRole(); // Ambil data level_kode dari user yang login
+        $user_role = $request->user()->getRole(); // Ambil data hak_akses_kode dari user yang login
     
-        if (in_array($user_role, $roles)) { // Cek apakah level_kode user ada di dalam array roles
+        if (in_array($user_role, $roles)) { // Cek apakah hak_akses_kode user ada di dalam array roles
             return $next($request); // Jika ada, maka lanjutkan request
         }
     

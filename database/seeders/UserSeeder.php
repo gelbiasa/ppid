@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
         $data = [
             [
                 'user_id' => 1,
-                'fk_m_level' => 1,
+                'fk_m_hak_akses' => 1,
                 'password' => Hash::make('12345'), // class untuk mengenkripsi/hash password
                 'nama_pengguna' => 'Gelby Firmansyah',
                 'alamat_pengguna' => 'Jl. Joyo Raharjo',
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'user_id' => 2,
-                'fk_m_level' => 2,
+                'fk_m_hak_akses' => 2,
                 'password' => Hash::make('12345'), // class untuk mengenkripsi/hash password
                 'nama_pengguna' => 'Zainal Arifin',
                 'alamat_pengguna' => 'Jl. Sudirman',
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'user_id' => 3,
-                'fk_m_level' => 3,
+                'fk_m_hak_akses' => 3,
                 'password' => Hash::make('12345'), // class untuk mengenkripsi/hash password
                 'nama_pengguna' => 'Agus Subianto',
                 'alamat_pengguna' => 'Jl. Veteran',
@@ -53,7 +53,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'user_id' => 4,
-                'fk_m_level' => 4,
+                'fk_m_hak_akses' => 4,
                 'password' => Hash::make('12345'), // class untuk mengenkripsi/hash password
                 'nama_pengguna' => 'Ahmad Isroqi',
                 'alamat_pengguna' => 'Jl. Soekarno Hatta',

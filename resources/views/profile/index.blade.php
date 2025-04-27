@@ -38,9 +38,9 @@
                                         @method('PUT')
 
                                         <div class="form-group">
-                                            <label for="level_nama">Level Pengguna</label>
-                                            <input type="text" class="form-control" id="level_nama"
-                                                value="{{ Auth::user()->level->level_nama }}" disabled>
+                                            <label for="hak_akses_nama">Level Pengguna</label>
+                                            <input type="text" class="form-control" id="hak_akses_nama"
+                                                value="{{ Auth::user()->level->hak_akses_nama }}" disabled>
                                         </div>
 
                                         <div class="form-group">

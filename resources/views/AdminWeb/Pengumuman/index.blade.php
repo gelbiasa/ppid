@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  use App\Models\HakAkses\HakAksesModel;
+  use App\Models\HakAkses\SetHakAksesModel;
   $detailPengumumanUrl = WebMenuModel::getDynamicMenuUrl('detail-pengumuman');
 @endphp
 @extends('layouts.template')
@@ -16,8 +16,8 @@
             <div class="card-tools">
               <!-- Perbaikan bagian tombol tambah -->
               @if(
-                Auth::user()->level->level_kode === 'SAR' ||
-                HakAksesModel::cekHakAkses(Auth::user()->user_id, $detailPengumumanUrl, 'create')
+                Auth::user()->level->hak_akses_kode === 'SAR' ||
+                SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailPengumumanUrl, 'create')
                 )
                 <button onclick="modalAction('{{ url($detailPengumumanUrl . '/addData') }}')" class="btn btn-sm btn-success">
                 <i class="fas fa-plus"></i> Tambah

@@ -55,7 +55,7 @@ class FormPkOrangLainModel extends Model
         try {
             $data = $request->t_form_pk_orang_lain;
 
-            $userLevel = Auth::user()->level->level_kode;
+            $userLevel = Auth::user()->level->hak_akses_kode;
 
             if ($userLevel === 'RPN') {
                 $data['pk_nama_pengguna_penginput'] = Auth::user()->nama_pengguna;
@@ -102,7 +102,7 @@ class FormPkOrangLainModel extends Model
         $message = [];
 
         // Jika user adalah ADM, tambahkan validasi untuk penginput
-        if (Auth::user()->level->level_kode === 'ADM') {
+        if (Auth::user()->level->hak_akses_kode === 'ADM') {
             $rules = array_merge($rules, [
                 't_form_pk_orang_lain.pk_nama_pengguna_penginput' => 'required',
                 't_form_pk_orang_lain.pk_alamat_pengguna_penginput' => 'required',

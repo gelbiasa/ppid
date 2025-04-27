@@ -12,10 +12,10 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Level Pengguna <span class="text-danger">*</span></label>
-                        <select name="level_kode" id="levelSelect" class="form-control" required>
+                        <select name="hak_akses_kode" id="levelSelect" class="form-control" required>
                             <option value="">Pilih Level</option>
                             @foreach($levels as $level)
-                                <option value="{{ $level->level_kode }}">{{ $level->level_nama }}</option>
+                                <option value="{{ $level->hak_akses_kode }}">{{ $level->hak_akses_nama }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -59,7 +59,7 @@
 $(document).ready(function() {
     // Ketika level dipilih, ambil menu sesuai level
     $('#levelSelect').on('change', function() {
-        const levelKode = $(this).val();
+        const hakAksesKode = $(this).val();
         const menuSelect = $('#menuSelect');
         const showMenuSelect = $('#showMenuSelect');
 
@@ -68,13 +68,13 @@ $(document).ready(function() {
         menuSelect.prop('disabled', true);
         showMenuSelect.val('');
 
-        if (levelKode) {
+        if (hakAksesKode) {
             $.ajax({
                 url: "{{ url('/get-menus') }}",
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
-                    level_kode: levelKode
+                    hak_akses_kode: hakAksesKode
                 },
                 success: function(response) {
                     // Tambahkan menu ke dropdown

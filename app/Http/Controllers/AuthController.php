@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserModel;
-use App\Models\LevelModel;
+use App\Models\HakAksesModel;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
 
@@ -17,7 +17,7 @@ class AuthController extends Controller
     {
         if (Auth::check()) {
             // Arahkan sesuai level pengguna yang login
-            $levelCode = Auth::user()->level->level_kode;
+            $levelCode = Auth::user()->level->hak_akses_kode;
             return redirect('/dashboard' . $levelCode);
         }
         return view('auth.login');
@@ -66,7 +66,7 @@ class AuthController extends Controller
 
     public function register()
     {
-        $level = LevelModel::all(); // Ambil level dari basis data
+        $level = HakAksesModel::all(); // Ambil level dari basis data
         return view('auth.register', compact('level')); // Kirim level ke view
     }
 

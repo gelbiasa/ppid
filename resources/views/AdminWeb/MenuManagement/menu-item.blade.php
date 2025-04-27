@@ -1,38 +1,38 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
 
     // Ambil context dari parent view (jenis menu yang sedang dikelompokkan)
-    $contextLevelKode = isset($kode) ? $kode : null;
+    $contexthakAksesKode = isset($kode) ? $kode : null;
     
     // Dapatkan level kode yang sesuai dengan menu ini
-    $levelKode = $menu->Level ? $menu->Level->level_kode : '';
-    $levelNama = $menu->Level ? $menu->Level->level_nama : 'Tidak Terdefinisi';
+    $hakAksesKode = $menu->Level ? $menu->Level->hak_akses_kode : '';
+    $hakAksesNama = $menu->Level ? $menu->Level->hak_akses_nama : 'Tidak Terdefinisi';
 
     // Tampilkan nama menu yang tepat berdasarkan hirarki data
     $displayName = $menu->getDisplayName();
 
     $dynamicMenuUrl = WebMenuModel::getDynamicMenuUrl('menu-management');
-    $updateHakAkses = HakAksesModel::cekHakAkses(
+    $updateHakAkses = SetHakAksesModel::cekHakAkses(
         Auth::user()->user_id,
         $dynamicMenuUrl,
         'update'
     );
-    $deleteHakAkses = HakAksesModel::cekHakAkses(
+    $deleteHakAkses = SetHakAksesModel::cekHakAkses(
         Auth::user()->user_id,
         $dynamicMenuUrl,
         'delete'
     );
 
-    $userLevelKode = Auth::user()->level->level_kode;
+    $userhakAksesKode = Auth::user()->level->hak_akses_kode;
     
     // Kondisi untuk menampilkan tombol edit/delete
-    $canEdit = ($userLevelKode === 'SAR') || ($updateHakAkses && $levelKode !== 'SAR');
-    $canDelete = ($userLevelKode === 'SAR') || ($deleteHakAkses && $levelKode !== 'SAR');
+    $canEdit = ($userhakAksesKode === 'SAR') || ($updateHakAkses && $hakAksesKode !== 'SAR');
+    $canDelete = ($userhakAksesKode === 'SAR') || ($deleteHakAkses && $hakAksesKode !== 'SAR');
 @endphp
 
-<li class="dd-item" data-id="{{ $menu->web_menu_id }}" data-level="{{ $menu->fk_m_level }}"
-    data-jenis="{{ $levelKode }}">
+<li class="dd-item" data-id="{{ $menu->web_menu_id }}" data-level="{{ $menu->fk_m_hak_akses }}"
+    data-jenis="{{ $hakAksesKode }}">
     <div class="dd-handle">
         <!-- Gunakan variabel displayName yang sudah kita buat -->
         <span class="menu-text">{{ $displayName }}</span>
@@ -41,7 +41,7 @@
                 {{ $menu->wm_status_menu }}
             </span>
             <span class="badge badge-info">
-                {{ $levelNama }}
+                {{ $hakAksesNama }}
             </span>
 
             <!-- Tombol Detail selalu tampil karena hanya untuk melihat -->
@@ -55,7 +55,7 @@
             @if($canEdit)
                 <button type="button" class="btn btn-xs btn-warning edit-menu dd-nodrag" 
                     data-id="{{ $menu->web_menu_id }}"
-                    data-toggle="modal" data-target="#editMenuModal" data-level-kode="{{ $levelKode }}">
+                    data-toggle="modal" data-target="#editMenuModal" data-level-kode="{{ $hakAksesKode }}">
                     <i class="fas fa-edit"></i>
                 </button>
             @endif
@@ -65,7 +65,7 @@
                 <button type="button" class="btn btn-xs btn-danger delete-menu dd-nodrag" 
                     data-id="{{ $menu->web_menu_id }}"
                     data-name="{{ $displayName }}" data-toggle="modal" data-target="#deleteConfirmModal"
-                    data-level-kode="{{ $levelKode }}">
+                    data-level-kode="{{ $hakAksesKode }}">
                     <i class="fas fa-trash"></i>
                 </button>
             @endif
@@ -74,7 +74,7 @@
     @if ($menu->children->count() > 0)
         <ol class="dd-list">
             @foreach ($menu->children as $child)
-                @include('adminweb.MenuManagement.menu-item', ['menu' => $child, 'kode' => $contextLevelKode])
+                @include('adminweb.MenuManagement.menu-item', ['menu' => $child, 'kode' => $contexthakAksesKode])
             @endforeach
         </ol>
     @endif

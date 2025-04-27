@@ -9,15 +9,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-class LevelModel extends Model
+class HakAksesModel extends Model
 {
     use TraitsModel;
 
-    protected $table = 'm_level';
-    protected $primaryKey = 'level_id';
+    protected $table = 'm_hak_akses';
+    protected $primaryKey = 'hak_akses_id';
     protected $fillable = [
-        'level_kode',
-        'level_nama'
+        'hak_akses_kode',
+        'hak_akses_nama'
     ];
 
     public function __construct(array $attributes = [])
@@ -34,8 +34,8 @@ class LevelModel extends Model
         // Tambahkan fungsionalitas pencarian
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
-                $q->where('level_kode', 'like', "%{$search}%")
-                  ->orWhere('level_nama', 'like', "%{$search}%");
+                $q->where('hak_akses_kode', 'like', "%{$search}%")
+                  ->orWhere('hak_akses_nama', 'like', "%{$search}%");
             });
         }
 
@@ -47,13 +47,13 @@ class LevelModel extends Model
         try {
             DB::beginTransaction();
 
-            $data = $request->m_level;
+            $data = $request->m_hak_akses;
             $level = self::create($data);
 
             TransactionModel::createData(
                 'CREATED',
-                $level->level_id,
-                $level->level_nama
+                $level->hak_akses_id,
+                $level->hak_akses_nama
             );
 
             DB::commit();
@@ -72,13 +72,13 @@ class LevelModel extends Model
 
             $level = self::findOrFail($id);
 
-            $data = $request->m_level;
+            $data = $request->m_hak_akses;
             $level->update($data);
 
             TransactionModel::createData(
                 'UPDATED',
-                $level->level_id,
-                $level->level_nama
+                $level->hak_akses_id,
+                $level->hak_akses_nama
             );
 
             DB::commit();
@@ -101,8 +101,8 @@ class LevelModel extends Model
 
             TransactionModel::createData(
                 'DELETED',
-                $level->level_id,
-                $level->level_nama
+                $level->hak_akses_id,
+                $level->hak_akses_nama
             );
 
             DB::commit();
@@ -122,15 +122,15 @@ class LevelModel extends Model
     public static function validasiData($request)
     {
         $rules = [
-            'm_level.level_kode' => 'required|max:50',
-            'm_level.level_nama' => 'required|max:255',
+            'm_hak_akses.hak_akses_kode' => 'required|max:50',
+            'm_hak_akses.hak_akses_nama' => 'required|max:255',
         ];
 
         $messages = [
-            'm_level.level_kode.required' => 'Kode level wajib diisi',
-            'm_level.level_kode.max' => 'Kode level maksimal 50 karakter',
-            'm_level.level_nama.required' => 'Nama level wajib diisi',
-            'm_level.level_nama.max' => 'Nama level maksimal 255 karakter',
+            'm_hak_akses.hak_akses_kode.required' => 'Kode level wajib diisi',
+            'm_hak_akses.hak_akses_kode.max' => 'Kode level maksimal 50 karakter',
+            'm_hak_akses.hak_akses_nama.required' => 'Nama level wajib diisi',
+            'm_hak_akses.hak_akses_nama.max' => 'Nama level maksimal 255 karakter',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);

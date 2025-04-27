@@ -1,7 +1,7 @@
 {{-- resources/views/adminweb/MenuManagement/index.blade.php --}}
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
 @endphp
 @extends('layouts.template')
 
@@ -11,8 +11,8 @@
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'create')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'create')
                 )
                                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addMenuModal">
                                     <i class="fas fa-plus"></i> Tambah Menu
@@ -100,8 +100,8 @@
 
     <!-- Add Menu Modal -->
     @if(
-        Auth::user()->level->level_kode === 'SAR' ||
-        HakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'create')
+        Auth::user()->level->hak_akses_kode === 'SAR' ||
+        SetHakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'create')
     )
         <div class="modal fade" id="addMenuModal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
@@ -118,10 +118,10 @@
 
                             <div class="form-group">
                                 <label>Hak Akses<span class="text-danger">*</span></label>
-                                <select class="form-control" name="web_menu[fk_m_level]" id="add_level_menu">
+                                <select class="form-control" name="web_menu[fk_m_hak_akses]" id="add_level_menu">
                                     <option value="">Pilih Hak Akses</option>
                                     @foreach($levels as $level)
-                                        <option value="{{ $level->level_id }}">{{ $level->level_nama }}</option>
+                                        <option value="{{ $level->hak_akses_id }}">{{ $level->hak_akses_nama }}</option>
                                     @endforeach
                                 </select>
                                 <div class="invalid-feedback">Hak Akses wajib diisi</div>
@@ -193,10 +193,10 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Hak Akses<span class="text-danger">*</span></label>
-                            <select class="form-control" name="web_menu[fk_m_level]" id="edit_level_menu">
+                            <select class="form-control" name="web_menu[fk_m_hak_akses]" id="edit_level_menu">
                                 <option value="">Pilih Hak Akses</option>
                                 @foreach($levels as $level)
-                                    <option value="{{ $level->level_id }}">{{ $level->level_nama }}</option>
+                                    <option value="{{ $level->hak_akses_id }}">{{ $level->hak_akses_nama }}</option>
                                 @endforeach
                             </select>
                             <div class="invalid-feedback">Hak Akses wajib diisi</div>
@@ -435,18 +435,18 @@
 
             // Tambahkan event listener untuk dropdown Hak Akses pada form tambah
             $('#add_level_menu').on('change', function () {
-                let levelId = $(this).val();
-                updateParentMenuOptions(levelId, $('#add_parent_id'));
+                let hakAksesId = $(this).val();
+                updateParentMenuOptions(hakAksesId, $('#add_parent_id'));
             });
 
             // Tambahkan event listener untuk dropdown Hak Akses pada form edit
             $('#edit_level_menu').on('change', function () {
-                let levelId = $(this).val();
-                updateParentMenuOptions(levelId, $('#edit_parent_id'));
+                let hakAksesId = $(this).val();
+                updateParentMenuOptions(hakAksesId, $('#edit_parent_id'));
             });
 
 
-            function updateParentMenuOptions(levelId, targetSelect) {
+            function updateParentMenuOptions(hakAksesId, targetSelect) {
                 // Reset dropdown
                 targetSelect.empty().append('<option value="">-Set Sebagai Menu Utama</option>');
 
@@ -455,13 +455,13 @@
 
                 // Lakukan request AJAX untuk mendapatkan parent menu berdasarkan level
                 $.ajax({
-                    url: `${dynamicUrl}/${levelId}`,
+                    url: `${dynamicUrl}/${hakAksesId}`,
                     method: 'GET',
                     success: function(response) {
                         if (response.success && response.parentMenus) {
                             response.parentMenus.forEach(function(menu) {
                                 targetSelect.append(`
-                                    <option value="${menu.web_menu_id}" data-level="${levelId}">
+                                    <option value="${menu.web_menu_id}" data-level="${hakAksesId}">
                                         ${menu.wm_menu_nama}
                                     </option>
                                 `);
@@ -504,7 +504,7 @@
                             }
 
                             // Simpan informasi level kode untuk menu ini
-                            item.level_kode = $('.dd-item[data-id="' + item.id + '"]').data('jenis');
+                            item.hak_akses_kode = $('.dd-item[data-id="' + item.id + '"]').data('jenis');
                         });
 
                         allData = allData.concat(levelData);
@@ -521,10 +521,10 @@
             $('.dd').on('change', function () {
                 // Dapatkan jenis kontainer tujuan
                 let targetContainerJenis = $(this).data('jenis');
-                let userLevelKode = '{{ Auth::user()->level->level_kode }}';
+                let userhakAksesKode = '{{ Auth::user()->level->hak_akses_kode }}';
 
                 // Jika container tujuan adalah SAR atau ada menu SAR yang di-drop ke container lain
-                if (targetContainerJenis === 'SAR' && userLevelKode !== 'SAR') {
+                if (targetContainerJenis === 'SAR' && userhakAksesKode !== 'SAR') {
                     // Cek apakah ada item non-SAR yang dipindahkan ke container SAR
                     let nonSarItemInSarContainer = false;
                     $(this).find('.dd-item').each(function () {
@@ -543,7 +543,7 @@
                 }
 
                 // Cek juga apakah item SAR dipindahkan ke container non-SAR
-                if (targetContainerJenis !== 'SAR' && userLevelKode !== 'SAR') {
+                if (targetContainerJenis !== 'SAR' && userhakAksesKode !== 'SAR') {
                     let sarItemInNonSarContainer = false;
                     $(this).find('.dd-item[data-jenis="SAR"]').each(function () {
                         sarItemInNonSarContainer = true;
@@ -583,10 +583,10 @@
             // Simpan Urutan Menu
             $('#saveOrderBtn').on('click', function () {
                 let data = collectAllMenuData();
-                let userLevelKode = '{{ Auth::user()->level->level_kode }}';
+                let userhakAksesKode = '{{ Auth::user()->level->hak_akses_kode }}';
 
                 // Validasi menu SAR
-                if (userLevelKode !== 'SAR') {
+                if (userhakAksesKode !== 'SAR') {
                     // Dapatkan semua menu dengan jenis SAR
                     let sarMenus = [];
                     $('.dd-item[data-jenis="SAR"]').each(function () {
@@ -700,7 +700,7 @@
             // Validasi saat memilih jenis menu di form tambah
             $('#add_jenis_menu').on('change', function () {
                 let selectedJenisMenu = $(this).val();
-                if (selectedJenisMenu === 'SAR' && '{{ Auth::user()->level->level_kode }}' !== 'SAR') {
+                if (selectedJenisMenu === 'SAR' && '{{ Auth::user()->level->hak_akses_kode }}' !== 'SAR') {
                     toastr.error('Hanya pengguna dengan level Super Administrator yang dapat menambahkan menu SAR');
                     $(this).val('');
                 }
@@ -709,7 +709,7 @@
             // Validasi saat memilih jenis menu di form edit
             $('#edit_jenis_menu').on('change', function () {
                 let selectedJenisMenu = $(this).val();
-                if (selectedJenisMenu === 'SAR' && '{{ Auth::user()->level->level_kode }}' !== 'SAR') {
+                if (selectedJenisMenu === 'SAR' && '{{ Auth::user()->level->hak_akses_kode }}' !== 'SAR') {
                     toastr.error('Hanya pengguna dengan level Super Administrator yang dapat mengubah menu SAR');
                     $(this).val($(this).data('original-value') || '');
                 }
@@ -768,13 +768,13 @@
 
             // Edit Menu
             @if(
-                Auth::user()->level->level_kode === 'SAR' ||
-                HakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'update')
+                Auth::user()->level->hak_akses_kode === 'SAR' ||
+                SetHakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'update')
             )
                 // Edit Menu
                 $(document).on('click', '.edit-menu', function () {
                     let menuId = $(this).data('id');
-                    let levelKode = $(this).data('level-kode');
+                    let hakAksesKode = $(this).data('level-kode');
                     
                     $('#edit_menu_id').val(menuId);
 
@@ -789,11 +789,11 @@
                                 $('#edit_status_menu').val(response.menu.wm_status_menu);
                                 
                                 // Set level menu
-                                $('#edit_level_menu').val(response.menu.fk_m_level || '');
+                                $('#edit_level_menu').val(response.menu.fk_m_hak_akses || '');
                                 
                                 // Perbarui dropdown Kategori Menu berdasarkan Level yang dipilih
                                 updateParentMenuOptions(
-                                    response.menu.fk_m_level, 
+                                    response.menu.fk_m_hak_akses, 
                                     $('#edit_parent_id')
                                 );
                                 
@@ -810,7 +810,7 @@
                                 }
                                 
                                 // Store original menu level for validation
-                                originalMenuLevel = response.menu.level_kode;
+                                originalMenuLevel = response.menu.hak_akses_kode;
                                 
                                 // Show edit modal
                                 $('#editMenuModal').modal('show');
@@ -833,17 +833,17 @@
 
             // Hapus Menu
             @if(
-                Auth::user()->level->level_kode === 'SAR' ||
-                HakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'delete')
+                Auth::user()->level->hak_akses_kode === 'SAR' ||
+                SetHakAksesModel::cekHakAkses(Auth::user()->user_id, WebMenuModel::getDynamicMenuUrl('menu-management'), 'delete')
             )
                 // Delete Menu
                 $(document).on('click', '.delete-menu', function () {
                     let menuId = $(this).data('id');
                     let menuName = $(this).data('name');
-                    let levelKode = $(this).data('level-kode');
+                    let hakAksesKode = $(this).data('level-kode');
 
                     // Jika level menu adalah SAR dan pengguna bukan SAR, tolak
-                    if (levelKode === 'SAR' && '{{ Auth::user()->level->level_kode }}' !== 'SAR') {
+                    if (hakAksesKode === 'SAR' && '{{ Auth::user()->level->hak_akses_kode }}' !== 'SAR') {
                         toastr.error('Hanya pengguna dengan level Super Administrator yang dapat menghapus menu SAR');
                         return false;
                     }
@@ -1010,7 +1010,7 @@
                 }
 
                 // Validasi menu SAR
-                if (originalMenuLevel === 'SAR' && '{{ Auth::user()->level->level_kode }}' !== 'SAR') {
+                if (originalMenuLevel === 'SAR' && '{{ Auth::user()->level->hak_akses_kode }}' !== 'SAR') {
                     toastr.error('Hanya pengguna dengan level Super Administrator yang dapat mengubah menu SAR');
                     return false;
                 }

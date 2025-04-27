@@ -18,7 +18,7 @@ use App\Helpers\MenuHelper;
     
     <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            {!! MenuHelper::renderSidebarMenus(Auth::user()->level->level_kode, $activeMenu) !!}
+            {!! MenuHelper::renderSidebarMenus(Auth::user()->level->hak_akses_kode, $activeMenu) !!}
         </ul>
     </nav>
 </div>

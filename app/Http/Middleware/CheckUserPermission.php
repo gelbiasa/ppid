@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\HakAkses\HakAksesModel;
+use App\Models\HakAkses\SetHakAksesModel;
 use App\Models\Website\WebMenuModel;
 use App\Models\Website\WebMenuUrlModel;
 use Closure;
@@ -19,11 +19,11 @@ class CheckUserPermission
         }
 
         $user = Auth::user();
-        $levelKode = $user->level->level_kode;
-        $levelId = $user->fk_m_level;
+        $hakAksesKode = $user->level->hak_akses_kode;
+        $hakAksesId = $user->fk_m_hak_akses;
 
         // Super Admin selalu punya akses penuh
-        if ($levelKode === 'SAR') {
+        if ($hakAksesKode === 'SAR') {
             return $next($request);
         }
 
@@ -43,7 +43,7 @@ class CheckUserPermission
         $menu = WebMenuModel::whereHas('WebMenuGlobal', function($query) use ($menuUrl) {
             $query->where('fk_web_menu_url', $menuUrl->web_menu_url_id);
         })
-        ->where('fk_m_level', $levelId)
+        ->where('fk_m_hak_akses', $hakAksesId)
         ->where('wm_status_menu', 'aktif')
         ->where('isDeleted', 0)
         ->first();
@@ -54,7 +54,7 @@ class CheckUserPermission
         }
 
         // Cek hak akses
-        $hakAkses = HakAksesModel::where('ha_pengakses', $user->user_id)
+        $hakAkses = SetHakAksesModel::where('ha_pengakses', $user->user_id)
             ->where('fk_web_menu', $menu->web_menu_id)
             ->first();
 

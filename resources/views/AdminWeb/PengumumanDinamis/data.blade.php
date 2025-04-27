@@ -1,6 +1,6 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
     $kategoriPengumumanUrl = WebMenuModel::getDynamicMenuUrl('kategori-pengumuman');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -24,8 +24,8 @@
             <td>{{ $item->pd_nama_submenu }}</td>
             <td>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPengumumanUrl, 'update')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPengumumanUrl, 'update')
                 )
                     <button class="btn btn-sm btn-warning"
                         onclick="modalAction('{{ url($kategoriPengumumanUrl . '/editData/' . $item->pengumuman_dinamis_id) }}')">
@@ -37,8 +37,8 @@
                     <i class="fas fa-eye"></i> Detail
                 </button>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPengumumanUrl, 'delete')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriPengumumanUrl, 'delete')
                 )
                     <button class="btn btn-sm btn-danger"
                         onclick="modalAction('{{ url($kategoriPengumumanUrl . '/deleteData/' . $item->pengumuman_dinamis_id) }}')">

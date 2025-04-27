@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\AdminWeb\MenuManagement;
 
 use App\Http\Controllers\TraitsController;
-use App\Models\LevelModel;
+use App\Models\HakAksesModel;
 use App\Models\Website\WebMenuModel;
 use App\Models\Website\WebMenuUrlModel;
 use Illuminate\Http\Request;
@@ -31,23 +31,23 @@ class MenuManagementController extends Controller
             $activeMenu = 'menumanagement';
 
             // Dapatkan semua level dari database
-            $levels = LevelModel::where('isDeleted', 0)->get();
+            $levels = HakAksesModel::where('isDeleted', 0)->get();
 
             // Gunakan nama level sebagai daftar jenis menu
-            $jenisMenuList = $levels->pluck('level_nama', 'level_kode')->toArray();
+            $jenisMenuList = $levels->pluck('hak_akses_nama', 'hak_akses_kode')->toArray();
 
             // Dapatkan menu dikelompokkan berdasarkan level
             $menusByJenis = [];
             foreach ($levels as $level) {
-                $levelId = $level->level_id;
-                $menusByJenis[$level->level_kode] = [
-                    'nama' => $level->level_nama,
-                    'menus' => WebMenuModel::where('fk_m_level', $levelId)
+                $hakAksesId = $level->hak_akses_id;
+                $menusByJenis[$level->hak_akses_kode] = [
+                    'nama' => $level->hak_akses_nama,
+                    'menus' => WebMenuModel::where('fk_m_hak_akses', $hakAksesId)
                         ->whereNull('wm_parent_id')
                         ->where('isDeleted', 0)
                         ->orderBy('wm_urutan_menu')
-                        ->with(['children' => function ($query) use ($levelId) {
-                            $query->where('fk_m_level', $levelId)
+                        ->with(['children' => function ($query) use ($hakAksesId) {
+                            $query->where('fk_m_hak_akses', $hakAksesId)
                                 ->where('isDeleted', 0)
                                 ->orderBy('wm_urutan_menu');
                         }, 'WebMenuGlobal', 'Level'])
@@ -131,9 +131,9 @@ class MenuManagementController extends Controller
         return redirect()->back();
     }
 
-    public function getParentMenus($levelId)
+    public function getParentMenus($hakAksesId)
     {
-        $parentMenus = WebMenuModel::getParentMenusByLevel($levelId);
+        $parentMenus = WebMenuModel::getParentMenusByLevel($hakAksesId);
         return response()->json([
             'success' => true,
             'parentMenus' => $parentMenus

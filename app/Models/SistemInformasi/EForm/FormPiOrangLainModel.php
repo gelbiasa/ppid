@@ -50,7 +50,7 @@ class FormPiOrangLainModel extends Model
         try {
             $data = $request->t_form_pi_orang_lain;
 
-            $userLevel = Auth::user()->level->level_kode;
+            $userLevel = Auth::user()->level->hak_akses_kode;
 
             if ($userLevel === 'RPN') {
                 $data['pi_nama_pengguna_penginput'] = Auth::user()->nama_pengguna;
@@ -86,7 +86,7 @@ class FormPiOrangLainModel extends Model
         $message = [];
 
         // Jika user adalah ADM, tambahkan validasi untuk penginput
-        if (Auth::user()->level->level_kode === 'ADM') {
+        if (Auth::user()->level->hak_akses_kode === 'ADM') {
             $rules = array_merge($rules, [
                 't_form_pi_orang_lain.pi_nama_pengguna_penginput' => 'required',
                 't_form_pi_orang_lain.pi_alamat_pengguna_penginput' => 'required',

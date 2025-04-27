@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  use App\Models\HakAkses\HakAksesModel;
+  use App\Models\HakAkses\SetHakAksesModel;
   $permohonanInformasiAdminUrl = WebMenuModel::getDynamicMenuUrl('permohonan-informasi-admin');
 @endphp
 @extends('layouts.template')
@@ -77,8 +77,8 @@ $ketentuanPelaporan = $data['ketentuanPelaporan'];
                 <div class="card-tools">
                     <!-- Perbaikan bagian tombol tambah -->
                     @if(
-                      Auth::user()->level->level_kode === 'SAR' ||
-                      HakAksesModel::cekHakAkses(Auth::user()->user_id, $permohonanInformasiAdminUrl, 'create')
+                      Auth::user()->level->hak_akses_kode === 'SAR' ||
+                      SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $permohonanInformasiAdminUrl, 'create')
                     )
                     <a href="{{ url($permohonanInformasiAdminUrl . '/addData') }}" class="custom-button d-block p-3 mb-2">
                         <i class="fas fa-edit fa-2x"></i>

@@ -1,6 +1,6 @@
 @php
     use App\Models\Website\WebMenuModel;
-    use App\Models\HakAkses\HakAksesModel;
+    use App\Models\HakAkses\SetHakAksesModel;
     $ketentuanPelaporanUrl = WebMenuModel::getDynamicMenuUrl('ketentuan-pelaporan');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -26,8 +26,8 @@
             <td>{{ $item->kp_judul }}</td>
             <td>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $ketentuanPelaporanUrl, 'update')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $ketentuanPelaporanUrl, 'update')
                 )
                     <button class="btn btn-sm btn-warning"
                         onclick="modalAction('{{ url($ketentuanPelaporanUrl . '/editData/' . $item->ketentuan_pelaporan_id) }}')">
@@ -39,8 +39,8 @@
                         <i class="fas fa-eye"></i> Detail
                     </button>
                 @if(
-                    Auth::user()->level->level_kode === 'SAR' ||
-                    HakAksesModel::cekHakAkses(Auth::user()->user_id, $ketentuanPelaporanUrl, 'delete')
+                    Auth::user()->level->hak_akses_kode === 'SAR' ||
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $ketentuanPelaporanUrl, 'delete')
                 )
                     <button class="btn btn-sm btn-danger"
                         onclick="modalAction('{{ url($ketentuanPelaporanUrl . '/deleteData/' . $item->ketentuan_pelaporan_id) }}')">

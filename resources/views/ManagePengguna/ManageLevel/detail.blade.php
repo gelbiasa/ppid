@@ -11,11 +11,11 @@
         <table class="table table-borderless">
           <tr>
             <th width="200">Kode Level</th>
-            <td>{{ $level->level_kode }}</td>
+            <td>{{ $level->hak_akses_kode }}</td>
           </tr>
           <tr>
             <th width="200">Nama Level</th>
-            <td>{{ $level->level_nama }}</td>
+            <td>{{ $level->hak_akses_nama }}</td>
           </tr>
           <tr>
             <th>Tanggal Dibuat</th>
