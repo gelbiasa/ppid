@@ -1,7 +1,7 @@
 @php
   use App\Models\Website\WebMenuModel;
   use App\Models\HakAkses\SetHakAksesModel;
-  $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('kategori-regulasi');
+  $kategoriRegulasiUrl = WebMenuModel::getDynamicMenuUrl('kategori-regulasi');
 @endphp
 @extends('layouts.template')
 
@@ -15,9 +15,9 @@
           <div class="col-md-6 text-right">
             @if(
           Auth::user()->level->hak_akses_kode === 'SAR' ||
-          SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrl, 'create')
+          SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $kategoriRegulasiUrl, 'create')
           )
-          <button onclick="modalAction('{{ url($regulasiDinamisUrl . '/addData') }}')" class="btn btn-sm btn-success">
+          <button onclick="modalAction('{{ url($kategoriRegulasiUrl . '/addData') }}')" class="btn btn-sm btn-success">
           <i class="fas fa-plus"></i> Tambah
           </button>
       @endif
@@ -75,7 +75,7 @@
   // Perbaikan untuk mengatasi error 404 pada modalAction
   $(document).ready(function () {
   // URL dinamis untuk Management KategoriForm
-  var regulasiDinamisUrl = '{{ $regulasiDinamisUrl }}';
+  var kategoriRegulasiUrl = '{{ $kategoriRegulasiUrl }}';
 
   // Handle search form submission
   $('#searchForm').on('submit', function (e) {
@@ -95,7 +95,7 @@
   // Fungsi untuk memuat data KategoriForm
   function loadKategoriRegulasiData(page, search) {
     $.ajax({
-    url: '{{ url('') }}/' + regulasiDinamisUrl + '/getData',
+    url: '{{ url('') }}/' + kategoriRegulasiUrl + '/getData',
     type: 'GET',
     data: {
       page: page,

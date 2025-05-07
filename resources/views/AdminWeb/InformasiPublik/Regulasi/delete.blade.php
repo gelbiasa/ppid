@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('detail-regulasi');
+  $detailRegulasiUrl = WebMenuModel::getDynamicMenuUrl('detail-regulasi');
 @endphp
 <div class="modal-header">
      <h5 class="modal-title">Konfirmasi Hapus Regulasi</h5>
@@ -66,7 +66,7 @@
    <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
      <button type="button" class="btn btn-danger" id="confirmDeleteButton" 
-       onclick="confirmDelete('{{ url( $regulasiDinamisUrl . '/deleteData/' . $regulasi->regulasi_id) }}')">
+       onclick="confirmDelete('{{ url( $detailRegulasiUrl . '/deleteData/' . $regulasi->regulasi_id) }}')">
        <i class="fas fa-trash mr-1"></i> Hapus
      </button>
    </div>

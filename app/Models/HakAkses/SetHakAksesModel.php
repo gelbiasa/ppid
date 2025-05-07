@@ -10,6 +10,7 @@ use App\Models\Website\WebMenuModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class SetHakAksesModel extends Model
 {
@@ -33,6 +34,12 @@ class SetHakAksesModel extends Model
         return $this->belongsTo(WebMenuModel::class, 'fk_web_menu', 'web_menu_id');
     }
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->fillable = array_merge($this->fillable, $this->getCommonFields());
+    }
+
     public static function selectData()
     {
         // Dapatkan data level selain SAR dan RPN
@@ -42,7 +49,13 @@ class SetHakAksesModel extends Model
         $levelUsers = [];
 
         foreach ($levels as $level) {
-            $users = UserModel::where('fk_m_hak_akses', $level->hak_akses_id)->get();
+            // Ubah cara mendapatkan user berdasarkan level
+            $userIds = DB::table('set_user_hak_akses')
+                ->where('fk_m_hak_akses', $level->hak_akses_id)
+                ->where('isDeleted', 0)
+                ->pluck('fk_m_user');
+
+            $users = UserModel::whereIn('user_id', $userIds)->get();
             $menus = self::getMenusByJenisMenu($level->hak_akses_kode);
 
             $levelUsers[$level->hak_akses_kode] = [
@@ -55,11 +68,6 @@ class SetHakAksesModel extends Model
         return self::responFormatSukses($levelUsers, 'Data hak akses berhasil dimuat.');
     }
 
-    public function createData()
-    {
-        //
-    }
-
     public static function updateData($data, $isLevel = false)
     {
         try {
@@ -67,97 +75,40 @@ class SetHakAksesModel extends Model
 
             // Jika simpan berdasarkan level
             if ($isLevel) {
-                $hakAksesKode = $data['hak_akses_kode'];
+                $hakAksesKode = $data['hak_akses_kode'] ?? null;
+
+                // Ambil level berdasarkan kode
+                $level = HakAksesModel::where('hak_akses_kode', $hakAksesKode)->first();
+
+                if (!$level) {
+                    throw new \Exception('Level tidak ditemukan');
+                }
+
+                // Ambil user dengan level tersebut
+                $userIds = DB::table('set_user_hak_akses')
+                    ->join('m_user', 'set_user_hak_akses.fk_m_user', '=', 'm_user.user_id')
+                    ->where('set_user_hak_akses.fk_m_hak_akses', $level->hak_akses_id)
+                    ->where('set_user_hak_akses.isDeleted', 0)
+                    ->where('m_user.isDeleted', 0)
+                    ->pluck('m_user.user_id');
+
+                if ($userIds->isEmpty()) {
+                    throw new \Exception('Tidak ada pengguna dengan level ini');
+                }
+
+                // Proses setiap menu yang dipilih
                 $menuAkses = $data['menu_akses'] ?? [];
 
-                // Ambil semua pengguna dalam hak_akses_kode tertentu
-                $users = UserModel::whereHas('level', function ($query) use ($hakAksesKode) {
-                    $query->where('hak_akses_kode', $hakAksesKode);
-                })->pluck('user_id');
-
-                $level = HakAksesModel::where('hak_akses_kode', $hakAksesKode)->first();
-                $hakAksesNama = $level ? $level->hak_akses_nama : $hakAksesKode;
-
-                // Simpan status hak akses lama untuk dibandingkan nanti
-                $oldHakAksesStatus = [];
-
-                // Ambil semua menu_id dari request
-                $menuIds = array_keys($menuAkses);
-
-                // Dapatkan status hak akses saat ini untuk semua menu
-                foreach ($menuIds as $menu_id) {
-                    // Cari menu yang sesuai dengan hak_akses_id
-                    $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                        ->where('fk_m_hak_akses', $level->hak_akses_id)
-                        ->where('isDeleted', 0)
-                        ->first();
-
-                    if (!$menu) continue;
-
-                    // Ambil contoh hak akses dari user pertama di level ini
-                    if (count($users) > 0) {
-                        $user_id = $users[0];
-                        $hakAkses = self::where('ha_pengakses', $user_id)
-                            ->where('fk_web_menu', $menu_id)
-                            ->first();
-
-                        if ($hakAkses) {
-                            $oldHakAksesStatus[$menu_id] = [
-                                'ha_menu' => $hakAkses->ha_menu,
-                                'ha_view' => $hakAkses->ha_view,
-                                'ha_create' => $hakAkses->ha_create,
-                                'ha_update' => $hakAkses->ha_update,
-                                'ha_delete' => $hakAkses->ha_delete
-                            ];
-                        } else {
-                            $oldHakAksesStatus[$menu_id] = [
-                                'ha_menu' => 0,
-                                'ha_view' => 0,
-                                'ha_create' => 0,
-                                'ha_update' => 0,
-                                'ha_delete' => 0
-                            ];
-                        }
-                    }
-                }
-
-                // Simpan pengaturan untuk setiap menu yang dipilih
-                foreach ($menuIds as $menu_id) {
-                    $akses = $menuAkses[$menu_id] ?? [];
-
-                    // Cari menu yang sesuai dengan hak_akses_id
-                    $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                        ->where('fk_m_hak_akses', $level->hak_akses_id)
-                        ->where('isDeleted', 0)
-                        ->first();
-
-                    if (!$menu) continue;
-
-                    foreach ($users as $user_id) {
-                        // Selalu gunakan firstOrNew untuk membuat data baru jika belum ada
-                        $hakAkses = self::firstOrNew([
-                            'ha_pengakses' => $user_id,
-                            'fk_web_menu' => $menu_id
-                        ]);
-
-                        // Set nilai default 0 untuk semua hak akses
-                        $hakAkses->ha_menu = isset($akses['menu']) ? 1 : 0;
-                        $hakAkses->ha_view = isset($akses['view']) ? 1 : 0;
-                        $hakAkses->ha_create = isset($akses['create']) ? 1 : 0;
-                        $hakAkses->ha_update = isset($akses['update']) ? 1 : 0;
-                        $hakAkses->ha_delete = isset($akses['delete']) ? 1 : 0;
-                        $hakAkses->save();
-                    }
-                }
-
-                // Identifikasi menu yang benar-benar berubah dan buat log transaksi hanya untuk menu tersebut
                 foreach ($menuAkses as $menu_id => $akses) {
-                    // Periksa apakah hak akses berubah dibandingkan status sebelumnya
-                    if (!isset($oldHakAksesStatus[$menu_id])) continue;
+                    // Cari menu yang sesuai
+                    $menu = WebMenuModel::find($menu_id);
 
-                    $oldStatus = $oldHakAksesStatus[$menu_id];
+                    if (!$menu) {
+                        continue;
+                    }
 
-                    $newStatus = [
+                    // Tentukan nilai hak akses baru
+                    $newHakAkses = [
                         'ha_menu' => isset($akses['menu']) ? 1 : 0,
                         'ha_view' => isset($akses['view']) ? 1 : 0,
                         'ha_create' => isset($akses['create']) ? 1 : 0,
@@ -165,248 +116,252 @@ class SetHakAksesModel extends Model
                         'ha_delete' => isset($akses['delete']) ? 1 : 0
                     ];
 
-                    // Cek apakah ada perubahan status hak akses
-                    $isChanged = false;
-                    foreach (['ha_menu', 'ha_view', 'ha_create', 'ha_update', 'ha_delete'] as $hakType) {
-                        if ($oldStatus[$hakType] != $newStatus[$hakType]) {
-                            $isChanged = true;
-                            break;
-                        }
-                    }
+                    // Update atau buat hak akses untuk setiap user
+                    foreach ($userIds as $userId) {
+                        $hakAkses = self::firstOrNew([
+                            'ha_pengakses' => $userId,
+                            'fk_web_menu' => $menu_id
+                        ]);
 
-                    // Jika ada perubahan, buat log
-                    if ($isChanged) {
-                        $menu = WebMenuModel::find($menu_id);
-                        if ($menu) {
-                            $detailAktivitas = $menu->wm_menu_nama . " untuk semua " . $hakAksesNama;
+                        $hakAkses->ha_menu = $newHakAkses['ha_menu'];
+                        $hakAkses->ha_view = $newHakAkses['ha_view'];
+                        $hakAkses->ha_create = $newHakAkses['ha_create'];
+                        $hakAkses->ha_update = $newHakAkses['ha_update'];
+                        $hakAkses->ha_delete = $newHakAkses['ha_delete'];
 
-                            TransactionModel::createData(
-                                'UPDATED',
-                                $menu_id,
-                                $detailAktivitas
-                            );
+                        // Set created_by jika record baru
+                        if (!$hakAkses->exists) {
+                            $hakAkses->created_by = Auth::check() ? Auth::user()->nama_pengguna : 'system';
+                        } else {
+                            $hakAkses->updated_by = Auth::check() ? Auth::user()->nama_pengguna : 'system';
                         }
+
+                        $hakAkses->save();
                     }
                 }
 
+                // Catat log transaksi
+                try {
+                    TransactionModel::createData(
+                        'UPDATED',
+                        $level->hak_akses_id,
+                        "Pengaturan hak akses untuk level {$level->hak_akses_nama}"
+                    );
+                } catch (\Exception $e) {
+                    // Lanjutkan proses meski log gagal
+                }
+
                 DB::commit();
-                return self::responFormatSukses(null, 'Hak akses berhasil diperbarui untuk level');
+                return [
+                    'success' => true,
+                    'message' => 'Hak akses berhasil diperbarui untuk level'
+                ];
             }
             // Jika simpan berdasarkan hak akses individual
             else {
-                $hakAksesData = [];
-                // Untuk melacak perubahan per user dan per menu
                 $userMenuChanges = [];
-                // Untuk melacak perubahan status hak akses
-                $statusChanges = [];
+                $aktivitasLog = [];
 
                 // Proses data dari form
                 foreach ($data as $key => $value) {
                     if (strpos($key, 'set_hak_akses_') === 0) {
-                        // Format key: set_hak_akses_[pengakses_id]_[menu_id]_[hak]
                         $parts = explode('_', $key);
 
-                        // Pastikan format sesuai: set_hak_akses_[pengakses_id]_[menu_id]_[hak]
-                        if (count($parts) >= 5) {
-                            $pengakses_id = $parts[2];
-                            $menu_id = $parts[3];
-                            $hak = end($parts);
+                        // Pastikan format sesuai
+                        if (count($parts) >= 5 && is_numeric($parts[3]) && is_numeric($parts[4])) {
+                            $pengakses_id = (int)$parts[3];
+                            $menu_id = (int)$parts[4];
+                            $hak = $parts[5]; // menu, view, create, update, delete
 
-                            // Cari menu yang sesuai dengan level pengguna
-                            $user = UserModel::find($pengakses_id);
-                            if (!$user) continue;
-
-                            $hakAksesId = $user->fk_m_hak_akses;
-
-                            $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                                ->where('fk_m_hak_akses', $hakAksesId)
-                                ->where('isDeleted', 0)
-                                ->first();
-
-                            if (!$menu) continue;
-
-                            // Simpan data untuk melacak perubahan
+                            // Inisialisasi tracking perubahan
                             if (!isset($userMenuChanges[$pengakses_id])) {
                                 $userMenuChanges[$pengakses_id] = [];
-                                $statusChanges[$pengakses_id] = [];
                             }
 
                             if (!isset($userMenuChanges[$pengakses_id][$menu_id])) {
-                                $userMenuChanges[$pengakses_id][$menu_id] = false; // Default: tidak berubah
-
-                                // Ambil status hak akses saat ini
-                                $currentHakAkses = self::where('ha_pengakses', $pengakses_id)
+                                // Get existing permissions
+                                $existingPerms = self::where('ha_pengakses', $pengakses_id)
                                     ->where('fk_web_menu', $menu_id)
                                     ->first();
 
-                                if (!isset($statusChanges[$pengakses_id][$menu_id])) {
-                                    $statusChanges[$pengakses_id][$menu_id] = [
-                                        'old' => [
-                                            'menu' => $currentHakAkses ? $currentHakAkses->ha_menu : 0,
-                                            'view' => $currentHakAkses ? $currentHakAkses->ha_view : 0,
-                                            'create' => $currentHakAkses ? $currentHakAkses->ha_create : 0,
-                                            'update' => $currentHakAkses ? $currentHakAkses->ha_update : 0,
-                                            'delete' => $currentHakAkses ? $currentHakAkses->ha_delete : 0
-                                        ],
-                                        'new' => [
-                                            'menu' => 0,
-                                            'view' => 0,
-                                            'create' => 0,
-                                            'update' => 0,
-                                            'delete' => 0
-                                        ]
-                                    ];
-                                }
-                            }
-
-                            // Simpan data hak akses
-                            $key = "$pengakses_id-$menu_id";
-                            if (!isset($hakAksesData[$key])) {
-                                $hakAksesData[$key] = [
-                                    'pengakses_id' => $pengakses_id,
-                                    'menu_id' => $menu_id,
-                                    'menu' => 0,
-                                    'view' => 0,
-                                    'create' => 0,
-                                    'update' => 0,
-                                    'delete' => 0
+                                // Initialize with existing values or defaults
+                                $userMenuChanges[$pengakses_id][$menu_id] = [
+                                    'menu' => $existingPerms ? $existingPerms->ha_menu : 0,
+                                    'view' => $existingPerms ? $existingPerms->ha_view : 0,
+                                    'create' => $existingPerms ? $existingPerms->ha_create : 0,
+                                    'update' => $existingPerms ? $existingPerms->ha_update : 0,
+                                    'delete' => $existingPerms ? $existingPerms->ha_delete : 0,
+                                    'changed' => false
                                 ];
                             }
 
-                            $hakAksesData[$key][$hak] = (int) $value;
-                            $statusChanges[$pengakses_id][$menu_id]['new'][$hak] = (int) $value;
-                        }
-                    }
-                }
+                            // Store the old value for comparison
+                            $oldValue = $userMenuChanges[$pengakses_id][$menu_id][$hak];
 
-                // Simpan ke database - Selalu gunakan firstOrNew untuk membuat data baru jika belum ada
-                foreach (array_values($hakAksesData) as $item) {
-                    $hakAkses = self::firstOrNew([
-                        'ha_pengakses' => $item['pengakses_id'],
-                        'fk_web_menu' => $item['menu_id']
-                    ]);
+                            // Update nilai hak akses
+                            $userMenuChanges[$pengakses_id][$menu_id][$hak] = (int)$value;
 
-                    // Pastikan semua hak akses diperbarui meskipun bernilai 0
-                    $hakAkses->ha_menu = $item['menu'] ?? 0;
-                    $hakAkses->ha_view = $item['view'] ?? 0;
-                    $hakAkses->ha_create = $item['create'] ?? 0;
-                    $hakAkses->ha_update = $item['update'] ?? 0;
-                    $hakAkses->ha_delete = $item['delete'] ?? 0;
-
-                    $hakAkses->save();
-                }
-
-                // Periksa perubahan sebenarnya dan perbarui tracking perubahan
-                foreach ($statusChanges as $pengakses_id => $menuStatus) {
-                    foreach ($menuStatus as $menu_id => $status) {
-                        $isChanged = false;
-                        foreach (['menu', 'view', 'create', 'update', 'delete'] as $hak) {
-                            if ($status['old'][$hak] != $status['new'][$hak]) {
-                                $isChanged = true;
-                                break;
+                            // Check if this field has changed
+                            if ($oldValue != (int)$value) {
+                                $userMenuChanges[$pengakses_id][$menu_id]['changed'] = true;
                             }
                         }
-                        $userMenuChanges[$pengakses_id][$menu_id] = $isChanged;
                     }
                 }
 
-                // Buat log transaksi hanya untuk menu yang benar-benar diubah
-                foreach ($userMenuChanges as $user_id => $menuChanges) {
-                    $user = UserModel::find($user_id);
+                // Simpan perubahan ke database - hanya untuk yang berubah
+                foreach ($userMenuChanges as $pengakses_id => $menuChanges) {
+                    foreach ($menuChanges as $menu_id => $hakAksesData) {
+                        // Skip if no changes
+                        if (!$hakAksesData['changed']) {
+                            continue;
+                        }
 
-                    if ($user) {
-                        $nama_pengguna = $user->nama_pengguna;
+                        // Remove the tracking flag before saving
+                        unset($hakAksesData['changed']);
 
-                        // Untuk setiap menu yang diubah untuk user ini
-                        foreach ($menuChanges as $menu_id => $changed) {
-                            // Hanya buat log jika benar-benar ada perubahan
-                            if ($changed) {
-                                $menu = WebMenuModel::find($menu_id);
+                        // Cari atau buat record hak akses
+                        $hakAkses = self::firstOrNew([
+                            'ha_pengakses' => $pengakses_id,
+                            'fk_web_menu' => $menu_id
+                        ]);
 
-                                if ($menu) {
-                                    // Format detail aktivitas khusus untuk user
-                                    $detailAktivitas = $menu->wm_menu_nama . " untuk user " . $nama_pengguna;
+                        // Update nilai hak akses
+                        $hakAkses->ha_menu = $hakAksesData['menu'];
+                        $hakAkses->ha_view = $hakAksesData['view'];
+                        $hakAkses->ha_create = $hakAksesData['create'];
+                        $hakAkses->ha_update = $hakAksesData['update'];
+                        $hakAkses->ha_delete = $hakAksesData['delete'];
 
-                                    TransactionModel::createData(
-                                        'UPDATED',
-                                        $menu_id,
-                                        $detailAktivitas
-                                    );
+                        // Set created_by atau updated_by
+                        if (!$hakAkses->exists) {
+                            $hakAkses->created_by = Auth::check() ? Auth::user()->nama_pengguna : 'system';
+                        } else {
+                            $hakAkses->updated_by = Auth::check() ? Auth::user()->nama_pengguna : 'system';
+                        }
+
+                        $hakAkses->save();
+
+                        // Ambil detail menu dan user untuk log
+                        $menu = WebMenuModel::find($menu_id);
+                        $user = UserModel::find($pengakses_id);
+
+                        if ($menu && $user) {
+                            $menuName = $menu->wm_menu_nama ?: ($menu->WebMenuGlobal ? $menu->WebMenuGlobal->wmg_nama_default : 'Menu');
+
+                            $detailAktivitas = "Perbarui hak akses {$menuName} untuk pengguna {$user->nama_pengguna}";
+                            $aktivitasLog[] = [
+                                'menu_id' => $menu_id,
+                                'aktivitas' => $detailAktivitas
+                            ];
+                        }
+                    }
+                }
+
+                // Only log transaction if there were actual changes
+                if (!empty($aktivitasLog)) {
+                    try {
+                        // Dapatkan data set_user_hak_akses_id untuk setiap user yang haknya diubah
+                        foreach ($userMenuChanges as $pengakses_id => $menuChanges) {
+                            // Cek apakah pengguna ini memiliki perubahan hak akses
+                            $hasChanges = false;
+                            foreach ($menuChanges as $menu_id => $hakAksesData) {
+                                if (isset($hakAksesData['changed']) && $hakAksesData['changed']) {
+                                    $hasChanges = true;
+                                    break;
+                                }
+                            }
+
+                            if ($hasChanges) {
+                                // Ambil user dari database
+                                $user = UserModel::find($pengakses_id);
+
+                                if ($user) {
+                                    // Dapatkan set_user_hak_akses_id berdasarkan user_id
+                                    $userHakAkses = DB::table('set_user_hak_akses')
+                                        ->where('fk_m_user', $pengakses_id)
+                                        ->where('isDeleted', 0)
+                                        ->first();
+
+                                    if ($userHakAkses) {
+                                        // Buat detail aktivitas yang lebih spesifik
+                                        $detailAktivitas = "Perbarui pengaturan hak akses untuk pengguna {$user->nama_pengguna}";
+
+                                        // Log transaksi dengan set_user_hak_akses_id sebagai aktivitasId
+                                        TransactionModel::createData(
+                                            'UPDATED',
+                                            $userHakAkses->set_user_hak_akses_id, // Gunakan set_user_hak_akses_id pengguna
+                                            $detailAktivitas
+                                        );
+                                    }
                                 }
                             }
                         }
+                    } catch (\Exception $e) {
+                        // Lanjutkan proses meski log gagal
+                        Log::error('Gagal mencatat transaksi: ' . $e->getMessage());
                     }
                 }
 
                 DB::commit();
-                return self::responFormatSukses(null, 'Hak akses berhasil disimpan');
+                return [
+                    'success' => true,
+                    'message' => !empty($aktivitasLog) ?
+                        'Hak akses berhasil disimpan untuk ' . count($aktivitasLog) . ' menu' :
+                        'Tidak ada perubahan hak akses yang dilakukan'
+                ];
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            return self::responFormatError($e, 'Terjadi kesalahan saat menyimpan hak akses');
+            return [
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan hak akses: ' . $e->getMessage()
+            ];
         }
     }
 
-    public function deleteData()
-    {
-        //
-    }
-
-    public function validasiData()
-    {
-        //
-    }
 
     public static function getHakAksesData($param1, $param2 = null)
     {
-        // Jika parameter kedua kosong, berarti ini request untuk hak akses level
+        // Jika parameter kedua kosong, ini request untuk hak akses level
         if ($param2 === null) {
             $hak_akses_kode = $param1;
             try {
-                // Ambil semua menu berdasarkan jenis_menu (hak_akses_kode)
-                $menus = self::getMenusByJenisMenu($hak_akses_kode);
-
-                // Flatten array untuk mendapatkan semua ID menu
-                $ambilSemuaMenuId = [];
-                foreach ($menus as $category) {
-                    if (is_array($category)) {
-                        $ambilSemuaMenuId = array_merge($ambilSemuaMenuId, array_values($category));
-                    }
-                }
-
-                // Ambil hak_akses_id berdasarkan hak_akses_kode
+                // Ambil level berdasarkan kode
                 $level = HakAksesModel::where('hak_akses_kode', $hak_akses_kode)->first();
                 if (!$level) return [];
 
-                // Ambil semua pengguna dalam hak_akses_kode tertentu untuk mendapatkan ha_pengakses
-                $users = UserModel::whereHas('level', function ($query) use ($hak_akses_kode) {
-                    $query->where('hak_akses_kode', $hak_akses_kode);
-                })->pluck('user_id');
+                // Ambil semua menu untuk level ini
+                $menus = self::getMenusByJenisMenu($hak_akses_kode);
+
+                // Ambil user pertama dengan level ini untuk cek hak akses
+                $userIds = DB::table('set_user_hak_akses')
+                    ->where('fk_m_hak_akses', $level->hak_akses_id)
+                    ->where('isDeleted', 0)
+                    ->limit(1)
+                    ->pluck('fk_m_user');
+
+                $firstUserId = $userIds->first();
 
                 // Gabungkan data menu dengan hak akses
                 $menuData = [];
                 foreach ($menus as $menu_utama => $submenus) {
                     foreach ($submenus as $sub_menu => $menu_id) {
-                        // Cari menu berdasarkan menu_id dan hak_akses_id
-                        $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                            ->where('fk_m_hak_akses', $level->hak_akses_id)
-                            ->where('isDeleted', 0)
-                            ->first();
-
+                        // Cari menu berdasarkan ID
+                        $menu = WebMenuModel::find($menu_id);
                         if (!$menu) continue;
 
-                        // Ambil hak akses yang sudah tersimpan berdasarkan level
-                        // Cukup ambil dari user pertama saja (asumsi semua user dengan level yang sama memiliki hak akses yang sama)
+                        // Ambil hak akses yang sudah tersimpan (dari user pertama)
                         $hakAkses = null;
-                        if (count($users) > 0) {
-                            $hakAkses = self::where('ha_pengakses', $users[0])
+                        if ($firstUserId) {
+                            $hakAkses = self::where('ha_pengakses', $firstUserId)
                                 ->where('fk_web_menu', $menu_id)
                                 ->first();
                         }
 
                         $menuData[$menu_id] = [
                             'menu_utama' => $menu_utama,
-                            'sub_menu' => $sub_menu === $menu_utama ? null : $sub_menu, // Jika sub_menu sama dengan menu utama, set null
+                            'sub_menu' => $sub_menu === $menu_utama ? null : $sub_menu,
                             'ha_menu' => $hakAkses ? $hakAkses->ha_menu : 0,
                             'ha_view' => $hakAkses ? $hakAkses->ha_view : 0,
                             'ha_create' => $hakAkses ? $hakAkses->ha_create : 0,
@@ -418,30 +373,32 @@ class SetHakAksesModel extends Model
 
                 return $menuData;
             } catch (\Exception $e) {
-                return self::responFormatError($e, 'Terjadi kesalahan saat mengambil data hak akses');
+                Log::error('Error getting hak akses data: ' . $e->getMessage());
+                return [];
             }
         }
-        // Jika kedua parameter ada, berarti ini request untuk hak akses spesifik
+        // Jika kedua parameter ada, ini request hak akses spesifik
         else {
             $pengakses_id = $param1;
             $menu_id = $param2;
 
-            // Cari user untuk mendapatkan level
-            $user = UserModel::find($pengakses_id);
-            if (!$user) return null;
-
-            // Cari menu berdasarkan menu_id dan hak_akses_id
-            $menu = WebMenuModel::where('web_menu_id', $menu_id)
-                ->where('fk_m_hak_akses', $user->fk_m_hak_akses)
-                ->where('isDeleted', 0)
-                ->first();
-
-            if (!$menu) return null;
-
-            // Cari hak akses berdasarkan ha_pengakses dan fk_web_menu
-            return self::where('ha_pengakses', $pengakses_id)
+            // Cari hak akses berdasarkan user dan menu
+            $hakAkses = self::where('ha_pengakses', $pengakses_id)
                 ->where('fk_web_menu', $menu_id)
                 ->first();
+
+            // Jika tidak ditemukan, kembalikan nilai default
+            if (!$hakAkses) {
+                return [
+                    'ha_menu' => 0,
+                    'ha_view' => 0,
+                    'ha_create' => 0,
+                    'ha_update' => 0,
+                    'ha_delete' => 0
+                ];
+            }
+
+            return $hakAkses;
         }
     }
 
@@ -466,7 +423,7 @@ class SetHakAksesModel extends Model
         $menuStructure = [];
 
         foreach ($parentMenus as $parentMenu) {
-            // Ambil sub-menu yang aktif dan tidak dihapus
+            // Ambil sub-menu yang aktif
             $submenus = WebMenuModel::where('wm_parent_id', $parentMenu->web_menu_id)
                 ->where('wm_status_menu', 'aktif')
                 ->where('isDeleted', 0)
@@ -474,7 +431,7 @@ class SetHakAksesModel extends Model
                 ->get();
 
             if ($submenus->count() > 0) {
-                // Jika ada sub-menu, hanya sub-menu yang bisa diedit
+                // Jika ada sub-menu
                 foreach ($submenus as $submenu) {
                     $menuStructure[] = [
                         'menu_utama' => $parentMenu->wm_menu_nama ?: ($parentMenu->WebMenuGlobal ? $parentMenu->WebMenuGlobal->wmg_nama_default : 'Unnamed Menu'),
@@ -483,7 +440,7 @@ class SetHakAksesModel extends Model
                     ];
                 }
             } else {
-                // Jika tidak ada sub-menu, maka parent menu bisa diedit
+                // Jika tidak ada sub-menu
                 $menuStructure[] = [
                     'menu_utama' => $parentMenu->wm_menu_nama ?: ($parentMenu->WebMenuGlobal ? $parentMenu->WebMenuGlobal->wmg_nama_default : 'Unnamed Menu'),
                     'sub_menu' => null,
@@ -492,6 +449,7 @@ class SetHakAksesModel extends Model
             }
         }
 
+        // Format struktur menu
         $formattedMenuStructure = [];
         foreach ($menuStructure as $menu) {
             $menuUtama = isset($menu['menu_utama']) ? (string)$menu['menu_utama'] : 'Uncategorized';
@@ -509,98 +467,157 @@ class SetHakAksesModel extends Model
 
     public static function cekHakAksesMenu($user_id, $menu_url)
     {
-        // Cek user level
-        $user = UserModel::find($user_id);
+        try {
+            // Cek user
+            $user = UserModel::find($user_id);
+            if (!$user) return false;
 
-        // Jika user adalah super admin, berikan akses penuh
-        if ($user && $user->level->hak_akses_kode === 'SAR') {
-            return true;
-        }
+            // Ambil hak akses aktif user
+            $activeHakAksesId = session('active_hak_akses_id');
+            $hakAkses = null;
 
-        $hakAksesId = $user->fk_m_hak_akses;
+            if ($activeHakAksesId) {
+                $hakAkses = DB::table('m_hak_akses')
+                    ->where('hak_akses_id', $activeHakAksesId)
+                    ->where('isDeleted', 0)
+                    ->first();
+            } else {
+                // Jika belum ada hak akses aktif, ambil yang pertama
+                $hakAkses = DB::table('set_user_hak_akses')
+                    ->join('m_hak_akses', 'set_user_hak_akses.fk_m_hak_akses', '=', 'm_hak_akses.hak_akses_id')
+                    ->where('set_user_hak_akses.fk_m_user', $user_id)
+                    ->where('set_user_hak_akses.isDeleted', 0)
+                    ->where('m_hak_akses.isDeleted', 0)
+                    ->first();
 
-        // Prioritas 1: Cari menu berdasarkan URL dan level pengguna
-        $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
-            $query->where('wmu_nama', $menu_url);
-        })
-        ->where('fk_m_hak_akses', $hakAksesId)
-        ->where('wm_status_menu', 'aktif')
-        ->where('isDeleted', 0)
-        ->first();
+                if ($hakAkses) {
+                    session(['active_hak_akses_id' => $hakAkses->hak_akses_id]);
+                }
+            }
 
-        // Jika tidak ditemukan, cari menu dengan URL yang sama tanpa mempedulikan level
-        if (!$menu) {
+            // Jika super admin, berikan akses penuh
+            if ($hakAkses && $hakAkses->hak_akses_kode === 'SAR') {
+                return true;
+            }
+
+            $hakAksesId = $hakAkses ? $hakAkses->hak_akses_id : null;
+
+            // Cari menu berdasarkan URL
             $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
                 $query->where('wmu_nama', $menu_url);
             })
-            ->where('wm_status_menu', 'aktif')
-            ->where('isDeleted', 0)
-            ->first();
+                ->where('fk_m_hak_akses', $hakAksesId)
+                ->where('wm_status_menu', 'aktif')
+                ->where('isDeleted', 0)
+                ->first();
+
+            // Jika tidak ditemukan, cari menu dengan URL yang sama tanpa mempedulikan level
+            if (!$menu) {
+                $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
+                    $query->where('wmu_nama', $menu_url);
+                })
+                    ->where('wm_status_menu', 'aktif')
+                    ->where('isDeleted', 0)
+                    ->first();
+            }
+
+            if (!$menu) {
+                return false;
+            }
+
+            // Cek hak akses menu
+            $hakAkses = self::where('ha_pengakses', $user_id)
+                ->where('fk_web_menu', $menu->web_menu_id)
+                ->first();
+
+            if (!$hakAkses) {
+                return false;
+            }
+            return $hakAkses->ha_menu == 1;
+        } catch (\Exception $e) {
+            // Log error dan return default value
+            Log::error('Error in cekHakAksesMenu: ' . $e->getMessage());
+            return false; // Atau return true jika Anda ingin memberikan akses default
         }
-
-        if (!$menu) {
-            return false;
-        }
-
-        // Cek hak akses menu berdasarkan fk_web_menu
-        $hakAkses = self::where('ha_pengakses', $user_id)
-            ->where('fk_web_menu', $menu->web_menu_id)
-            ->first();
-
-        if (!$hakAkses) {
-            return false;
-        }
-
-        return $hakAkses->ha_menu == 1;
     }
 
     public static function cekHakAkses($user_id, $menu_url, $hak)
     {
-        // Cek user level
-        $user = UserModel::find($user_id);
+        try {
+            // Cek user
+            $user = UserModel::find($user_id);
+            if (!$user) return false;
 
-        // Jika user adalah super admin, berikan akses penuh
-        if ($user && $user->level->hak_akses_kode === 'SAR') {
-            return true;
-        }
+            // Ambil hak akses aktif user
+            $activeHakAksesId = session('active_hak_akses_id');
+            $hakAkses = null;
 
-        $hakAksesId = $user->fk_m_hak_akses;
+            if ($activeHakAksesId) {
+                $hakAkses = DB::table('m_hak_akses')
+                    ->where('hak_akses_id', $activeHakAksesId)
+                    ->where('isDeleted', 0)
+                    ->first();
+            } else {
+                // Jika belum ada hak akses aktif, ambil yang pertama
+                $hakAkses = DB::table('set_user_hak_akses')
+                    ->join('m_hak_akses', 'set_user_hak_akses.fk_m_hak_akses', '=', 'm_hak_akses.hak_akses_id')
+                    ->where('set_user_hak_akses.fk_m_user', $user_id)
+                    ->where('set_user_hak_akses.isDeleted', 0)
+                    ->where('m_hak_akses.isDeleted', 0)
+                    ->first();
 
-        // Prioritas 1: Cari menu berdasarkan URL dan level pengguna
-        $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
-            $query->where('wmu_nama', $menu_url);
-        })
-        ->where('fk_m_hak_akses', $hakAksesId)
-        ->where('wm_status_menu', 'aktif')
-        ->where('isDeleted', 0)
-        ->first();
+                if ($hakAkses) {
+                    session(['active_hak_akses_id' => $hakAkses->hak_akses_id]);
+                }
+            }
 
-        // Jika tidak ditemukan, cari menu dengan URL yang sama tanpa mempedulikan level
-        if (!$menu) {
+            // Jika super admin, berikan akses penuh
+            if ($hakAkses && $hakAkses->hak_akses_kode === 'SAR') {
+                return true;
+            }
+
+            $hakAksesId = $hakAkses ? $hakAkses->hak_akses_id : null;
+
+            // Cari menu berdasarkan URL
             $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
                 $query->where('wmu_nama', $menu_url);
             })
-            ->where('wm_status_menu', 'aktif')
-            ->where('isDeleted', 0)
-            ->first();
+                ->where('fk_m_hak_akses', $hakAksesId)
+                ->where('wm_status_menu', 'aktif')
+                ->where('isDeleted', 0)
+                ->first();
+
+            // Jika tidak ditemukan, cari menu dengan URL yang sama tanpa mempedulikan level
+            if (!$menu) {
+                $menu = WebMenuModel::whereHas('WebMenuUrl', function ($query) use ($menu_url) {
+                    $query->where('wmu_nama', $menu_url);
+                })
+                    ->where('wm_status_menu', 'aktif')
+                    ->where('isDeleted', 0)
+                    ->first();
+            }
+
+            if (!$menu) {
+                return false;
+            }
+
+            // Buat prefix untuk kolom hak akses
+            $hakField = 'ha_' . $hak;
+
+            // Cek hak akses
+            $hakAkses = self::where('ha_pengakses', $user_id)
+                ->where('fk_web_menu', $menu->web_menu_id)
+                ->first();
+
+            if (!$hakAkses) {
+                return false;
+            }
+
+            return $hakAkses->$hakField == 1;
+        } catch (\Exception $e) {
+            // Log error dan return default value
+            Log::error('Error in cekHakAkses: ' . $e->getMessage());
+            return false; // Atau return true jika Anda ingin memberikan akses default
         }
-
-        if (!$menu) {
-            return false;
-        }
-
-        // Buat prefix untuk kolom hak akses
-        $hakField = 'ha_' . $hak;
-
-        // Cek hak akses berdasarkan fk_web_menu
-        $hakAkses = self::where('ha_pengakses', $user_id)
-            ->where('fk_web_menu', $menu->web_menu_id)
-            ->first();
-
-        if (!$hakAkses) {
-            return false;
-        }
-
-        return $hakAkses->$hakField == 1;
     }
 }

@@ -1,7 +1,7 @@
 @php
   use App\Models\Website\WebMenuModel;
   use App\Models\HakAkses\SetHakAksesModel;
-  $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('detail-regulasi');
+  $detailRegulasiUrl = WebMenuModel::getDynamicMenuUrl('detail-regulasi');
 @endphp
 @extends('layouts.template')
 
@@ -17,9 +17,9 @@
               <!-- Perbaikan bagian tombol tambah -->
               @if(
                 Auth::user()->level->hak_akses_kode === 'SAR' ||
-                SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrl, 'create')
+                SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailRegulasiUrl, 'create')
                 )
-                <button onclick="modalAction('{{ url($regulasiDinamisUrl . '/addData') }}')" class="btn btn-sm btn-success">
+                <button onclick="modalAction('{{ url($detailRegulasiUrl . '/addData') }}')" class="btn btn-sm btn-success">
                 <i class="fas fa-plus"></i> Tambah
                 </button>
             @endif
@@ -78,7 +78,7 @@
   // Perbaikan untuk mengatasi error 404 pada modalAction
   $(document).ready(function () {
   // URL dinamis untuk Management detailRegulasi
-  var regulasiDinamisUrl = '{{ $regulasiDinamisUrl }}';
+  var detailRegulasiUrl = '{{ $detailRegulasiUrl }}';
 
   // Handle search form submission
   $('#searchForm').on('submit', function (e) {
@@ -98,7 +98,7 @@
   // Fungsi untuk memuat data detailRegulasi
   function loadDetailRegulasiData(page, search) {
     $.ajax({
-    url: '{{ url('') }}/' + regulasiDinamisUrl + '/getData',
+    url: '{{ url('') }}/' + detailRegulasiUrl + '/getData',
     type: 'GET',
     data: {
       page: page,

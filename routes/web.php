@@ -38,6 +38,7 @@ use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\RegulasiController;
 use App\Http\Controllers\AdminWeb\KategoriAkses\DetailPintasanLainnyaController;
 use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\RegulasiDinamisController;
 use App\Http\Controllers\AdminWeb\InformasiPublik\Regulasi\KategoriRegulasiController;
+use App\Http\Controllers\ManagePengguna\UserController;
 use App\Http\Controllers\SistemInformasi\KetentuanPelaporan\KetentuanPelaporanController;
 
 /*
@@ -56,10 +57,12 @@ Route::pattern('id', '[0-9]+'); // Artinya: Ketika ada parameter {id}, maka haru
 Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
 Route::get('logout', [AuthController::class, 'logout'])->middleware('auth');
-Route::post('/pilih-level', [AuthController::class, 'pilihLevel'])->name('pilih.level');
+Route::get('/pilih-level', [AuthController::class, 'pilihLevel'])->name('pilih.level');
+Route::post('/pilih-level', [AuthController::class, 'pilihLevelPost'])->name('pilih.level.post');
 
 Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'postRegister']);
+
 
 // Group route yang memerlukan autentikasi
 Route::middleware('auth')->group(function () {
@@ -428,5 +431,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/detailData/{id}', [HakAksesController::class, 'detailData']);
         Route::get('/deleteData/{id}', [HakAksesController::class, 'deleteData']);
         Route::delete('/deleteData/{id}', [HakAksesController::class, 'deleteData'])->middleware('permission:delete');
+    });
+
+    Route::group(['prefix' => WebMenuModel::getDynamicMenuUrl('management-user')], function () {
+        Route::get('/', [UserController::class, 'index'])->middleware('permission:view');
+        Route::get('/getData', [UserController::class, 'getData']);
+        Route::get('/addData', [UserController::class, 'addData']);
+        Route::post('/createData', [UserController::class, 'createData'])->middleware('permission:create');
+        Route::get('/editData/{id}', [UserController::class, 'editData']);
+        Route::post('/updateData/{id}', [UserController::class, 'updateData'])->middleware('permission:update');
+        Route::get('/detailData/{id}', [UserController::class, 'detailData']);
+        Route::get('/deleteData/{id}', [UserController::class, 'deleteData']);
+        Route::delete('/deleteData/{id}', [UserController::class, 'deleteData'])->middleware('permission:delete');
+        Route::post('/addHakAkses/{userId}', [UserController::class, 'addHakAkses'])->middleware('permission:update');
+        Route::delete('/deleteHakAkses/{id}', [UserController::class, 'deleteHakAkses'])->middleware('permission:update');
     });
 });

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Log\TransactionModel;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,6 @@ class UserModel extends Authenticatable implements JWTSubject
     protected $table = 'm_user';
     protected $primaryKey = 'user_id';
     protected $fillable = [
-        'fk_m_hak_akses',
         'password',
         'nama_pengguna',
         'alamat_pengguna',
@@ -31,10 +31,37 @@ class UserModel extends Authenticatable implements JWTSubject
     protected $hidden = ['password']; // Tidak ditampilkan saat select
     protected $casts = ['password' => 'hashed']; // Password akan di-hash secara otomatis
 
-    // Relasi ke tabel level
+    // Relasi ke tabel set_user_hak_akses
+    public function hakAksesSet()
+    {
+        return $this->hasMany(SetUserHakAksesModel::class, 'fk_m_user', 'user_id');
+    }
+
+    // Mendapatkan semua hak akses user
+    public function hakAkses()
+    {
+        return $this->belongsToMany(HakAksesModel::class, 'set_user_hak_akses', 'fk_m_user', 'fk_m_hak_akses')
+            ->where('set_user_hak_akses.isDeleted', 0)
+            ->where('m_hak_akses.isDeleted', 0);
+    }
+
+    // Mendapatkan hak akses aktif saat ini
     public function level()
     {
-        return $this->belongsTo(HakAksesModel::class, 'fk_m_hak_akses', 'hak_akses_id');
+        $activeHakAksesId = session('active_hak_akses_id');
+
+        return $this->belongsToMany(HakAksesModel::class, 'set_user_hak_akses', 'fk_m_user', 'fk_m_hak_akses')
+            ->wherePivot('isDeleted', 0)
+            ->where('m_hak_akses.isDeleted', 0)
+            ->when($activeHakAksesId, function ($query) use ($activeHakAksesId) {
+                return $query->where('m_hak_akses.hak_akses_id', $activeHakAksesId);
+            });
+    }
+
+    // Accessor untuk mengambil level sebagai single model, bukan collection
+    public function getLevelAttribute()
+    {
+        return $this->level()->first();
     }
 
     public function __construct(array $attributes = [])
@@ -45,18 +72,21 @@ class UserModel extends Authenticatable implements JWTSubject
 
     public function getRoleName(): string
     {
-        return $this->level->hak_akses_nama;
+        $level = $this->getActiveHakAkses();
+        return $level ? $level->hak_akses_nama : '';
     }
 
     public function hasRole($role): bool
     {
-        return $this->level->hak_akses_kode == $role;
+        $level = $this->getActiveHakAkses();
+        return $level && $level->hak_akses_kode == $role;
     }
 
     /* Mendapatkan Kode Role */
     public function getRole()
     {
-        return $this->level->hak_akses_kode;
+        $level = $this->getActiveHakAkses();
+        return $level ? $level->hak_akses_kode : '';
     }
 
     public function getJWTIdentifier()
@@ -74,6 +104,269 @@ class UserModel extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public static function selectData($perPage = null, $search = '')
+    {
+        $query = self::query()
+            ->where('isDeleted', 0);
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_pengguna', 'like', "%{$search}%")
+                    ->orWhere('email_pengguna', 'like', "%{$search}%")
+                    ->orWhere('nik_pengguna', 'like', "%{$search}%")
+                    ->orWhere('no_hp_pengguna', 'like', "%{$search}%");
+            });
+        }
+
+        return self::paginateResults($query, $perPage);
+    }
+
+    public static function createData($request)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validasi data
+            self::validasiData($request);
+
+            $data = $request->m_user;
+            $hakAksesId = $request->hak_akses_id;
+
+            // Proses upload file KTP jika ada
+            if ($request->hasFile('upload_nik_pengguna')) {
+                $fileName = self::uploadFile(
+                    $request->file('upload_nik_pengguna'),
+                    'upload_nik'
+                );
+                $data['upload_nik_pengguna'] = $fileName;
+            }
+
+            // Hash password
+            $data['password'] = Hash::make($request->password);
+
+            // Simpan data user ke database
+            $user = self::create($data);
+
+            // Buat relasi di tabel set_user_hak_akses
+            SetUserHakAksesModel::create([
+                'fk_m_user' => $user->user_id,
+                'fk_m_hak_akses' => $hakAksesId
+            ]);
+
+            // Log transaksi
+            TransactionModel::createData(
+                'CREATED',
+                $user->user_id,
+                $user->nama_pengguna
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($user, 'Pengguna berhasil dibuat');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return self::responValidatorError($e);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if (isset($fileName)) {
+                self::removeFile($fileName);
+            }
+            return self::responFormatError($e, 'Gagal membuat pengguna');
+        }
+    }
+
+    public static function updateData($request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validasi data
+            self::validasiDataUpdate($request, $id);
+
+            $user = self::findOrFail($id);
+            $data = $request->m_user;
+
+            // Proses upload file KTP jika ada
+            if ($request->hasFile('upload_nik_pengguna')) {
+                // Hapus file lama jika ada
+                if (!empty($user->upload_nik_pengguna)) {
+                    self::removeFile($user->upload_nik_pengguna);
+                }
+
+                $fileName = self::uploadFile(
+                    $request->file('upload_nik_pengguna'),
+                    'upload_nik'
+                );
+                $data['upload_nik_pengguna'] = $fileName;
+            }
+
+            // Update password jika ada
+            if (!empty($request->password)) {
+                $data['password'] = Hash::make($request->password);
+            }
+
+            // Update data user
+            $user->update($data);
+
+            // Log transaksi
+            TransactionModel::createData(
+                'UPDATED',
+                $user->user_id,
+                $user->nama_pengguna
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($user, 'Pengguna berhasil diperbarui');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return self::responValidatorError($e);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if (isset($fileName)) {
+                self::removeFile($fileName);
+            }
+            return self::responFormatError($e, 'Gagal memperbarui pengguna');
+        }
+    }
+
+    public static function deleteData($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = self::findOrFail($id);
+
+            // Hapus user (soft delete)
+            $user->delete();
+
+            // Log transaksi
+            TransactionModel::createData(
+                'DELETED',
+                $user->user_id,
+                $user->nama_pengguna
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($user, 'Pengguna berhasil dihapus');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return self::responFormatError($e, 'Gagal menghapus pengguna');
+        }
+    }
+
+    public static function detailData($id)
+    {
+        return self::with(['hakAkses'])->findOrFail($id);
+    }
+
+    public static function validasiData($request)
+    {
+        $rules = [
+            'password' => 'required|min:5|confirmed',
+            'password_confirmation' => 'required',
+            'm_user.nama_pengguna' => 'required|min:2|max:50',
+            'm_user.email_pengguna' => 'required|email|unique:m_user,email_pengguna',
+            'm_user.no_hp_pengguna' => 'required|digits_between:4,15',
+            'm_user.alamat_pengguna' => 'required|string',
+            'm_user.pekerjaan_pengguna' => 'required|string',
+            'm_user.nik_pengguna' => 'required|digits:16|unique:m_user,nik_pengguna',
+            'hak_akses_id' => 'required|exists:m_hak_akses,hak_akses_id',
+        ];
+
+        // Jika file KTP ada, validasi file
+        if ($request->hasFile('upload_nik_pengguna')) {
+            $rules['upload_nik_pengguna'] = 'required|image|mimes:jpeg,png,jpg|max:2048';
+        }
+
+        $messages = [
+            'password.min' => 'Password minimal harus 5 karakter.',
+            'password.confirmed' => 'Verifikasi password tidak sesuai dengan password baru.',
+            'password_confirmation.required' => 'Konfirmasi password wajib diisi.',
+            'upload_nik_pengguna.required' => 'Upload foto KTP wajib dilakukan.',
+            'upload_nik_pengguna.image' => 'File harus berupa gambar.',
+            'upload_nik_pengguna.mimes' => 'Format gambar harus jpeg, png, atau jpg.',
+            'upload_nik_pengguna.max' => 'Ukuran gambar maksimal 2MB.',
+            'm_user.nama_pengguna.min' => 'Nama minimal harus 2 karakter.',
+            'm_user.nama_pengguna.max' => 'Nama maksimal 50 karakter.',
+            'm_user.email_pengguna.required' => 'Email wajib diisi.',
+            'm_user.email_pengguna.email' => 'Format email tidak valid.',
+            'm_user.email_pengguna.unique' => 'Email sudah digunakan, silakan gunakan email lain.',
+            'm_user.no_hp_pengguna.required' => 'Nomor handphone wajib diisi.',
+            'm_user.no_hp_pengguna.digits_between' => 'Nomor handphone harus terdiri dari 4 hingga 15 digit.',
+            'm_user.alamat_pengguna.required' => 'Alamat wajib diisi.',
+            'm_user.pekerjaan_pengguna.required' => 'Pekerjaan wajib diisi.',
+            'm_user.nik_pengguna.required' => 'NIK wajib diisi.',
+            'm_user.nik_pengguna.digits' => 'NIK harus terdiri dari 16 digit.',
+            'm_user.nik_pengguna.unique' => 'NIK sudah terdaftar.',
+            'hak_akses_id.required' => 'Level pengguna wajib dipilih.',
+            'hak_akses_id.exists' => 'Level pengguna tidak valid.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        return true;
+    }
+
+    public static function validasiDataUpdate($request, $id)
+    {
+        $rules = [
+            'm_user.nama_pengguna' => 'required|min:2|max:50',
+            'm_user.email_pengguna' => 'required|email|unique:m_user,email_pengguna,' . $id . ',user_id',
+            'm_user.no_hp_pengguna' => 'required|digits_between:4,15',
+            'm_user.alamat_pengguna' => 'required|string',
+            'm_user.pekerjaan_pengguna' => 'required|string',
+            'm_user.nik_pengguna' => 'required|digits:16|unique:m_user,nik_pengguna,' . $id . ',user_id',
+        ];
+
+        // Jika password diisi, validasi password
+        if (!empty($request->password)) {
+            $rules['password'] = 'required|min:5|confirmed';
+            $rules['password_confirmation'] = 'required';
+        }
+
+        // Jika file KTP ada, validasi file
+        if ($request->hasFile('upload_nik_pengguna')) {
+            $rules['upload_nik_pengguna'] = 'required|image|mimes:jpeg,png,jpg|max:2048';
+        }
+
+        $messages = [
+            'password.min' => 'Password minimal harus 5 karakter.',
+            'password.confirmed' => 'Verifikasi password tidak sesuai dengan password baru.',
+            'password_confirmation.required' => 'Konfirmasi password wajib diisi.',
+            'upload_nik_pengguna.required' => 'Upload foto KTP wajib dilakukan.',
+            'upload_nik_pengguna.image' => 'File harus berupa gambar.',
+            'upload_nik_pengguna.mimes' => 'Format gambar harus jpeg, png, atau jpg.',
+            'upload_nik_pengguna.max' => 'Ukuran gambar maksimal 2MB.',
+            'm_user.nama_pengguna.min' => 'Nama minimal harus 2 karakter.',
+            'm_user.nama_pengguna.max' => 'Nama maksimal 50 karakter.',
+            'm_user.email_pengguna.required' => 'Email wajib diisi.',
+            'm_user.email_pengguna.email' => 'Format email tidak valid.',
+            'm_user.email_pengguna.unique' => 'Email sudah digunakan, silakan gunakan email lain.',
+            'm_user.no_hp_pengguna.required' => 'Nomor handphone wajib diisi.',
+            'm_user.no_hp_pengguna.digits_between' => 'Nomor handphone harus terdiri dari 4 hingga 15 digit.',
+            'm_user.alamat_pengguna.required' => 'Alamat wajib diisi.',
+            'm_user.pekerjaan_pengguna.required' => 'Pekerjaan wajib diisi.',
+            'm_user.nik_pengguna.required' => 'NIK wajib diisi.',
+            'm_user.nik_pengguna.digits' => 'NIK harus terdiri dari 16 digit.',
+            'm_user.nik_pengguna.unique' => 'NIK sudah terdaftar.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        return true;
+    }
+
     public static function prosesLogin($request)
     {
         $user = self::where('nik_pengguna', $request->username)
@@ -84,20 +377,54 @@ class UserModel extends Authenticatable implements JWTSubject
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::login($user);
 
-            // Simpan data ke sesi menggunakan method getDataUser
-            $userData = self::getDataUser($user);
-            session($userData);
+            // Ambil semua hak akses yang dimiliki user
+            $hakAkses = $user->hakAkses()->get();
 
-            // Perbaikan routing - sesuaikan dengan definisi route yang ada
-            $levelCode = $user->level->hak_akses_kode;
-            $redirectUrl = url('/dashboard' . $levelCode);
+            // Jika user memiliki lebih dari 1 hak akses
+            if ($hakAkses->count() > 1) {
+                // Simpan data user ke session
+                $userData = self::getDataUser($user);
+                session($userData);
 
-            return [
-                'success' => true,
-                'message' => 'Login Berhasil',
-                'redirect' => $redirectUrl,
-                'user' => $user  // Tambahkan user ke dalam array hasil
-            ];
+                // Kembalikan data hak akses untuk ditampilkan di form pilih level
+                return [
+                    'success' => true,
+                    'message' => 'Login Berhasil',
+                    'multi_level' => true,
+                    'hak_akses' => $hakAkses,
+                    'redirect' => url('/pilih-level'),
+                    'user' => $user
+                ];
+            }
+            // Jika user hanya memiliki 1 hak akses
+            elseif ($hakAkses->count() == 1) {
+                // Set hak akses aktif
+                session(['active_hak_akses_id' => $hakAkses->first()->hak_akses_id]);
+
+                // Simpan data user ke session
+                $userData = self::getDataUser($user);
+                session($userData);
+
+                // Perbaikan routing - sesuaikan dengan definisi route yang ada
+                $levelCode = $hakAkses->first()->hak_akses_kode;
+                $redirectUrl = url('/dashboard' . $levelCode);
+
+                return [
+                    'success' => true,
+                    'message' => 'Login Berhasil',
+                    'multi_level' => false,
+                    'redirect' => $redirectUrl,
+                    'user' => $user
+                ];
+            }
+            // Jika user tidak memiliki hak akses sama sekali
+            else {
+                Auth::logout();
+                return [
+                    'success' => false,
+                    'message' => 'Akun Anda tidak memiliki hak akses yang aktif',
+                ];
+            }
         }
 
         return [
@@ -164,8 +491,17 @@ class UserModel extends Authenticatable implements JWTSubject
             $data['upload_nik_pengguna'] = $fileName;
             $data['password'] = Hash::make($request->password);
 
-            // Simpan data ke database
+            // Ambil hak akses yang dipilih
+            $hakAksesId = $request->hak_akses_id;
+
+            // Simpan data user ke database
             $user = self::create($data);
+
+            // Buat relasi di tabel set_user_hak_akses
+            SetUserHakAksesModel::create([
+                'fk_m_user' => $user->user_id,
+                'fk_m_hak_akses' => $hakAksesId
+            ]);
 
             DB::commit();
 
@@ -196,7 +532,7 @@ class UserModel extends Authenticatable implements JWTSubject
             'm_user.alamat_pengguna' => 'required|string',
             'm_user.pekerjaan_pengguna' => 'required|string',
             'm_user.nik_pengguna' => 'required|digits:16|unique:m_user,nik_pengguna',
-            'm_user.fk_m_hak_akses' => 'required|exists:m_hak_akses,hak_akses_id',
+            'hak_akses_id' => 'required|exists:m_hak_akses,hak_akses_id',
         ], [
             'password.min' => 'Password minimal harus 5 karakter.',
             'password.confirmed' => 'Verifikasi password tidak sesuai dengan password baru.',
@@ -217,8 +553,8 @@ class UserModel extends Authenticatable implements JWTSubject
             'm_user.nik_pengguna.required' => 'NIK wajib diisi.',
             'm_user.nik_pengguna.digits' => 'NIK harus terdiri dari 16 digit.',
             'm_user.nik_pengguna.unique' => 'NIK sudah terdaftar.',
-            'm_user.fk_m_hak_akses.required' => 'Level pengguna wajib dipilih.',
-            'm_user.fk_m_hak_akses.exists' => 'Level pengguna tidak valid.',
+            'hak_akses_id.required' => 'Level pengguna wajib dipilih.',
+            'hak_akses_id.exists' => 'Level pengguna tidak valid.',
         ]);
 
         if ($validator->fails()) {
@@ -226,5 +562,45 @@ class UserModel extends Authenticatable implements JWTSubject
         }
 
         return true;
+    }
+
+    public static function getUsersByLevel($levelId, $perPage = null, $search = '')
+    {
+        $query = self::query()
+            ->join('set_user_hak_akses', 'm_user.user_id', '=', 'set_user_hak_akses.fk_m_user')
+            ->where('set_user_hak_akses.fk_m_hak_akses', $levelId)
+            ->where('m_user.isDeleted', 0)
+            ->where('set_user_hak_akses.isDeleted', 0)
+            ->select('m_user.*');
+
+        // Tambahkan fungsionalitas pencarian
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_pengguna', 'like', "%{$search}%")
+                    ->orWhere('email_pengguna', 'like', "%{$search}%")
+                    ->orWhere('nik_pengguna', 'like', "%{$search}%")
+                    ->orWhere('no_hp_pengguna', 'like', "%{$search}%");
+            });
+        }
+
+        return self::paginateResults($query, $perPage);
+    }
+
+    // Helper method untuk mengambil hak akses aktif sekarang
+    public function getActiveHakAkses()
+    {
+        $activeHakAksesId = session('active_hak_akses_id');
+
+        if (!$activeHakAksesId) {
+            // Jika tidak ada hak akses aktif di session, ambil yang pertama
+            $hakAkses = $this->hakAkses()->first();
+            if ($hakAkses) {
+                session(['active_hak_akses_id' => $hakAkses->hak_akses_id]);
+                return $hakAkses;
+            }
+            return null;
+        }
+
+        return $this->hakAkses()->where('m_hak_akses.hak_akses_id', $activeHakAksesId)->first();
     }
 }

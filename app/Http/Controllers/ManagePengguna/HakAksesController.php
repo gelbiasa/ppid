@@ -13,8 +13,8 @@ class HakAksesController extends Controller
 {
     use TraitsController;
 
-    public $breadcrumb = 'Pengaturan Level';
-    public $pagename = 'ManagePengguna/ManagementLevel';
+    public $breadcrumb = 'Pengaturan Hak Akses';
+    public $pagename = 'ManagePengguna/ManageLevel';
 
     public function index(Request $request)
     {
@@ -29,7 +29,7 @@ class HakAksesController extends Controller
             'title' => 'Daftar Level'
         ];
 
-        $activeMenu = 'managementlevel';
+        $activeMenu = 'managelevel';
 
         // Gunakan pagination dan pencarian
         $level = HakAksesModel::selectData(10, $search);
