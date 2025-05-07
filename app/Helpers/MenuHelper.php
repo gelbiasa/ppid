@@ -10,6 +10,10 @@ class MenuHelper
 {
     public static function renderSidebarMenus($hakAksesKode, $activeMenu)
     {
+        if (empty($hakAksesKode)) {
+            return ''; // Jika kode hak akses kosong, tidak ada menu yang ditampilkan
+        }
+        
         $userId = Auth::user()->user_id;
         $menus = WebMenuModel::getMenusByLevelWithPermissions($hakAksesKode, $userId);
         $totalNotifikasi = WebMenuModel::getNotifikasiCount($hakAksesKode);

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Models\Log\TransactionModel;
 
 class SetUserHakAksesModel extends Model
 {
@@ -30,33 +31,64 @@ class SetUserHakAksesModel extends Model
         return $this->belongsTo(UserModel::class, 'fk_m_user', 'user_id');
     }
 
-    public static function selectData()
+    public static function getUsersByHakAkses($hakAksesId)
     {
-        //
+        return self::where('fk_m_hak_akses', $hakAksesId)
+            ->where('isDeleted', 0)
+            ->with(['User' => function($query) {
+                $query->where('isDeleted', 0);
+            }])
+            ->get();
     }
 
-    public static function createData()
+    public static function createData($userId, $hakAksesId)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            $userHakAkses = self::create([
+                'fk_m_user' => $userId,
+                'fk_m_hak_akses' => $hakAksesId
+            ]);
+
+            // Log transaksi
+            TransactionModel::createData(
+                'CREATED',
+                $userHakAkses->set_user_hak_akses_id,
+                'Menambahkan hak akses ke pengguna'
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($userHakAkses, 'Hak akses berhasil ditambahkan ke pengguna');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return self::responFormatError($e, 'Gagal menambahkan hak akses');
+        }
     }
 
-    public static function updateData()
+    public static function deleteData($id)
     {
-        //
-    }
+        try {
+            DB::beginTransaction();
 
-    public static function deleteData()
-    {
-        //
-    }
+            $userHakAkses = self::findOrFail($id);
 
-    public static function detailData()
-    {
-        //
-    }
+            $userHakAkses->delete();
 
-    public static function validasiData()
-    {
-        //
+            // Log transaksi
+            TransactionModel::createData(
+                'DELETED',
+                $userHakAkses->set_user_hak_akses_id,
+                'Menghapus hak akses dari pengguna'
+            );
+
+            DB::commit();
+
+            return self::responFormatSukses($userHakAkses, 'Hak akses berhasil dihapus dari pengguna');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return self::responFormatError($e, 'Gagal menghapus hak akses');
+        }
     }
 }

@@ -24,7 +24,14 @@
         'delete'
     );
 
-    $userhakAksesKode = Auth::user()->level->hak_akses_kode;
+    // Ambil hak akses aktif dari session
+    $activeHakAksesId = session('active_hak_akses_id');
+    $userHakAkses = DB::table('m_hak_akses')
+        ->where('hak_akses_id', $activeHakAksesId)
+        ->where('isDeleted', 0)
+        ->first();
+    
+    $userhakAksesKode = $userHakAkses ? $userHakAkses->hak_akses_kode : '';
     
     // Kondisi untuk menampilkan tombol edit/delete
     $canEdit = ($userhakAksesKode === 'SAR') || ($updateHakAkses && $hakAksesKode !== 'SAR');

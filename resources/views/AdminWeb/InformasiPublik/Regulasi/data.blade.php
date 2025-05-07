@@ -1,7 +1,7 @@
 @php
     use App\Models\Website\WebMenuModel;
     use App\Models\HakAkses\SetHakAksesModel;
-    $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('detail-regulasi');
+    $detailRegulasiUrl = WebMenuModel::getDynamicMenuUrl('detail-regulasi');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-2">
      <div class="showing-text">
@@ -35,23 +35,23 @@
              <td>
                 @if(
                     Auth::user()->level->hak_akses_kode === 'SAR' ||
-                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrl, 'update')
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailRegulasiUrl, 'update')
                 )
                     <button class="btn btn-sm btn-warning"
-                        onclick="modalAction('{{ url($regulasiDinamisUrl . '/editData/' . $item->regulasi_id) }}')">
+                        onclick="modalAction('{{ url($detailRegulasiUrl . '/editData/' . $item->regulasi_id) }}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
                 @endif
                 <button class="btn btn-sm btn-info"
-                    onclick="modalAction('{{ url($regulasiDinamisUrl . '/detailData/' . $item->regulasi_id) }}')">
+                    onclick="modalAction('{{ url($detailRegulasiUrl . '/detailData/' . $item->regulasi_id) }}')">
                     <i class="fas fa-eye"></i> Detail
                 </button>
                 @if(
                     Auth::user()->level->hak_akses_kode === 'SAR' ||
-                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $regulasiDinamisUrl, 'delete')
+                    SetHakAksesModel::cekHakAkses(Auth::user()->user_id, $detailRegulasiUrl, 'delete')
                 )
                     <button class="btn btn-sm btn-danger"
-                        onclick="modalAction('{{ url($regulasiDinamisUrl . '/deleteData/' . $item->regulasi_id) }}')">
+                        onclick="modalAction('{{ url($detailRegulasiUrl . '/deleteData/' . $item->regulasi_id) }}')">
                         <i class="fas fa-trash"></i> Hapus
                     </button>
                 @endif

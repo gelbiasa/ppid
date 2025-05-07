@@ -252,34 +252,42 @@
                 $('#hakAksesKode').val(hakAksesKode);
                 $('#levelTitle').text($(this).data('name'));
 
+                console.log('Loading hak akses for level:', hakAksesKode);
+
                 $.ajax({
                     url: `{{ url('/HakAkses/getHakAksesData') }}/${hakAksesKode}`,
                     type: 'GET',
                     dataType: 'json',
                     success: function (data) {
+                        console.log('Received data for level:', data);
                         let html = '';
 
-                        Object.keys(data).forEach(menu_id => {
-                            let akses = data[menu_id];
+                        if (Object.keys(data).length === 0) {
+                            html = '<tr><td colspan="7" class="text-center">Tidak ada menu yang tersedia</td></tr>';
+                        } else {
+                            Object.keys(data).forEach(menu_id => {
+                                let akses = data[menu_id];
 
-                            // Tambahkan baris untuk ha_menu di modal hak akses level
-                            html += `
-                            <tr>
-                                <td>${akses.menu_utama}</td>
-                                <td>${akses.sub_menu ?? 'Null'}</td>
-                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][menu]" ${akses.ha_menu ? 'checked' : ''}></td>
-                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][view]" ${akses.ha_view ? 'checked' : ''}></td>
-                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][create]" ${akses.ha_create ? 'checked' : ''}></td>
-                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][update]" ${akses.ha_update ? 'checked' : ''}></td>
-                                <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][delete]" ${akses.ha_delete ? 'checked' : ''}></td>
-                            </tr>
-                            `;
-                        });
+                                // Tambahkan baris untuk ha_menu di modal hak akses level
+                                html += `
+                        <tr>
+                            <td>${akses.menu_utama}</td>
+                            <td>${akses.sub_menu ?? 'Null'}</td>
+                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][menu]" ${akses.ha_menu ? 'checked' : ''}></td>
+                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][view]" ${akses.ha_view ? 'checked' : ''}></td>
+                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][create]" ${akses.ha_create ? 'checked' : ''}></td>
+                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][update]" ${akses.ha_update ? 'checked' : ''}></td>
+                            <td class="text-center"><input type="checkbox" name="menu_akses[${menu_id}][delete]" ${akses.ha_delete ? 'checked' : ''}></td>
+                        </tr>
+                        `;
+                            });
+                        }
 
                         $('#menuList').html(html);
                         $('#modalHakAksesLevel').modal('show');
                     },
-                    error: function () {
+                    error: function (xhr, status, error) {
+                        console.error('Error loading hak akses level:', error, xhr.responseText);
                         alert("Terjadi kesalahan, silakan coba lagi.");
                     }
                 });
@@ -328,6 +336,8 @@
                         type: 'GET',
                         dataType: 'json',
                         success: function (data) {
+                            console.log(`Loading hak akses for user ${userId}, menu ${menuId}, hak ${hak}:`, data);
+
                             // Periksa apakah data ditemukan dan nilai hak akses adalah 1
                             if (data && data['ha_' + hak] === 1) {
                                 checkbox.prop('checked', true);

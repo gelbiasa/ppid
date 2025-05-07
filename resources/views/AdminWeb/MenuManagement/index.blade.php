@@ -429,7 +429,25 @@
             $('.dd').each(function () {
                 $(this).nestable({
                     maxDepth: 2,
-                    group: 1 // Memungkinkan drag and drop antar kelompok
+                    group: 1, // Memungkinkan drag and drop antar kelompok
+                    dragStop: function(e) {
+                        // Dapatkan kontainer target
+                        const $container = $(e.target).closest('.dd');
+                        const targetJenis = $container.data('jenis');
+                        
+                        // Update jenis menu untuk item yang dipindahkan
+                        const $item = $(e.item);
+                        $item.attr('data-jenis', targetJenis);
+                        
+                        // Update juga untuk semua submenu
+                        $item.find('.dd-item').each(function() {
+                            $(this).attr('data-jenis', targetJenis);
+                            updateMenuItemStyle($(this), targetJenis);
+                        });
+                        
+                        // Update tampilan
+                        updateMenuItemStyle($item, targetJenis);
+                    }
                 });
             });
 
@@ -446,7 +464,7 @@
             });
 
 
-            function updateParentMenuOptions(hakAksesId, targetSelect) {
+            function updateParentMenuOptions(hakAksesId, targetSelect, excludeId = null) {
                 // Reset dropdown
                 targetSelect.empty().append('<option value="">-Set Sebagai Menu Utama</option>');
 
@@ -456,13 +474,15 @@
                 // Lakukan request AJAX untuk mendapatkan parent menu berdasarkan level
                 $.ajax({
                     url: `${dynamicUrl}/${hakAksesId}`,
-                    method: 'GET',
+                    type: 'GET',
+                    data: { exclude_id: excludeId }, // Kirim exclude_id sebagai parameter
                     success: function(response) {
                         if (response.success && response.parentMenus) {
                             response.parentMenus.forEach(function(menu) {
+                                // Gunakan display_name yang sudah diproses di server
                                 targetSelect.append(`
                                     <option value="${menu.web_menu_id}" data-level="${hakAksesId}">
-                                        ${menu.wm_menu_nama}
+                                        ${menu.display_name}
                                     </option>
                                 `);
                             });
@@ -503,8 +523,8 @@
                                 item.level = jenisKode;
                             }
 
-                            // Simpan informasi level kode untuk menu ini
-                            item.hak_akses_kode = $('.dd-item[data-id="' + item.id + '"]').data('jenis');
+                            // Simpan informasi level kode saat ini untuk menu ini
+                            item.current_level = jenisKode;
                         });
 
                         allData = allData.concat(levelData);
@@ -565,6 +585,12 @@
 
                     // Perbarui juga tampilan visual
                     updateMenuItemStyle($(this), targetContainerJenis);
+
+                    // Update juga data-jenis untuk semua submenu
+                    $(this).find('.dd-item').each(function() {
+                        $(this).attr('data-jenis', targetContainerJenis);
+                        updateMenuItemStyle($(this), targetContainerJenis);
+                    });
                 });
             });
 
@@ -792,15 +818,18 @@
                                 $('#edit_level_menu').val(response.menu.fk_m_hak_akses || '');
                                 
                                 // Perbarui dropdown Kategori Menu berdasarkan Level yang dipilih
+                                // Pass menu ID untuk dikecualikan dari daftar parent
                                 updateParentMenuOptions(
                                     response.menu.fk_m_hak_akses, 
-                                    $('#edit_parent_id')
+                                    $('#edit_parent_id'),
+                                    menuId // Kirim menuId untuk dikecualikan
                                 );
                                 
                                 // Set selected parent - set setelah dropdown diupdate
+                                // Kita tambahkan delay untuk memastikan dropdown sudah terisi
                                 setTimeout(function() {
                                     $('#edit_parent_id').val(response.menu.wm_parent_id);
-                                }, 100);
+                                }, 500); // Tambah delay lebih lama untuk memastikan dropdown sudah terisi
                                 
                                 // Disable/enable level field based on parent
                                 if (response.menu.wm_parent_id) {
@@ -889,7 +918,7 @@
                 });
             @endif
 
-            // Validasi Form Add Menu
+            // Pada form tambah menu
             $('#addMenuForm').on('submit', function (e) {
                 e.preventDefault();
 
@@ -901,6 +930,7 @@
                 let menuNama = $('#add_menu_nama').val().trim();
                 let statusMenu = $('#add_status_menu').val();
                 let levelMenu = $('#add_level_menu').val();
+                // URL menu bisa kosong untuk menu utama dengan submenu
                 let menuUrl = $('#add_menu_url').val();
 
                 // Validasi Level Menu
@@ -914,13 +944,6 @@
                 if (!menuNama) {
                     $('#add_menu_nama').addClass('is-invalid');
                     $('#add_menu_nama').siblings('.invalid-feedback').show();
-                    isValid = false;
-                }
-
-                // Validasi URL Menu
-                if (!menuUrl) {
-                    $('#add_menu_url').addClass('is-invalid');
-                    $('#add_menu_url').siblings('.invalid-feedback').text('URL menu wajib dipilih').show();
                     isValid = false;
                 }
 

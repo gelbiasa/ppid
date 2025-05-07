@@ -6,6 +6,7 @@ use App\Http\Controllers\TraitsController;
 use App\Models\HakAkses\SetHakAksesModel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 
 class SetHakAksesController extends Controller
 {
@@ -68,36 +69,34 @@ class SetHakAksesController extends Controller
         }
     }
 
-    public function updateData(Request $request, $isLevel = false)
+    public function updateData(Request $request)
     {
         try {
             // Menentukan apakah permintaan berasal dari form level atau individual
-            // Jika ada ajax request, maka ini adalah permintaan dari form level
+            $isLevel = $request->has('hak_akses_kode');
+            
+            // Proses data dengan model
+            $result = SetHakAksesModel::updateData($request->all(), $isLevel);
+
+            // Jika request adalah ajax (untuk level) atau jika request memiliki parameter untuk level
             if ($request->ajax() || $isLevel) {
-                // Proses data dengan model
-                $result = SetHakAksesModel::updateData($request->all(), true);
-
-                if ($result['success']) {
-                    return response()->json(['success' => true, 'message' => $result['message']]);
-                } else {
-                    return response()->json(['success' => false, 'message' => $result['message']]);
-                }
-            }
-            // Jika bukan ajax request, maka ini adalah permintaan dari form individual
+                return response()->json([
+                    'success' => $result['success'], 
+                    'message' => $result['message']
+                ]);
+            } 
+            // Jika permintaan untuk individual (form biasa)
             else {
-                // Proses data menggunakan model
-                $result = SetHakAksesModel::updateData($request->all(), false);
-
                 if ($result['success']) {
                     return redirect()->back()->with('success', $result['message']);
                 } else {
                     return redirect()->back()->with('error', $result['message']);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Exception $e) {   
             $errorMessage = 'Terjadi kesalahan: ' . $e->getMessage();
             // Jika ajax request, kembalikan response json
-            if ($request->ajax() || $isLevel) {
+            if ($request->ajax()) {
                 return response()->json(['success' => false, 'message' => $errorMessage]);
             }
             // Jika bukan ajax request, redirect dengan error message

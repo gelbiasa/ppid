@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 class TransactionModel extends Model
@@ -26,7 +27,8 @@ class TransactionModel extends Model
 
     // Di TransactionModel
     public static function createData($tipeTransaksi, $aktivitasId, $detailAktivitas)
-    {
+{
+    try {
         // Dapatkan controller dan action saat ini
         $route = Route::current();
         $controller = $route->getController();
@@ -36,6 +38,21 @@ class TransactionModel extends Model
 
         // Tentukan jenis form/menu berdasarkan controller
         $formType = self::menentukanTipeForm($controller);
+
+        // Ambil level dari user yang sedang login
+        $levelNama = '';
+        if (Auth::check()) {
+            // Ambil level langsung dari session atau query database
+            $activeHakAksesId = session('active_hak_akses_id');
+            
+            if ($activeHakAksesId) {
+                $level = \App\Models\HakAksesModel::find($activeHakAksesId);
+                $levelNama = $level ? $level->hak_akses_nama : 'Tidak Diketahui';
+            } else {
+                // Fallback jika tidak ada hak akses di session
+                $levelNama = 'Tidak Diketahui';
+            }
+        }
 
         // Generate pesan aktivitas
         $aktivitas = self::generateAktivitas(
@@ -50,11 +67,15 @@ class TransactionModel extends Model
             'log_transaction_jenis' => $transactionType,
             'log_transaction_aktivitas_id' => $aktivitasId,
             'log_transaction_aktivitas' => $aktivitas,
-            'log_transaction_level' => Auth::user()->level->hak_akses_nama,
+            'log_transaction_level' => $levelNama,
             'log_transaction_pelaku' => session('alias'),
             'log_transaction_tanggal_aktivitas' => now()
         ]);
+    } catch (\Exception $e) {
+        // Log error tanpa menghentikan proses
+        Log::error('Gagal membuat log transaksi: ' . $e->getMessage());
     }
+}
 
     private static function menentukanTipeForm($controller)
     {

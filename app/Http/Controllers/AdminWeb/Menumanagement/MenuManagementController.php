@@ -15,7 +15,7 @@ class MenuManagementController extends Controller
 
     public $breadcrumb = 'Menu Management';
     public $pagename = 'AdminWeb/MenuManagement';
-    
+
     public function index()
     {
         try {
@@ -133,7 +133,8 @@ class MenuManagementController extends Controller
 
     public function getParentMenus($hakAksesId)
     {
-        $parentMenus = WebMenuModel::getParentMenusByLevel($hakAksesId);
+        $excludeId = request()->input('exclude_id');
+        $parentMenus = WebMenuModel::getParentMenusByLevel($hakAksesId, $excludeId);
         return response()->json([
             'success' => true,
             'parentMenus' => $parentMenus

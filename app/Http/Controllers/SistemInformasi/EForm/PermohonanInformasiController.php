@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SistemInformasi\EForm;
 
 use App\Http\Controllers\TraitsController;
 use App\Models\SistemInformasi\EForm\PermohonanInformasiModel;
+use App\Models\Website\WebMenuModel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -74,12 +75,21 @@ class PermohonanInformasiController extends Controller
     public function createData(Request $request)
     {
         try {
+            // Dapatkan folder untuk menentukan redirect
             $folder = $this->getUserFolder();
+            
             PermohonanInformasiModel::validasiData($request);
             $result = PermohonanInformasiModel::createData($request);
 
             if ($result['success']) {
-                return $this->redirectSuccess("/SistemInformasi/EForm/$folder/PermohonanInformasi", $result['message']);
+                // Tentukan URL redirect berdasarkan folder
+                if ($folder === 'RPN') {
+                    $redirectUrl = WebMenuModel::getDynamicMenuUrl('permohonan-informasi');
+                } else {
+                    $redirectUrl = WebMenuModel::getDynamicMenuUrl('permohonan-informasi-admin');
+                }
+                
+                return $this->redirectSuccess($redirectUrl, $result['message']);
             }
 
             return $this->redirectError($result['message']);
@@ -93,6 +103,9 @@ class PermohonanInformasiController extends Controller
     private function getUserFolder()
     {
         $hakAksesKode = Auth::user()->level->hak_akses_kode;
-        return ($hakAksesKode === 'ADM' || $hakAksesKode === 'RPN') ? $hakAksesKode : abort(403);
+        
+        // Jika user adalah RPN, gunakan folder RPN
+        // Jika tidak (ADM, ADT, atau lainnya), gunakan folder ADM
+        return ($hakAksesKode === 'RPN') ? 'RPN' : 'ADM';
     }
 }

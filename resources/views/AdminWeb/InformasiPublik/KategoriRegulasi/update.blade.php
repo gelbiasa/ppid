@@ -1,6 +1,6 @@
 @php
   use App\Models\Website\WebMenuModel;
-  $regulasiDinamisUrl = WebMenuModel::getDynamicMenuUrl('kategori-regulasi');
+  $kategoriRegulasiUrl = WebMenuModel::getDynamicMenuUrl('kategori-regulasi');
 @endphp
 <div class="modal-header">
      <h5 class="modal-title">Ubah Kategori Regulasi</h5>
@@ -10,7 +10,7 @@
  </div>
  
  <div class="modal-body">
-     <form id="formUpdateKategoriRegulasi" action="{{ url($regulasiDinamisUrl . '/updateData/' . $kategoriRegulasi->kategori_reg_id) }}" method="POST">
+     <form id="formUpdateKategoriRegulasi" action="{{ url($kategoriRegulasiUrl . '/updateData/' . $kategoriRegulasi->kategori_reg_id) }}" method="POST">
          @csrf
  
          <div class="form-group">

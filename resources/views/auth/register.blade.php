@@ -38,8 +38,10 @@
 
                     <!-- Pilih Level -->
                     <div class="input-group mb-3">
-                        <select class="form-control" id="hak_akses_id" name="m_user[fk_m_hak_akses]" required>
-                            <option value="2">Responden</option> 
+                        <select class="form-control" id="hak_akses_id" name="hak_akses_id" required>
+                            @foreach($level)
+                                <option value="{{ $level->hak_akses_id }}">{{ $level->hak_akses_nama }}</option>
+                            @endforeach
                         </select>
                         <div class="input-group-append">
                             <div class="input-group-text">
@@ -47,10 +49,11 @@
                             </div>
                         </div>
                     </div>
-                    <small id="error-fk_m_hak_akses" class="error-text text-danger d-block"></small>
+                    <small id="error-hak_akses_id" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <input type="text" id="nama_pengguna" name="m_user[nama_pengguna]" class="form-control" placeholder="Nama (sesuai KTP)" required>
+                        <input type="text" id="nama_pengguna" name="m_user[nama_pengguna]" class="form-control"
+                            placeholder="Nama (sesuai KTP)" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-user"></span>
@@ -60,7 +63,8 @@
                     <small id="error-nama_pengguna" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <input type="email" id="email_pengguna" name="m_user[email_pengguna]" class="form-control" placeholder="Email" required>
+                        <input type="email" id="email_pengguna" name="m_user[email_pengguna]" class="form-control"
+                            placeholder="Email" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-envelope"></span>
@@ -70,7 +74,8 @@
                     <small id="error-email_pengguna" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <input type="text" id="no_hp_pengguna" name="m_user[no_hp_pengguna]" class="form-control" placeholder="Nomor Handphone" required>
+                        <input type="text" id="no_hp_pengguna" name="m_user[no_hp_pengguna]" class="form-control"
+                            placeholder="Nomor Handphone" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-phone"></span>
@@ -80,7 +85,8 @@
                     <small id="error-no_hp_pengguna" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <textarea id="alamat_pengguna" name="m_user[alamat_pengguna]" class="form-control" placeholder="Alamat" required></textarea>
+                        <textarea id="alamat_pengguna" name="m_user[alamat_pengguna]" class="form-control"
+                            placeholder="Alamat" required></textarea>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-map-marker-alt"></span>
@@ -90,7 +96,8 @@
                     <small id="error-alamat_pengguna" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <input type="text" id="pekerjaan_pengguna" name="m_user[pekerjaan_pengguna]" class="form-control" placeholder="Pekerjaan" required>
+                        <input type="text" id="pekerjaan_pengguna" name="m_user[pekerjaan_pengguna]"
+                            class="form-control" placeholder="Pekerjaan" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-briefcase"></span>
@@ -100,7 +107,8 @@
                     <small id="error-pekerjaan_pengguna" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <input type="text" id="nik_pengguna" name="m_user[nik_pengguna]" class="form-control" placeholder="NIK (16 digit)" required maxlength="16">
+                        <input type="text" id="nik_pengguna" name="m_user[nik_pengguna]" class="form-control"
+                            placeholder="NIK (16 digit)" required maxlength="16">
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-id-card"></span>
@@ -111,14 +119,16 @@
 
                     <div class="input-group mb-3">
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="upload_nik_pengguna" name="upload_nik_pengguna" required accept="image/jpeg,image/png,image/jpg">
+                            <input type="file" class="custom-file-input" id="upload_nik_pengguna"
+                                name="upload_nik_pengguna" required accept="image/jpeg,image/png,image/jpg">
                             <label class="custom-file-label" for="upload_nik_pengguna">Upload Foto KTP</label>
                         </div>
                     </div>
                     <small id="error-upload_nik_pengguna" class="error-text text-danger d-block"></small>
 
                     <div class="input-group mb-3">
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Password"
+                            required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
